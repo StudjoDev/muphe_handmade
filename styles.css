@@ -456,6 +456,97 @@ button {
   margin-top: 16px;
 }
 
+.concept-section {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.concept-heading {
+  align-items: end;
+  display: grid;
+  gap: 24px;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.62fr);
+  margin-bottom: 34px;
+}
+
+.concept-heading h2 {
+  font-size: 4rem;
+  letter-spacing: 0;
+  line-height: 1.06;
+  margin: 0;
+}
+
+.concept-heading p:last-child {
+  color: rgba(255, 250, 240, 0.72);
+  margin: 0;
+}
+
+.concept-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1.25fr 1fr 1fr;
+}
+
+.concept-tile {
+  min-height: 300px;
+  overflow: hidden;
+  position: relative;
+}
+
+.concept-feature {
+  grid-row: span 2;
+  min-height: 612px;
+}
+
+.concept-tile img {
+  height: 100%;
+  inset: 0;
+  object-fit: cover;
+  position: absolute;
+  transition: transform 420ms ease;
+  width: 100%;
+}
+
+.concept-tile::after {
+  background: linear-gradient(180deg, rgba(36, 26, 43, 0.04), rgba(36, 26, 43, 0.72));
+  content: "";
+  inset: 0;
+  position: absolute;
+}
+
+.concept-tile:hover img {
+  transform: scale(1.035);
+}
+
+.concept-tile div {
+  bottom: 0;
+  left: 0;
+  padding: 22px;
+  position: absolute;
+  right: 0;
+  z-index: 1;
+}
+
+.concept-tile span {
+  color: rgba(255, 250, 240, 0.72);
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 900;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.concept-tile h3 {
+  font-size: 1.55rem;
+  line-height: 1.18;
+  margin: 0;
+}
+
+.concept-tile p {
+  color: rgba(255, 250, 240, 0.74);
+  margin: 10px 0 0;
+}
+
 .shop-section {
   background: var(--paper);
 }
@@ -1033,6 +1124,7 @@ details p {
 
   .section-heading h2,
   .shop-heading h2,
+  .concept-heading h2,
   .ritual-copy h2,
   .story-copy h2 {
     font-size: 3.4rem;
@@ -1066,6 +1158,7 @@ details p {
 
   .section-heading h2,
   .shop-heading h2,
+  .concept-heading h2,
   .ritual-copy h2,
   .story-copy h2 {
     font-size: 2.8rem;
@@ -1085,6 +1178,7 @@ details p {
 
   .intro-strip,
   .shop-heading,
+  .concept-heading,
   .ritual-section,
   .story-section {
     display: grid;
@@ -1105,6 +1199,19 @@ details p {
 
   .product-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .concept-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .concept-feature {
+    grid-column: span 2;
+    min-height: 420px;
+  }
+
+  .concept-tile {
+    min-height: 270px;
   }
 
   .ritual-media {
@@ -1171,9 +1278,23 @@ details p {
 
   .section-heading h2,
   .shop-heading h2,
+  .concept-heading h2,
   .ritual-copy h2,
   .story-copy h2 {
     font-size: 2.15rem;
+  }
+
+  .concept-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .concept-feature {
+    grid-column: auto;
+    min-height: 330px;
+  }
+
+  .concept-tile {
+    min-height: 250px;
   }
 
   .hero-actions {
