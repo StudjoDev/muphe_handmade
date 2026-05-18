@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>沐菲 MUPHÉ Handmade｜場景角色水晶手作</title>
+    <meta
+      name="description"
+      content="沐菲 MUPHÉ Handmade 以人生場景角色導購，販售手作水晶手鍊、原礦擴香與送禮套組。"
+    />
+    <link rel="icon" href="assets/muphe-logo.jpg" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header" data-header>
+      <a class="brand-lockup" href="#top" aria-label="回到首頁">
+        <img src="assets/muphe-logo.jpg" alt="MUPHÉ Handmade 沐菲標誌" />
+        <span>
+          <strong>MUPHÉ Handmade</strong>
+          <small>沐菲</small>
+        </span>
+      </a>
+
+      <nav class="desktop-nav" aria-label="主導覽">
+        <a href="#scene">場景選水晶</a>
+        <a href="#shop">手作手鍊</a>
+        <a href="#raw">原礦/擴香</a>
+        <a href="#guide">水晶百科</a>
+        <a href="#story">品牌故事</a>
+        <a href="#faq">購物須知</a>
+      </nav>
+
+      <div class="header-actions">
+        <button class="icon-button menu-toggle" type="button" aria-label="開啟選單" data-menu-toggle>
+          <span></span>
+          <span></span>
+        </button>
+        <button class="cart-button" type="button" data-cart-open>
+          <span class="cart-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M6.5 8h11l-1.1 10H7.6L6.5 8Z" stroke="currentColor" stroke-width="1.8" />
+              <path d="M9 8a3 3 0 0 1 6 0" stroke="currentColor" stroke-width="1.8" />
+            </svg>
+          </span>
+          <span>購物車</span>
+          <b data-cart-count>0</b>
+        </button>
+      </div>
+    </header>
+
+    <div class="mobile-nav" data-mobile-nav aria-label="手機導覽">
+      <a href="#scene">場景選水晶</a>
+      <a href="#shop">手作手鍊</a>
+      <a href="#raw">原礦/擴香</a>
+      <a href="#gift">禮物套組</a>
+      <a href="#guide">水晶百科</a>
+      <a href="#story">品牌故事</a>
+      <a href="#faq">購物須知</a>
+    </div>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-content reveal">
+          <p class="eyebrow">場景角色水晶手作</p>
+          <h1 id="hero-title">
+            MUPHÉ Handmade
+            <span>把日常切換成你想要的狀態</span>
+          </h1>
+          <p class="hero-copy">
+            沐菲不先問你缺什麼，先問你今天要上場成為誰。從職場界線、上台發光到睡前關機，用手作水晶陪你換一個狀態。
+          </p>
+          <div class="hero-actions">
+            <a class="primary-link" href="#scene">開始場景導購</a>
+            <a class="secondary-link" href="#shop">看首發 18 款</a>
+          </div>
+          <div class="hero-scenes" aria-label="熱門場景">
+            <a href="#shop" data-hero-scene="職場防小人">職場防小人</a>
+            <a href="#shop" data-hero-scene="上台發光">上台發光</a>
+            <a href="#shop" data-hero-scene="深度關機沉睡">深度關機沉睡</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="intro-strip" aria-label="品牌定位">
+        <p>水晶不是考卷答案，是今天上場前的狀態裝備。</p>
+        <span>手作手鍊</span>
+        <span>場景導購</span>
+        <span>原礦擴香</span>
+      </section>
+
+      <section class="scene-section section-pad" id="scene">
+        <div class="section-heading">
+          <p class="eyebrow">Scene Finder</p>
+          <h2>先選人生場景，不先背水晶功課</h2>
+          <p>
+            用生活語言找到商品，再用晶種、色系、功效和尺寸做第二層篩選。初次買水晶也能快速知道哪一款適合自己。
+          </p>
+        </div>
+        <div class="scene-grid" data-scene-grid></div>
+      </section>
+
+      <section class="shop-section section-pad" id="shop">
+        <div class="shop-heading">
+          <div>
+            <p class="eyebrow">Launch Collection</p>
+            <h2>首發 18 款日常狀態裝備</h2>
+          </div>
+          <p>
+            商品頁固定說清楚：適合誰、什麼情境戴、用了哪些晶種、尺寸材質、淨化保養、包裝內容和可加購儀式。
+          </p>
+        </div>
+
+        <div class="shop-controls" aria-label="商品篩選">
+          <label>
+            場景
+            <select data-filter="scene">
+              <option value="全部">全部場景</option>
+            </select>
+          </label>
+          <label>
+            類型
+            <select data-filter="type">
+              <option value="全部">全部類型</option>
+            </select>
+          </label>
+          <label>
+            色系
+            <select data-filter="color">
+              <option value="全部">全部色系</option>
+            </select>
+          </label>
+          <label class="toggle-field">
+            <input type="checkbox" data-custom-only />
+            <span>只看可客製</span>
+          </label>
+        </div>
+
+        <div class="result-row">
+          <p data-result-count></p>
+          <button type="button" class="text-button" data-reset-filters>重設篩選</button>
+        </div>
+
+        <div class="product-grid" data-product-grid></div>
+      </section>
+
+      <section class="ritual-section section-pad" id="raw">
+        <div class="ritual-media" aria-hidden="true">
+          <img src="assets/muphe-crystal-slab.jpg" alt="" />
+        </div>
+        <div class="ritual-copy">
+          <p class="eyebrow">Phase 2 Value Add</p>
+          <h2>香氛、音頻與原礦，讓水晶從飾品變成日常儀式</h2>
+          <p>
+            首發先用場景角色建立差異化；第二階段可加上 QR Code 音頻、精油小禮與原礦擴香，把客單價往上推。
+          </p>
+          <div class="ritual-list">
+            <article>
+              <span>01</span>
+              <h3>靈性音頻</h3>
+              <p>每款商品附 3 分鐘專屬音頻，可放在感謝卡 QR Code。</p>
+            </article>
+            <article>
+              <span>02</span>
+              <h3>香氛小禮</h3>
+              <p>高品質基礎精油小分裝，搭配火山石、木質珠或擴香原礦。</p>
+            </article>
+            <article>
+              <span>03</span>
+              <h3>空間擴香</h3>
+              <p>白水晶簇、粉晶原石與調香精油，主打「用氣味啟動水晶結果」。</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="gift-section section-pad" id="gift">
+        <div class="section-heading">
+          <p class="eyebrow">Gift Ready</p>
+          <h2>送禮不用解釋玄學，只要說：這款很像你</h2>
+          <p>
+            禮物套組用「狀態祝福」包裝，適合生日、面試、新工作、搬家、失戀後重啟和期末衝刺。
+          </p>
+        </div>
+        <div class="gift-row">
+          <div>
+            <span>Birthday Reset</span>
+            <strong>生日轉場禮物盒</strong>
+            <p>手作手鍊、白水晶碎石、祝福小卡與收納袋。</p>
+          </div>
+          <div>
+            <span>Starter Kit</span>
+            <strong>初次入坑水晶包</strong>
+            <p>用 3 種基本場景入門，送自己或送朋友都不會太重。</p>
+          </div>
+          <div>
+            <span>Desk Ritual</span>
+            <strong>辦公桌結界原礦</strong>
+            <p>放在鍵盤旁邊，提醒自己界線、專注與呼吸。</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="guide-section section-pad" id="guide">
+        <div class="section-heading">
+          <p class="eyebrow">Crystal Guide</p>
+          <h2>水晶百科寫給第一次買的人</h2>
+          <p>不逼客人背晶種，讓每一篇都能回到「我現在需要哪一種狀態」。</p>
+        </div>
+        <div class="guide-list">
+          <article>
+            <span>水晶怎麼挑</span>
+            <h3>先選場景，再選晶種</h3>
+            <p>先從生活問題切入，再看紫水晶、粉晶、白水晶、黑曜石等對應感受。</p>
+          </article>
+          <article>
+            <span>尺寸與配戴</span>
+            <h3>手圍、鬆緊與日常配戴</h3>
+            <p>每款手鍊可選尺寸，客製款會依手圍調整珠數與整體節奏。</p>
+          </article>
+          <article>
+            <span>保養淨化</span>
+            <h3>天然水晶的色差與保養</h3>
+            <p>避免長時間泡水、碰撞和化學清潔，收納前以軟布擦拭。</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="story-section section-pad" id="story">
+        <div class="story-mark">
+          <img src="assets/muphe-logo.jpg" alt="MUPHÉ Handmade 沐菲品牌標誌" />
+        </div>
+        <div class="story-copy">
+          <p class="eyebrow">Brand Story</p>
+          <h2>從水晶開始，練習做一門看得懂人心的生意</h2>
+          <p>
+            沐菲相信手作可以很小、很慢，也可以很聰明。初期不靠大庫存砸錢，而是用低買高賣、洞察需求、順應潮流和持續研發，培養樂樂做生意的頭腦。
+          </p>
+          <p>
+            我們把每一串水晶手鍊做成生活場景裡的角色切換器：該發光時發光，該拒絕時拒絕，該休息時把腦袋關機。
+          </p>
+        </div>
+      </section>
+
+      <section class="faq-section section-pad" id="faq">
+        <div class="section-heading">
+          <p class="eyebrow">FAQ</p>
+          <h2>購物須知</h2>
+          <p>把會影響下單的問題放在同一區，降低第一次購買的猶豫。</p>
+        </div>
+        <div class="faq-list">
+          <details open>
+            <summary>手圍尺寸怎麼選？</summary>
+            <p>用軟尺貼著手腕量一圈，喜歡貼手可加 0.5 公分，喜歡寬鬆可加 1 公分。客製款會依手圍微調珠數。</p>
+          </details>
+          <details>
+            <summary>可以客製嗎？</summary>
+            <p>可客製商品會標示「可客製」。可調整尺寸、主色感與少量晶種，若變動太大會另外報價。</p>
+          </details>
+          <details>
+            <summary>天然水晶會和照片一樣嗎？</summary>
+            <p>天然水晶有雲霧、冰裂、礦缺與色差，每顆都不完全相同。商品照呈現的是整體風格與配色方向。</p>
+          </details>
+          <details>
+            <summary>多久出貨？</summary>
+            <p>現貨約 2-4 個工作天寄出；客製或預購商品依頁面標示時間製作。</p>
+          </details>
+          <details>
+            <summary>退換貨規則？</summary>
+            <p>非客製商品保持全新可依平台規範申請退換；客製尺寸、客製晶種與已拆封擴香用品不適用一般退換。</p>
+          </details>
+          <details>
+            <summary>怎麼保養和淨化？</summary>
+            <p>日常以軟布擦拭，避免泡水、碰撞、香水與清潔劑。可用白水晶碎石、月光或靜置方式做溫和淨化。</p>
+          </details>
+        </div>
+      </section>
+    </main>
+
+    <aside class="drawer product-drawer" data-product-drawer aria-hidden="true" aria-label="商品詳情">
+      <div class="drawer-panel">
+        <button class="icon-button close-button" type="button" aria-label="關閉商品詳情" data-product-close>
+          <span></span>
+          <span></span>
+        </button>
+        <div data-product-detail></div>
+      </div>
+    </aside>
+
+    <aside class="drawer cart-drawer" data-cart-drawer aria-hidden="true" aria-label="購物車">
+      <div class="drawer-panel cart-panel">
+        <button class="icon-button close-button" type="button" aria-label="關閉購物車" data-cart-close>
+          <span></span>
+          <span></span>
+        </button>
+        <h2>購物車</h2>
+        <div class="cart-items" data-cart-items></div>
+        <div class="cart-summary">
+          <span>小計</span>
+          <strong data-cart-total>NT$0</strong>
+        </div>
+        <button class="checkout-button" type="button">前往結帳</button>
+        <p>此為前端展示版，後續可接入 SHOPLINE、Shopify 或自架結帳流程。</p>
+      </div>
+    </aside>
+
+    <script src="app.js"></script>
+  </body>
+</html>
