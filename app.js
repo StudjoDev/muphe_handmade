@@ -390,13 +390,15 @@ const cartItems = document.querySelector("[data-cart-items]");
 const cartTotal = document.querySelector("[data-cart-total]");
 const mobileNav = document.querySelector("[data-mobile-nav]");
 
-function makeBracelet(product) {
-  const beads = Array.from({ length: 12 }, (_, index) => {
-    const color = product.palette[index % product.palette.length];
-    return `<span class="bead" style="--i:${index}; --bead-color:${color}"></span>`;
-  }).join("");
-
-  return `<div class="bracelet-preview" aria-hidden="true">${beads}</div>`;
+function makeProductImage(product, detail = false) {
+  return `
+    <img
+      class="${detail ? "detail-product-photo" : "product-photo"}"
+      src="assets/products/${product.id}.webp"
+      alt="${product.name} 商品照"
+      loading="${detail ? "eager" : "lazy"}"
+    />
+  `;
 }
 
 function renderScenes() {
@@ -458,7 +460,7 @@ function renderProducts() {
       (product) => `
         <article class="product-card">
           <div class="product-visual">
-            ${makeBracelet(product)}
+            ${makeProductImage(product)}
           </div>
           <div class="product-body">
             <div class="product-meta">
@@ -521,7 +523,7 @@ function findProduct(id) {
 
 function renderProductDetail(product) {
   productDetail.innerHTML = `
-    <div class="detail-visual">${makeBracelet(product)}</div>
+    <div class="detail-visual">${makeProductImage(product, true)}</div>
     <div class="detail-content">
       <span class="product-scene">${product.scene}</span>
       <h2>${product.name}</h2>

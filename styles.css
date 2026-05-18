@@ -560,52 +560,22 @@ button {
 }
 
 .product-visual {
-  align-items: center;
-  aspect-ratio: 1 / 0.83;
-  background:
-    radial-gradient(circle at 50% 35%, rgba(255, 255, 255, 0.86), transparent 34%),
-    linear-gradient(135deg, rgba(183, 139, 62, 0.13), rgba(31, 111, 103, 0.08)),
-    var(--stone);
-  display: flex;
-  justify-content: center;
+  aspect-ratio: 1;
+  background: var(--stone);
   overflow: hidden;
   position: relative;
 }
 
-.product-visual::after {
-  background: rgba(255, 250, 240, 0.6);
-  bottom: 20px;
-  content: "";
-  filter: blur(8px);
-  height: 18px;
-  position: absolute;
-  width: 58%;
+.product-photo,
+.detail-product-photo {
+  height: 100%;
+  object-fit: cover;
+  transition: transform 360ms ease;
+  width: 100%;
 }
 
-.bracelet-preview {
-  aspect-ratio: 1;
-  position: relative;
-  width: min(62%, 176px);
-  z-index: 1;
-}
-
-.bead {
-  background:
-    radial-gradient(circle at 31% 28%, rgba(255, 255, 255, 0.85), transparent 17%),
-    var(--bead-color);
-  border: 1px solid rgba(36, 26, 43, 0.09);
-  border-radius: 50%;
-  box-shadow: 0 5px 10px rgba(36, 26, 43, 0.15);
-  height: 28px;
-  left: 50%;
-  position: absolute;
-  top: 50%;
-  transform:
-    rotate(calc(var(--i) * 30deg))
-    translate(70px)
-    rotate(calc(var(--i) * -30deg));
-  transform-origin: 0 0;
-  width: 28px;
+.product-card:hover .product-photo {
+  transform: scale(1.035);
 }
 
 .product-body {
@@ -910,14 +880,10 @@ details p {
 }
 
 .detail-visual {
-  background:
-    radial-gradient(circle at 50% 34%, rgba(255, 255, 255, 0.9), transparent 35%),
-    linear-gradient(135deg, rgba(75, 45, 95, 0.14), rgba(31, 111, 103, 0.08)),
-    var(--stone);
+  background: var(--stone);
   border-radius: var(--radius);
-  display: grid;
-  min-height: 270px;
-  place-items: center;
+  aspect-ratio: 1;
+  overflow: hidden;
 }
 
 .detail-content {
@@ -1258,12 +1224,4 @@ details p {
     font-size: 1.8rem;
   }
 
-  .bead {
-    height: 24px;
-    transform:
-      rotate(calc(var(--i) * 30deg))
-      translate(58px)
-      rotate(calc(var(--i) * -30deg));
-    width: 24px;
-  }
 }
