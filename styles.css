@@ -888,15 +888,26 @@ button {
 
 .story-mark {
   align-items: center;
-  display: flex;
+  display: grid;
+  gap: 16px;
   justify-content: center;
+  justify-items: center;
 }
 
 .story-mark img {
   border: 1px solid rgba(183, 139, 62, 0.35);
-  border-radius: 50%;
   box-shadow: var(--shadow);
+}
+
+.story-signature-logo {
+  border-radius: var(--radius);
   width: min(100%, 420px);
+}
+
+.story-seal-logo {
+  background: var(--paper);
+  border-radius: 50%;
+  width: min(48%, 190px);
 }
 
 .faq-list {
@@ -928,6 +939,38 @@ details p {
   color: var(--muted);
   margin: 0;
   padding: 0 0 18px;
+}
+
+.site-footer {
+  align-items: center;
+  background: var(--ink);
+  color: var(--paper);
+  display: grid;
+  gap: 28px;
+  grid-template-columns: 154px 1fr 100px;
+  padding: 34px max(22px, 6vw);
+}
+
+.site-footer img:first-child {
+  border-radius: var(--radius);
+  width: 154px;
+}
+
+.site-footer img:last-child {
+  border-radius: 50%;
+  justify-self: end;
+  width: 96px;
+}
+
+.site-footer strong {
+  display: block;
+  font-size: 1.1rem;
+}
+
+.site-footer p {
+  color: rgba(255, 250, 240, 0.68);
+  margin: 6px 0 0;
+  max-width: 560px;
 }
 
 .drawer {
@@ -1228,6 +1271,20 @@ details p {
   .gift-row {
     grid-template-columns: 1fr;
   }
+
+  .site-footer {
+    grid-template-columns: 120px 1fr;
+  }
+
+  .site-footer img:first-child {
+    width: 120px;
+  }
+
+  .site-footer img:last-child {
+    grid-column: 1 / -1;
+    justify-self: start;
+    width: 82px;
+  }
 }
 
 @media (max-width: 620px) {
@@ -1297,6 +1354,10 @@ details p {
     min-height: 250px;
   }
 
+  .story-seal-logo {
+    width: min(52%, 160px);
+  }
+
   .hero-actions {
     align-items: stretch;
     flex-direction: column;
@@ -1334,6 +1395,20 @@ details p {
 
   .product-actions {
     grid-template-columns: 1fr;
+  }
+
+  .site-footer {
+    gap: 18px;
+    grid-template-columns: 1fr;
+  }
+
+  .site-footer img:first-child {
+    width: 142px;
+  }
+
+  .site-footer img:last-child {
+    grid-column: auto;
+    width: 78px;
   }
 
   .drawer-panel {
