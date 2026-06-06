@@ -9,6 +9,7 @@
  * 
  *  架構：
  *  HTML5 表單 → doPost() → processSubmission() → writeToSheet()
+ *                                                → syncCsvMirror()
  *                                                → generateRecommendation()
  *                                                → sendConsultationNotification()
  * 
@@ -55,11 +56,18 @@ function doPost(e) {
   try {
     let formData = {};
 
-    // 根據 Content-Type 解析資料
-    if (e.postData && e.postData.type === 'application/json') {
-      // JSON 格式（來自 HTML5 表單的 fetch POST）
-      formData = JSON.parse(e.postData.contents);
-    } else if (e.parameter) {
+    // Apps Script Web App 常會收到 text/plain JSON（來自 GitHub Pages no-cors fetch）
+    if (e.postData && e.postData.contents) {
+      try {
+        formData = JSON.parse(e.postData.contents);
+      } catch (parseError) {
+        if (e.parameter && Object.keys(e.parameter).length > 0) {
+          formData = e.parameter;
+        } else {
+          throw new Error('無法解析 JSON 請求內容');
+        }
+      }
+    } else if (e.parameter && Object.keys(e.parameter).length > 0) {
       // URL-encoded 格式（來自傳統表單 POST）
       formData = e.parameter;
     } else {
@@ -76,7 +84,8 @@ function doPost(e) {
         message: '諮詢表單已成功送出！',
         data: {
           name: formData.name || '',
-          recommendation: result.recommendation || ''
+          recommendation: result.recommendation || '',
+          csvUrl: result.csvUrl || ''
         }
       }))
       .setMimeType(ContentService.MimeType.JSON);
@@ -148,6 +157,17 @@ function onFormSubmit(e) {
       
       // 寫入空白備註
       sheet.getRange(row, COLUMNS.NOTES).setValue('');
+
+      // 同步更新 CSV 備份（失敗不影響已寫入的 Google Sheet 資料）
+      try {
+        SpreadsheetApp.flush();
+        const csvUrl = syncCsvMirrorWithLock(sheet);
+        if (csvUrl) {
+          console.log('【CSV 同步】✅ 已更新：' + csvUrl);
+        }
+      } catch (csvError) {
+        console.error('【CSV 同步失敗】' + csvError.toString());
+      }
 
       // 發送 LINE 通知
       sendConsultationNotification({
@@ -222,9 +242,21 @@ function processSubmission(data) {
       ''                                      // 17. Q 欄 — 備註紀錄（空白）
     ];
 
-    // 步驟 5：寫入試算表（先確保資料寫入成功）
-    sheet.appendRow(rowData);
+    // 步驟 5：寫入試算表，並同步更新同一份 CSV 紀錄檔
+    const csvUrl = withScriptLock(function() {
+      sheet.appendRow(rowData);
+      SpreadsheetApp.flush();
+      try {
+        return syncCsvMirrorFromSheet(sheet);
+      } catch (csvError) {
+        console.error('【CSV 同步失敗】' + csvError.toString());
+        return '';
+      }
+    });
     console.log('【資料寫入】✅ 已寫入新資料：' + data.name);
+    if (csvUrl) {
+      console.log('【CSV 同步】✅ 已更新：' + csvUrl);
+    }
 
     // 步驟 6：發送 LINE 通知（失敗不影響資料寫入）
     try {
@@ -242,7 +274,8 @@ function processSubmission(data) {
 
     return {
       success: true,
-      recommendation: recommendation
+      recommendation: recommendation,
+      csvUrl: csvUrl || ''
     };
 
   } catch (error) {
@@ -346,6 +379,95 @@ function getArrayValue(value) {
   return value || '';
 }
 
+/**
+ * 使用 Script Lock 保護寫入流程，避免多人同時送出時 CSV 同步互相覆蓋
+ * @param {Function} callback - 需要在鎖內執行的函數
+ * @returns {*} callback 的回傳值
+ */
+function withScriptLock(callback) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    return callback();
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * 在尚未持有鎖時，同步更新 CSV 紀錄檔
+ * @param {Sheet} sheet - 來源工作表
+ * @returns {string} CSV 檔案網址；若停用則回傳空字串
+ */
+function syncCsvMirrorWithLock(sheet) {
+  return withScriptLock(function() {
+    SpreadsheetApp.flush();
+    return syncCsvMirrorFromSheet(sheet);
+  });
+}
+
+/**
+ * 將目前工作表全部內容輸出成同一份 CSV 檔案
+ * @param {Sheet} sheet - 來源工作表
+ * @returns {string} CSV 檔案網址；若停用則回傳空字串
+ */
+function syncCsvMirrorFromSheet(sheet) {
+  if (typeof CSV_MIRROR_ENABLED !== 'undefined' && CSV_MIRROR_ENABLED === false) {
+    return '';
+  }
+
+  const values = sheet.getDataRange().getDisplayValues();
+  const csvContent = values
+    .map(function(row) {
+      return row.map(csvEscape).join(',');
+    })
+    .join('\r\n') + '\r\n';
+
+  const csvFile = getOrCreateCsvFile();
+  csvFile.setContent(csvContent);
+  return csvFile.getUrl();
+}
+
+/**
+ * 取得或建立 CSV 紀錄檔
+ * @returns {File} Google Drive 檔案
+ */
+function getOrCreateCsvFile() {
+  const folder = getCsvFolder();
+  const files = folder.getFilesByName(CSV_FILE_NAME);
+
+  if (files.hasNext()) {
+    return files.next();
+  }
+
+  return folder.createFile(CSV_FILE_NAME, '', 'text/csv');
+}
+
+/**
+ * 取得 CSV 存放資料夾；未設定時使用雲端硬碟根目錄
+ * @returns {Folder} Google Drive 資料夾
+ */
+function getCsvFolder() {
+  const folderId = typeof CSV_FOLDER_ID === 'undefined' ? '' : String(CSV_FOLDER_ID || '').trim();
+  if (folderId) {
+    return DriveApp.getFolderById(folderId);
+  }
+  return DriveApp.getRootFolder();
+}
+
+/**
+ * CSV 欄位轉義，確保逗號、換行、雙引號可正確匯出
+ * @param {*} value - 欄位值
+ * @returns {string} CSV 安全字串
+ */
+function csvEscape(value) {
+  const text = value === null || typeof value === 'undefined' ? '' : String(value);
+  if (/[",\r\n]/.test(text)) {
+    return '"' + text.replace(/"/g, '""') + '"';
+  }
+  return text;
+}
+
 // ============================
 // 🔄 手動操作函數
 // ============================
@@ -357,6 +479,7 @@ function getArrayValue(value) {
 function initializeSheet() {
   try {
     const sheet = getOrCreateSheet();
+    const csvUrl = syncCsvMirrorWithLock(sheet);
     console.log('✅ 試算表初始化完成！');
     console.log('  工作表名稱：' + sheet.getName());
     console.log('  欄位數量：' + HEADER_ROW.length);
@@ -364,8 +487,29 @@ function initializeSheet() {
     // 顯示試算表 URL
     const spreadsheet = sheet.getParent();
     console.log('  試算表網址：' + spreadsheet.getUrl());
+    if (csvUrl) {
+      console.log('  CSV 紀錄檔網址：' + csvUrl);
+    }
   } catch (error) {
     console.error('❌ 初始化失敗：' + error.toString());
+  }
+}
+
+/**
+ * 手動重建 CSV 紀錄檔
+ * 用於首次設定 CSV，或手動修改試算表資料後重新同步
+ */
+function rebuildCsvMirror() {
+  try {
+    const sheet = getOrCreateSheet();
+    const csvUrl = syncCsvMirrorWithLock(sheet);
+    if (csvUrl) {
+      console.log('✅ CSV 紀錄檔已重建：' + csvUrl);
+    } else {
+      console.log('CSV 同步目前已停用');
+    }
+  } catch (error) {
+    console.error('❌ CSV 重建失敗：' + error.toString());
   }
 }
 

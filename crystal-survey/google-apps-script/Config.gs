@@ -20,6 +20,23 @@ const SPREADSHEET_ID = '在此貼上您的試算表ID';
 const SHEET_NAME = '諮詢紀錄';
 
 // ============================
+// 🧾 CSV 備份設定
+// ============================
+
+/** 是否在每次送出後，同步更新同一份 CSV 紀錄檔 */
+const CSV_MIRROR_ENABLED = true;
+
+/** CSV 檔案名稱（會在 Google Drive 中建立或更新同名檔案） */
+const CSV_FILE_NAME = 'muphe_crystal_consultation_records.csv';
+
+/**
+ * CSV 存放資料夾 ID
+ * - 留空：建立在 Apps Script 執行帳號的 Google Drive 根目錄
+ * - 填入資料夾 ID：建立在指定資料夾中
+ */
+const CSV_FOLDER_ID = '';
+
+// ============================
 // 💬 LINE Messaging API 設定
 // （LINE Notify 已於 2025/3/31 停止服務，改用 Messaging API）
 // ============================

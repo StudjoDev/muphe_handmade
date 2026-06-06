@@ -1,6 +1,6 @@
 # 水晶能量諮詢系統 — 完整部署指南
 
-> 本指南涵蓋「水晶能量諮詢系統」從零開始的完整部署流程，包含 Google Sheets、Apps Script、LINE Messaging API、Web App 部署及測試驗證。
+> 本指南涵蓋「水晶能量諮詢系統」從零開始的完整部署流程，包含 Google Sheets、CSV 統一紀錄、Apps Script、LINE Messaging API、Web App 部署及測試驗證。
 
 ---
 
@@ -113,6 +113,11 @@ https://docs.google.com/spreadsheets/d/1aBcDeFgHiJkLmNoPqRsTuVwXyZ/edit
 const SPREADSHEET_ID = '你的_SPREADSHEET_ID';    // 步驟一取得的 ID
 const SHEET_NAME = '諮詢紀錄';                    // 工作表名稱
 
+// CSV 統一紀錄設定
+const CSV_MIRROR_ENABLED = true;
+const CSV_FILE_NAME = 'muphe_crystal_consultation_records.csv';
+const CSV_FOLDER_ID = '';                         // 留空會放在 Google Drive 根目錄
+
 // LINE Messaging API 設定（取代已停用的 LINE Notify）
 const LINE_CHANNEL_ACCESS_TOKEN = '你的_CHANNEL_ACCESS_TOKEN';  // 步驟三取得
 const LINE_TARGET_ID = '你的_USER_ID_或_GROUP_ID';               // 接收通知的對象
@@ -124,6 +129,8 @@ const GEMINI_API_KEY = '你的_GEMINI_API_KEY';     // 從 Google AI Studio 取�
 ```
 
 > ⚠️ **重要**：請務必將上方的佔位字串替換為您的實際值！
+>
+> 💡 CSV 會在每次表單送出後，自動把「諮詢紀錄」工作表完整同步到同一份 `muphe_crystal_consultation_records.csv`。如果想放在指定資料夾，請把 Google Drive 資料夾 ID 填入 `CSV_FOLDER_ID`。
 
 ### 步驟 5：儲存專案
 
@@ -331,24 +338,13 @@ https://script.google.com/macros/s/AKfycbxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/exe
 
 ### 步驟 5：更新 HTML 表單的 POST URL
 
-如果您有獨立的 HTML 諮詢表單，需要更新表單的提交目標：
-
-```html
-<form id="consultationForm" action="你的_WEB_APP_URL" method="POST">
-  <!-- 表單欄位 -->
-</form>
-```
-
-或在 JavaScript 中：
+如果您使用 GitHub Pages 上的 `crystal-survey/frontend/crystal-form.html`，請將檔案中的 Apps Script 提交網址改成部署完成後取得的 Web App URL：
 
 ```javascript
-const WEB_APP_URL = '你的_WEB_APP_URL';
-
-fetch(WEB_APP_URL, {
-  method: 'POST',
-  body: formData
-});
+const SUBMIT_URL = 'https://script.google.com/macros/s/AKfycbxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/exec';
 ```
+
+> ⚠️ 若仍保留 `GOOGLE_APPS_SCRIPT_WEB_APP_URL` 佔位字串，正式網頁會顯示「表單收件網址尚未設定」，避免使用者誤以為資料已送出。
 
 ### 更新部署（日後修改程式碼時）
 
@@ -441,37 +437,47 @@ fetch(WEB_APP_URL, {
 1. 開啟 **「水晶諮詢資料庫」** Google Sheets
 2. 切換至 **「諮詢紀錄」** 工作表
 3. 確認：
-   - [ ] 新資料已出現在最後一列
-   - [ ] 時間戳記正確
-   - [ ] 各欄位資料與表單填寫內容一致
-   - [ ] 處理狀態預設為「待處理」
+	   - [ ] 新資料已出現在最後一列
+	   - [ ] 時間戳記正確
+	   - [ ] 各欄位資料與表單填寫內容一致
+	   - [ ] 處理狀態預設為「未處理」
 
-### 測試 3：AI 推薦自動填入
+### 測試 3：CSV 統一紀錄驗證
+
+1. 開啟 Google Drive，找到 `muphe_crystal_consultation_records.csv`
+2. 確認：
+   - [ ] CSV 檔案已建立
+   - [ ] 最新提交資料已出現在 CSV 最後一列
+   - [ ] CSV 欄位順序與 Google Sheets 標題列一致
+   - [ ] 若設定 `CSV_FOLDER_ID`，CSV 檔案位於指定資料夾
+
+### 測試 4：AI 推薦自動填入
 
 1. 查看剛提交的資料列
 2. 確認：
-   - [ ] J 欄（AI初步推薦）已自動填入推薦內容
-   - [ ] 推薦內容合理且與填寫的偏好相符
-   - [ ] 如使用 Gemini API，確認未超出 API 配額
+	   - [ ] O 欄（AI初步推薦）已自動填入推薦內容
+	   - [ ] 推薦內容合理且與填寫的偏好相符
+	   - [ ] 如使用 Gemini API，確認未超出 API 配額
 
-### 測試 4：LINE 通知接收
+### 測試 5：LINE 通知接收
 
 1. 開啟 LINE 應用程式
 2. 確認：
-   - [ ] 收到來自 Bot 的通知訊息
-   - [ ] 通知包含客人姓名和諮詢摘要
-   - [ ] 通知格式正確、可讀
+	   - [ ] 收到來自 Bot 的通知訊息
+	   - [ ] 通知包含客人姓名和諮詢摘要
+	   - [ ] 通知格式正確、可讀
 
-### 測試 5：Google Form 提交（如使用）
+### 測試 6：Google Form 提交（如使用）
 
 1. 開啟 Google Form 預覽或連結
 2. 填寫測試資料並提交
 3. 確認：
-   - [ ] Google Sheets 中出現新資料
-   - [ ] `onFormSubmit` 觸發器正常執行
-   - [ ] AI 推薦和 LINE 通知功能正常
+	   - [ ] Google Sheets 中出現新資料
+	   - [ ] CSV 統一紀錄檔同步更新
+	   - [ ] `onFormSubmit` 觸發器正常執行
+	   - [ ] AI 推薦和 LINE 通知功能正常
 
-### 測試 6：LINE 圖文選單功能
+### 測試 7：LINE 圖文選單功能
 
 1. 在 LINE 中開啟官方帳號的聊天室
 2. 確認：
@@ -656,6 +662,7 @@ function sendLineMessage(message) {
 | 權限                                    | 用途                    |
 |-----------------------------------------|------------------------|
 | `https://www.googleapis.com/auth/spreadsheets` | 讀寫 Google Sheets     |
+| `https://www.googleapis.com/auth/drive` | 建立與更新 CSV 紀錄檔 |
 | `https://www.googleapis.com/auth/script.external_request` | 呼叫外部 API（LINE 等）|
 | `https://www.googleapis.com/auth/forms`  | 存取 Google Forms      |
 
@@ -718,11 +725,12 @@ function sendLineMessage(message) {
 
 ### Google 相關
 - [ ] Google Sheets「水晶諮詢資料庫」已建立
-- [ ] 「諮詢紀錄」工作表已建立，含 12 個欄位標題
+- [ ] 「諮詢紀錄」工作表已建立，含 17 個欄位標題
 - [ ] Spreadsheet ID 已複製並填入 Config.gs
 - [ ] Apps Script 4 個檔案已建立並貼上程式碼
 - [ ] Config.gs 中的設定值已更新
 - [ ] Web App 已部署，URL 已複製
+- [ ] CSV 檔案已建立並可在 Google Drive 中找到
 
 ### LINE 相關
 - [ ] LINE Developers Console 已建立 Messaging API Channel
@@ -740,6 +748,7 @@ function sendLineMessage(message) {
 
 ### 功能驗證
 - [ ] 表單提交 → Sheets 寫入正常
+- [ ] 表單提交 → CSV 統一紀錄同步正常
 - [ ] AI 推薦自動生成正常
 - [ ] LINE 通知接收正常
 - [ ] 圖文選單各按鈕功能正常

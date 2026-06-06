@@ -1752,14 +1752,18 @@
   <script>
     /* ============================
        Google Apps Script Web App 提交網址
-       （部署時請替換為實際網址）
+       （部署到 GitHub Pages 前，請替換為實際 Web App URL）
        ============================ */
+    const SUBMIT_URL_PLACEHOLDER = 'GOOGLE_APPS_SCRIPT_WEB_APP_URL';
     const SUBMIT_URL = 'GOOGLE_APPS_SCRIPT_WEB_APP_URL';
 
     // 取得實際的提交 URL (支援本地測試與生產環境自動切換)
     function getSubmitUrl() {
       if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         return '/api/crystal/submit';
+      }
+      if (!SUBMIT_URL || SUBMIT_URL === SUBMIT_URL_PLACEHOLDER) {
+        return '';
       }
       return SUBMIT_URL;
     }
@@ -2087,17 +2091,22 @@
 
       try {
         const url = getSubmitUrl();
+        if (!url) {
+          showError('表單收件網址尚未設定，請聯繫沐菲確認諮詢表單連線。');
+          return;
+        }
+
         const isLocal = url.startsWith('/');
 
         const fetchOptions = {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': isLocal ? 'application/json' : 'text/plain;charset=utf-8'
           },
           body: JSON.stringify(data)
         };
 
-        // 如果是跨域的 Apps Script Web App，保留 no-cors 避免 CORS 報錯
+        // GitHub Pages 跨域送到 Apps Script 時使用 no-cors 與 text/plain JSON
         if (!isLocal) {
           fetchOptions.mode = 'no-cors';
         }
