@@ -47,7 +47,7 @@ const products = [
     custom: true,
     crystals: "黑曜石、白水晶、紫水晶、茶晶",
     effect: "界線、防護、專注",
-    size: "14-17 cm 彈力線，可客製手圍",
+    size: "依妳提供的手圍客製，彈力線與珠徑可微調",
     fit: "適合總是被臨時塞事、需要練習拒絕的人。",
     moment: "開會、協調、進辦公室前配戴，提醒自己把界線放回身上。",
     care: "以白水晶碎石或靜置淨化，避免長時間泡水。",
@@ -65,7 +65,7 @@ const products = [
     custom: true,
     crystals: "海藍寶、白水晶、灰月光、拉長石",
     effect: "溝通、冷靜、降低火氣",
-    size: "14-17 cm 彈力線，可客製手圍",
+    size: "依妳提供的手圍客製，彈力線與珠徑可微調",
     fit: "適合一開會就想翻白眼，但還是需要把話說漂亮的人。",
     moment: "會議、談合作、回覆訊息前配戴，讓語氣先降溫。",
     care: "以月光或白水晶淨化，避免強烈日曬。",
@@ -80,10 +80,10 @@ const products = [
     type: "手作手鍊",
     color: "藍金白",
     price: 1380,
-    custom: false,
+    custom: true,
     crystals: "青金石、黃水晶、白水晶、藍紋瑪瑙",
     effect: "表達、自信、思路清楚",
-    size: "15-16.5 cm 彈力線，現貨尺寸",
+    size: "依妳提供的手圍客製，彈力線與珠徑可微調",
     fit: "適合需要上台簡報、面試或把想法講到重點的人。",
     moment: "上台前 15 分鐘配戴，搭配三次深呼吸整理說話節奏。",
     care: "以白水晶碎石淨化，避免碰撞造成表面刮痕。",
@@ -101,7 +101,7 @@ const products = [
     custom: true,
     crystals: "黃水晶、太陽石、白水晶、金髮晶",
     effect: "亮度、行動、舞台感",
-    size: "14-17 cm 彈力線，可客製手圍",
+    size: "依妳提供的手圍客製，彈力線與珠徑可微調",
     fit: "適合已經準備好內容，只差一點氣場的人。",
     moment: "面試、發表、直播或需要被看見的當天配戴。",
     care: "以乾布擦拭，避免長時間曝曬讓配件加速氧化。",
@@ -119,7 +119,7 @@ const products = [
     custom: true,
     crystals: "紫水晶、黑碧璽、月光石、白水晶",
     effect: "睡眠、放鬆、停止過度思考",
-    size: "14-17 cm 彈力線，可客製手圍",
+    size: "依妳提供的手圍客製，彈力線與珠徑可微調",
     fit: "適合睡前腦袋轉不停、越累越難睡的人。",
     moment: "睡前一小時配戴或放在床邊，搭配不滑手機的關機儀式。",
     care: "以白水晶或月光淨化，睡覺時可放床邊避免壓到彈力線。",
@@ -134,10 +134,10 @@ const products = [
     type: "手作手鍊",
     color: "灰白藍",
     price: 1080,
-    custom: false,
+    custom: true,
     crystals: "灰月光、藍紋瑪瑙、白水晶、煙晶",
     effect: "沉澱、安定、減少內耗",
-    size: "15-16.5 cm 彈力線，現貨尺寸",
+    size: "依妳提供的手圍客製，彈力線與珠徑可微調",
     fit: "適合白天吸收太多訊息，晚上還在腦內開會的人。",
     moment: "洗澡後或睡前閱讀時配戴，把一天慢慢收掉。",
     care: "以乾布擦拭，避免泡澡或睡眠翻身時拉扯。",
@@ -155,7 +155,7 @@ const products = [
     custom: true,
     crystals: "粉晶、葡萄石、白水晶、草莓晶",
     effect: "柔和、人緣、接住情緒",
-    size: "14-17 cm 彈力線，可客製手圍",
+    size: "依妳提供的手圍客製，彈力線與珠徑可微調",
     fit: "適合容易把話說太直，但心裡其實沒有惡意的人。",
     moment: "聚會、家人溝通、約會前配戴，讓表達多一點溫度。",
     care: "粉晶避免長時間強光直曬，以白水晶碎石淨化。",
@@ -173,7 +173,7 @@ const products = [
     custom: true,
     crystals: "東陵玉、白水晶、黃水晶、橄欖石",
     effect: "輕盈、人緣、回復活力",
-    size: "14-17 cm 彈力線，可客製手圍",
+    size: "依妳提供的手圍客製，彈力線與珠徑可微調",
     fit: "適合需要社交，但回家常常像電量歸零的人。",
     moment: "聚餐、展覽、活動日配戴，提醒自己保持舒服距離。",
     care: "避免劇烈碰撞，配戴後以軟布擦拭汗水。",
@@ -191,7 +191,7 @@ const products = [
     custom: true,
     crystals: "綠幽靈、黃水晶、黑曜石、虎眼石",
     effect: "行動、財運、決策",
-    size: "14-17 cm 彈力線，可客製手圍",
+    size: "依妳提供的手圍客製，彈力線與珠徑可微調",
     fit: "適合想賺錢，但需要把想法變成動作的人。",
     moment: "談案、上架商品、記帳、定價和做決策時配戴。",
     care: "以白水晶碎石淨化，避免長時間泡水。",
@@ -206,10 +206,10 @@ const products = [
     type: "手作手鍊",
     color: "茶金綠",
     price: 1360,
-    custom: false,
+    custom: true,
     crystals: "茶晶、綠幽靈、黃水晶、白水晶",
     effect: "洞察、穩定、商業直覺",
-    size: "15-16.5 cm 彈力線，現貨尺寸",
+    size: "依妳提供的手圍客製，彈力線與珠徑可微調",
     fit: "適合正在練習看市場、抓需求、抓價格的人。",
     moment: "選品、談價、做社群內容和盤點成本時配戴。",
     care: "以乾布擦拭，收納時避免和硬物摩擦。",
@@ -227,7 +227,7 @@ const products = [
     custom: true,
     crystals: "粉晶、紫水晶、白水晶、草莓晶",
     effect: "自愛、魅力、穩住界線",
-    size: "14-17 cm 彈力線，可客製手圍",
+    size: "依妳提供的手圍客製，彈力線與珠徑可微調",
     fit: "適合想靠近愛，但不想把自己弄丟的人。",
     moment: "約會、曖昧聊天、整理感情狀態時配戴。",
     care: "粉晶避免長時間強烈日照，日常以軟布擦拭。",
@@ -245,7 +245,7 @@ const products = [
     custom: true,
     crystals: "粉晶、黑曜石、白水晶、月光石",
     effect: "心動、清醒、守住節奏",
-    size: "14-17 cm 彈力線，可客製手圍",
+    size: "依妳提供的手圍客製，彈力線與珠徑可微調",
     fit: "適合一暈船就忘記自己原本生活的人。",
     moment: "約會前、等訊息時、想過度解讀對方時配戴。",
     care: "以白水晶碎石淨化，避免拉扯彈力線。",
@@ -260,10 +260,10 @@ const products = [
     type: "手作手鍊",
     color: "綠灰白",
     price: 1120,
-    custom: false,
+    custom: true,
     crystals: "綠螢石、白水晶、灰月光、煙晶",
     effect: "安定、呼吸、整理情緒",
-    size: "15-16.5 cm 彈力線，現貨尺寸",
+    size: "依妳提供的手圍客製，彈力線與珠徑可微調",
     fit: "適合一緊張就胸口卡住，需要先把自己穩回來的人。",
     moment: "通勤、考試前、情緒上來時配戴，摸到珠子就做一次呼吸。",
     care: "避免碰撞和泡水，綠螢石較需溫柔收納。",
@@ -281,7 +281,7 @@ const products = [
     custom: true,
     crystals: "紫水晶、藍紋瑪瑙、白水晶、螢石",
     effect: "專注、穩定、記憶整理",
-    size: "14-17 cm 彈力線，可客製手圍",
+    size: "依妳提供的手圍客製，彈力線與珠徑可微調",
     fit: "適合考前緊張、讀很多但需要穩定輸出的人。",
     moment: "讀書、考前、交報告前配戴，提醒自己先穩再寫。",
     care: "以白水晶碎石淨化，避免螢石長時間曝曬。",
@@ -291,73 +291,73 @@ const products = [
   },
   {
     id: "rose-quartz-raw",
-    name: "粉晶原礦擴香組",
+    name: "粉晶柔光客製手鏈",
     scene: "人際柔和",
-    type: "原礦/擴香",
+    type: "手作手鍊",
     color: "粉白",
     price: 980,
-    custom: false,
-    crystals: "粉晶原礦、白水晶碎石、火山石",
-    effect: "空間柔和、關係暖度、香氣記憶",
-    size: "原礦約 4-6 cm，含 2 ml 試香瓶",
-    fit: "適合放在梳妝台、床頭或工作桌，讓空間不要太硬。",
-    moment: "滴 1-2 滴精油於火山石，讓香氣和水晶一起留在空間。",
-    care: "原礦不可泡水，精油請避開家具表面。",
-    pack: "粉晶原礦、白水晶碎石、火山石、試香瓶、說明卡。",
-    ritual: "可加購沐菲專屬調頻精油。",
+    custom: true,
+    crystals: "粉晶、白水晶、火山石、草莓晶",
+    effect: "柔和、自愛、關係暖度",
+    size: "依妳提供的手圍客製，彈力線與珠徑可微調",
+    fit: "適合想讓表達更柔軟，也想把注意力收回自己身上的人。",
+    moment: "約會、聚會、整理關係情緒時配戴，提醒自己溫柔但不委屈。",
+    care: "粉晶避免長時間強光直曬，配戴後以軟布擦拭汗水。",
+    pack: "手鏈、絨布袋、場景小卡、保養卡。",
+    ritual: "可加購自愛調頻音頻。",
     palette: ["#f0c4ca", "#fff7f6", "#3c3937", "#d6b8b9"],
   },
   {
     id: "desk-shield-raw",
-    name: "辦公桌結界白水晶",
+    name: "白晶職場結界手鏈",
     scene: "職場防小人",
-    type: "原礦/擴香",
+    type: "手作手鍊",
     color: "白透金",
     price: 880,
-    custom: false,
-    crystals: "白水晶簇、黃水晶碎石、火山石",
-    effect: "空間清理、專注、界線提醒",
-    size: "白水晶簇約 5-7 cm",
-    fit: "適合桌面容易堆滿工作情緒的人。",
-    moment: "放在鍵盤旁或工作區，每天開工前把今日重點寫在小卡上。",
-    care: "避免摔落和泡水，灰塵可用軟刷輕刷。",
-    pack: "白水晶簇、黃水晶碎石、火山石、狀態小卡。",
+    custom: true,
+    crystals: "白水晶、黃水晶、茶晶、黑曜石",
+    effect: "清理、專注、界線提醒",
+    size: "依妳提供的手圍客製，彈力線與珠徑可微調",
+    fit: "適合桌面容易堆滿工作情緒，想把專注力拉回來的人。",
+    moment: "開工、回信、整理待辦前配戴，把今日重點放回手上。",
+    care: "以乾布擦拭，避免碰撞和長時間泡水。",
+    pack: "手鏈、絨布袋、場景小卡、保養卡。",
     ritual: "可加購辦公桌開工音頻。",
     palette: ["#f7f4ed", "#d8a63f", "#46403e", "#ffffff"],
   },
   {
     id: "starter-gift",
-    name: "初次入坑水晶包",
+    name: "初次入坑三晶手鏈",
     scene: "情緒穩定",
-    type: "禮物套組",
+    type: "手作手鍊",
     color: "混合",
     price: 1680,
     custom: true,
     crystals: "白水晶、粉晶、紫水晶、黑曜石",
-    effect: "入門、送禮、日常切換",
-    size: "手鍊 14-17 cm 可客製，附 3 款場景小卡",
-    fit: "適合第一次買水晶，或想送朋友但不知道晶種的人。",
-    moment: "依當天狀態抽一張小卡，再選對應手鍊或碎石包。",
+    effect: "入門、穩定、日常切換",
+    size: "依妳提供的手圍客製，附 3 款場景小卡",
+    fit: "適合第一次買水晶，想用最基本的晶種陪自己建立日常節奏的人。",
+    moment: "依當天狀態抽一張小卡，再把注意力帶回手鏈代表的提醒。",
     care: "依各晶種保養卡使用，避免泡水和撞擊。",
-    pack: "手鍊、白水晶碎石、3 張場景小卡、禮盒、保養卡。",
+    pack: "手鏈、絨布袋、3 張場景小卡、保養卡。",
     ritual: "可加購入門水晶音頻包。",
     palette: ["#f8f7f2", "#f0c4ca", "#5d3c72", "#16151e"],
   },
   {
     id: "birthday-reset",
-    name: "生日轉場禮物盒",
+    name: "生日轉場自信手鏈",
     scene: "戀愛自信",
-    type: "禮物套組",
+    type: "手作手鍊",
     color: "粉金紫",
     price: 1880,
     custom: true,
     crystals: "粉晶、黃水晶、紫水晶、白水晶",
     effect: "祝福、轉場、自信",
-    size: "手鍊 14-17 cm 可客製，禮盒包裝",
-    fit: "適合送給正在換工作、換狀態、換人生章節的人。",
+    size: "依妳提供的手圍客製，彈力線與珠徑可微調",
+    fit: "適合正在換工作、換狀態、換人生章節，也想重新確認自己的人。",
     moment: "生日當天配戴，寫下新一歲想要保留和放下的事。",
-    care: "以白水晶碎石淨化，禮盒可作日常收納。",
-    pack: "手鍊、白水晶碎石、祝福卡、絨布袋、禮盒。",
+    care: "以白水晶碎石淨化，配戴後以軟布擦拭。",
+    pack: "手鏈、絨布袋、祝福小卡、保養卡。",
     ritual: "可加購生日轉場音頻。",
     palette: ["#f0c4ca", "#d8a63f", "#7b4e8c", "#fff7f6"],
   },
@@ -366,9 +366,7 @@ const products = [
 const state = {
   filters: {
     scene: "全部",
-    type: "全部",
     color: "全部",
-    customOnly: false,
   },
   cart: [],
 };
@@ -423,16 +421,11 @@ function uniqueValues(key) {
 
 function populateFilters() {
   const sceneSelect = document.querySelector('[data-filter="scene"]');
-  const typeSelect = document.querySelector('[data-filter="type"]');
   const colorSelect = document.querySelector('[data-filter="color"]');
 
   sceneSelect.insertAdjacentHTML(
     "beforeend",
     scenes.map((scene) => `<option value="${scene.name}">${scene.name}</option>`).join(""),
-  );
-  typeSelect.insertAdjacentHTML(
-    "beforeend",
-    uniqueValues("type").map((type) => `<option value="${type}">${type}</option>`).join(""),
   );
   colorSelect.insertAdjacentHTML(
     "beforeend",
@@ -443,11 +436,9 @@ function populateFilters() {
 function getFilteredProducts() {
   return products.filter((product) => {
     const sceneMatch = state.filters.scene === "全部" || product.scene === state.filters.scene;
-    const typeMatch = state.filters.type === "全部" || product.type === state.filters.type;
     const colorMatch = state.filters.color === "全部" || product.color === state.filters.color;
-    const customMatch = !state.filters.customOnly || product.custom;
 
-    return sceneMatch && typeMatch && colorMatch && customMatch;
+    return sceneMatch && colorMatch;
   });
 }
 
@@ -470,9 +461,8 @@ function renderProducts() {
             <h3>${product.name}</h3>
             <p>${product.fit}</p>
             <div class="product-tags">
-              <span>${product.type}</span>
               <span>${product.color}</span>
-              <span>${product.custom ? "可客製" : "現貨尺寸"}</span>
+              <span>可客製</span>
             </div>
             <div class="product-actions">
               <button class="quick-view-button" type="button" data-open-product="${product.id}">
@@ -491,9 +481,7 @@ function renderProducts() {
 
 function syncFilterControls() {
   document.querySelector('[data-filter="scene"]').value = state.filters.scene;
-  document.querySelector('[data-filter="type"]').value = state.filters.type;
   document.querySelector('[data-filter="color"]').value = state.filters.color;
-  document.querySelector("[data-custom-only]").checked = state.filters.customOnly;
 }
 
 function updateFilter(key, value) {
@@ -542,7 +530,7 @@ function renderProductDetail(product) {
           <p>${product.crystals}</p>
         </div>
         <div class="detail-row">
-          <strong>尺寸/材質</strong>
+          <strong>客製手圍</strong>
           <p>${product.size}</p>
         </div>
         <div class="detail-row">
@@ -638,9 +626,7 @@ function renderCart() {
 function resetFilters() {
   state.filters = {
     scene: "全部",
-    type: "全部",
     color: "全部",
-    customOnly: false,
   };
   syncFilterControls();
   renderScenes();
@@ -716,15 +702,9 @@ document.addEventListener("click", (event) => {
 
 document.addEventListener("change", (event) => {
   const filter = event.target.closest("[data-filter]");
-  const customOnly = event.target.closest("[data-custom-only]");
 
   if (filter) {
     updateFilter(filter.dataset.filter, filter.value);
-  }
-
-  if (customOnly) {
-    state.filters.customOnly = customOnly.checked;
-    renderProducts();
   }
 });
 

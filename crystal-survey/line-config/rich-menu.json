@@ -1,0 +1,89 @@
+{
+  "size": {
+    "width": 2500,
+    "height": 1686
+  },
+  "selected": true,
+  "name": "Crystal Energy Consultation Menu",
+  "chatBarText": "✨ 水晶能量選單",
+  "areas": [
+    {
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "width": 833,
+        "height": 843
+      },
+      "action": {
+        "type": "uri",
+        "label": "📝 填寫諮詢單",
+        "uri": "GOOGLE_APPS_SCRIPT_WEB_APP_URL"
+      }
+    },
+    {
+      "bounds": {
+        "x": 833,
+        "y": 0,
+        "width": 834,
+        "height": 843
+      },
+      "action": {
+        "type": "message",
+        "label": "💎 水晶介紹",
+        "text": "水晶介紹"
+      }
+    },
+    {
+      "bounds": {
+        "x": 1667,
+        "y": 0,
+        "width": 833,
+        "height": 843
+      },
+      "action": {
+        "type": "message",
+        "label": "📞 聯繫客服",
+        "text": "聯繫客服"
+      }
+    },
+    {
+      "bounds": {
+        "x": 0,
+        "y": 843,
+        "width": 833,
+        "height": 843
+      },
+      "action": {
+        "type": "message",
+        "label": "🎉 最新活動",
+        "text": "最新活動"
+      }
+    },
+    {
+      "bounds": {
+        "x": 833,
+        "y": 843,
+        "width": 834,
+        "height": 843
+      },
+      "action": {
+        "type": "message",
+        "label": "📖 品牌故事",
+        "text": "品牌故事"
+      }
+    },
+    {
+      "bounds": {
+        "x": 1667,
+        "y": 843,
+        "width": 833,
+        "height": 843
+      },
+      "action": {
+        "type": "message",
+        "label": "❓ 常見問題",
+        "text": "常見問題"
+      }
+    }
+  ]
+}

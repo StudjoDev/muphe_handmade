@@ -82,10 +82,11 @@ button {
 }
 
 .brand-lockup img {
+  background: var(--paper);
   border: 1px solid rgba(183, 139, 62, 0.45);
-  border-radius: 50%;
+  border-radius: 8px;
   height: 44px;
-  object-fit: cover;
+  object-fit: contain;
   width: 44px;
 }
 
@@ -563,7 +564,7 @@ button {
   align-items: end;
   display: grid;
   gap: 12px;
-  grid-template-columns: repeat(4, minmax(150px, 1fr));
+  grid-template-columns: repeat(2, minmax(150px, 1fr));
 }
 
 .shop-controls label {
@@ -585,25 +586,6 @@ button {
   color: var(--ink);
   min-height: 46px;
   padding: 0 38px 0 13px;
-}
-
-.toggle-field {
-  align-items: center;
-  background: var(--cream);
-  border: 1px solid rgba(36, 26, 43, 0.16);
-  border-radius: var(--radius);
-  color: var(--ink) !important;
-  display: flex !important;
-  flex-direction: row;
-  gap: 10px !important;
-  min-height: 46px;
-  padding: 0 14px;
-}
-
-.toggle-field input {
-  accent-color: var(--teal);
-  height: 18px;
-  width: 18px;
 }
 
 .result-row {
@@ -784,6 +766,13 @@ button {
   max-width: 780px;
 }
 
+.consult-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 26px;
+}
+
 .ritual-list {
   border-top: 1px solid rgba(36, 26, 43, 0.14);
   margin-top: 36px;
@@ -812,52 +801,9 @@ button {
 }
 
 .ritual-list p,
-.guide-list p,
-.gift-row p {
+.guide-list p {
   color: var(--muted);
   margin: 0;
-}
-
-.gift-section {
-  background: var(--ink);
-  color: var(--paper);
-}
-
-.gift-section .section-heading p:last-child {
-  color: rgba(255, 250, 240, 0.72);
-}
-
-.gift-row {
-  display: grid;
-  gap: 1px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.gift-row div {
-  background: rgba(255, 250, 240, 0.07);
-  min-height: 230px;
-  padding: 26px;
-}
-
-.gift-row span {
-  color: var(--gold);
-  display: block;
-  font-size: 0.78rem;
-  font-weight: 900;
-  letter-spacing: 0;
-  margin-bottom: 28px;
-  text-transform: uppercase;
-}
-
-.gift-row strong {
-  display: block;
-  font-size: 1.45rem;
-  line-height: 1.25;
-  margin-bottom: 14px;
-}
-
-.gift-row p {
-  color: rgba(255, 250, 240, 0.7);
 }
 
 .guide-list {
@@ -876,6 +822,114 @@ button {
 .guide-list span {
   color: var(--teal);
   font-weight: 900;
+}
+
+.guide-steps {
+  color: var(--muted);
+  display: grid;
+  gap: 14px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.guide-steps li {
+  border-bottom: 1px solid rgba(36, 26, 43, 0.1);
+  display: grid;
+  gap: 5px;
+  padding-bottom: 14px;
+}
+
+.guide-steps li:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.guide-steps strong {
+  color: var(--ink);
+  display: block;
+  line-height: 1.35;
+}
+
+.guide-steps span {
+  color: var(--muted);
+  font-weight: 600;
+  line-height: 1.75;
+}
+
+.guide-picker {
+  display: grid;
+  gap: 18px;
+}
+
+.guide-intro {
+  max-width: 780px;
+}
+
+.guide-card-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.guide-card {
+  background: #fffdf8;
+  border: 1px solid rgba(36, 26, 43, 0.1);
+  border-radius: var(--radius);
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+}
+
+.guide-card-kicker {
+  color: var(--teal) !important;
+  font-weight: 900;
+  margin: 0;
+}
+
+.guide-card h4 {
+  font-size: 1.08rem;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.guide-card-facts {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.guide-card-facts div {
+  display: grid;
+  gap: 3px;
+}
+
+.guide-card-facts dt {
+  color: var(--gold);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.guide-card-facts dd {
+  color: var(--muted);
+  line-height: 1.7;
+  margin: 0;
+}
+
+.guide-note {
+  background: rgba(31, 111, 103, 0.08);
+  border: 1px solid rgba(31, 111, 103, 0.2);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+}
+
+.guide-note strong {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.guide-note p {
+  margin: 0;
 }
 
 .story-section {
@@ -899,15 +953,41 @@ button {
   box-shadow: var(--shadow);
 }
 
-.story-signature-logo {
+.story-square-logo {
+  background: var(--paper);
   border-radius: var(--radius);
-  width: min(100%, 420px);
+  width: min(100%, 320px);
 }
 
-.story-seal-logo {
-  background: var(--paper);
-  border-radius: 50%;
-  width: min(48%, 190px);
+.story-role-list {
+  border-top: 1px solid rgba(36, 26, 43, 0.14);
+  display: grid;
+  margin-top: 28px;
+  max-width: 720px;
+}
+
+.story-role-list article {
+  align-items: start;
+  border-bottom: 1px solid rgba(36, 26, 43, 0.12);
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 42px minmax(0, 1fr);
+  padding: 18px 0;
+}
+
+.story-role-list span {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.story-role-list h3 {
+  font-size: 1.08rem;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.story-role-list p {
+  margin-top: 6px;
 }
 
 .faq-list {
@@ -947,19 +1027,15 @@ details p {
   color: var(--paper);
   display: grid;
   gap: 28px;
-  grid-template-columns: 154px 1fr 100px;
+  grid-template-columns: 118px 1fr;
   padding: 34px max(22px, 6vw);
 }
 
-.site-footer img:first-child {
+.footer-logo {
+  background: var(--paper);
+  border: 1px solid rgba(255, 255, 255, 0.35);
   border-radius: var(--radius);
-  width: 154px;
-}
-
-.site-footer img:last-child {
-  border-radius: 50%;
-  justify-self: end;
-  width: 96px;
+  width: 118px;
 }
 
 .site-footer strong {
@@ -1268,22 +1344,12 @@ details p {
     grid-template-columns: 1fr;
   }
 
-  .gift-row {
-    grid-template-columns: 1fr;
-  }
-
   .site-footer {
     grid-template-columns: 120px 1fr;
   }
 
-  .site-footer img:first-child {
+  .footer-logo {
     width: 120px;
-  }
-
-  .site-footer img:last-child {
-    grid-column: 1 / -1;
-    justify-self: start;
-    width: 82px;
   }
 }
 
@@ -1354,10 +1420,6 @@ details p {
     min-height: 250px;
   }
 
-  .story-seal-logo {
-    width: min(52%, 160px);
-  }
-
   .hero-actions {
     align-items: stretch;
     flex-direction: column;
@@ -1389,6 +1451,7 @@ details p {
 
   .shop-controls,
   .product-grid,
+  .guide-card-grid,
   .detail-row {
     grid-template-columns: 1fr;
   }
@@ -1402,13 +1465,8 @@ details p {
     grid-template-columns: 1fr;
   }
 
-  .site-footer img:first-child {
+  .footer-logo {
     width: 142px;
-  }
-
-  .site-footer img:last-child {
-    grid-column: auto;
-    width: 78px;
   }
 
   .drawer-panel {

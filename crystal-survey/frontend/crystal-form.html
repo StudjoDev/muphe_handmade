@@ -1,0 +1,2148 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>✨ 水晶能量專屬諮詢 ✨</title>
+
+  <!-- 載入 Google Fonts：中文用 Noto Sans TC，英文標題用 Cormorant Garamond -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Noto+Sans+TC:wght@300;400;500;700&display=swap"
+    rel="stylesheet">
+
+  <style>
+    /* ============================
+       全域色彩變數與主題設定
+       ============================ */
+    :root {
+      --deep-purple: #2d1b69;
+      --lavender: #b794f6;
+      --rose-quartz: #f7a8c4;
+      --amethyst: #9b59b6;
+      --moonstone: #f0e6ff;
+      --card-bg: rgba(255, 255, 255, 0.12);
+      --card-border: rgba(183, 148, 246, 0.3);
+      --card-shadow: rgba(45, 27, 105, 0.25);
+      --input-bg: rgba(255, 255, 255, 0.08);
+      --input-border: rgba(183, 148, 246, 0.35);
+      --input-focus: rgba(183, 148, 246, 0.7);
+      --text-primary: #f0e6ff;
+      --text-secondary: rgba(240, 230, 255, 0.75);
+      --text-label: #d4bfff;
+      --glow-purple: rgba(155, 89, 182, 0.5);
+      --glow-pink: rgba(247, 168, 196, 0.4);
+      --gradient-main: linear-gradient(135deg, #1a0e3e 0%, #2d1b69 30%, #3d1f6e 60%, #2a1555 100%);
+      --gradient-accent: linear-gradient(135deg, var(--lavender), var(--rose-quartz));
+      --gradient-btn: linear-gradient(135deg, #9b59b6 0%, #b794f6 50%, #f7a8c4 100%);
+      --font-zh: 'Noto Sans TC', sans-serif;
+      --font-en: 'Cormorant Garamond', serif;
+      --radius: 16px;
+      --radius-sm: 10px;
+      --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ============================
+       全域重設與基礎排版
+       ============================ */
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      font-size: 16px;
+    }
+
+    body {
+      font-family: var(--font-zh);
+      background: var(--gradient-main);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ============================
+       粒子 / 星光背景動畫
+       ============================ */
+    .particle-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    /* 產生多層星光粒子 */
+    .sparkle {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, rgba(183, 148, 246, 0.3) 60%, transparent 100%);
+      animation: sparkle-float linear infinite;
+      opacity: 0;
+    }
+
+    @keyframes sparkle-float {
+      0% {
+        opacity: 0;
+        transform: translateY(0) scale(0.3);
+      }
+
+      15% {
+        opacity: 1;
+      }
+
+      85% {
+        opacity: 0.8;
+      }
+
+      100% {
+        opacity: 0;
+        transform: translateY(-100vh) scale(1);
+      }
+    }
+
+    /* 漂浮光暈裝飾 */
+    .ambient-glow {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .ambient-glow.g1 {
+      width: 400px;
+      height: 400px;
+      background: var(--glow-purple);
+      top: -100px;
+      right: -100px;
+      animation: glow-drift-1 12s ease-in-out infinite;
+    }
+
+    .ambient-glow.g2 {
+      width: 350px;
+      height: 350px;
+      background: var(--glow-pink);
+      bottom: -80px;
+      left: -80px;
+      animation: glow-drift-2 15s ease-in-out infinite;
+    }
+
+    .ambient-glow.g3 {
+      width: 250px;
+      height: 250px;
+      background: rgba(183, 148, 246, 0.25);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      animation: glow-drift-3 10s ease-in-out infinite;
+    }
+
+    @keyframes glow-drift-1 {
+
+      0%,
+      100% {
+        transform: translate(0, 0);
+      }
+
+      50% {
+        transform: translate(-60px, 40px);
+      }
+    }
+
+    @keyframes glow-drift-2 {
+
+      0%,
+      100% {
+        transform: translate(0, 0);
+      }
+
+      50% {
+        transform: translate(50px, -30px);
+      }
+    }
+
+    @keyframes glow-drift-3 {
+
+      0%,
+      100% {
+        transform: translate(-50%, -50%) scale(1);
+      }
+
+      50% {
+        transform: translate(-50%, -50%) scale(1.3);
+      }
+    }
+
+    /* ============================
+       LOGO 浮水印背景
+       ============================ */
+    .bg-logo-watermark {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-image: url('../../pic/LOGO.jpg');
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: min(72vw, 680px) auto;
+      opacity: 0.1;
+      pointer-events: none;
+      z-index: 0;
+      mix-blend-mode: screen;
+      filter: grayscale(100%) contrast(120%);
+    }
+
+    @media (max-width: 768px) {
+      .bg-logo-watermark {
+        background-size: 115vw auto;
+        opacity: 0.07;
+      }
+    }
+
+    /* ============================
+       主容器佈局
+       ============================ */
+    .main-container {
+      position: relative;
+      z-index: 1;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 24px 16px 60px;
+    }
+
+    /* ============================
+       頂部 Header 區塊
+       ============================ */
+    .form-header {
+      text-align: center;
+      padding: 48px 20px 36px;
+      animation: header-fade-in 1s ease-out;
+    }
+
+    @keyframes header-fade-in {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* 水晶寶石裝飾 SVG 圖標 */
+    .crystal-icon-row {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .crystal-icon-row svg {
+      width: 36px;
+      height: 36px;
+      animation: crystal-float 3s ease-in-out infinite;
+      filter: drop-shadow(0 0 8px rgba(183, 148, 246, 0.6));
+    }
+
+    .crystal-icon-row svg:nth-child(2) {
+      animation-delay: 0.5s;
+    }
+
+    .crystal-icon-row svg:nth-child(3) {
+      animation-delay: 1s;
+    }
+
+    @keyframes crystal-float {
+
+      0%,
+      100% {
+        transform: translateY(0) rotate(0deg);
+      }
+
+      50% {
+        transform: translateY(-8px) rotate(5deg);
+      }
+    }
+
+    .form-header h1 {
+      font-family: var(--font-en);
+      font-weight: 700;
+      font-size: clamp(1.8rem, 5vw, 2.6rem);
+      background: var(--gradient-accent);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+      letter-spacing: 2px;
+      line-height: 1.3;
+    }
+
+    .form-header .subtitle {
+      font-size: clamp(0.9rem, 2.5vw, 1.05rem);
+      color: var(--text-secondary);
+      font-weight: 300;
+      letter-spacing: 1px;
+    }
+
+    .header-divider {
+      width: 80px;
+      height: 2px;
+      background: var(--gradient-accent);
+      margin: 20px auto 0;
+      border-radius: 2px;
+    }
+
+    /* ============================
+       玻璃擬態卡片
+       ============================ */
+    .glass-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 32px 28px;
+      margin-bottom: 20px;
+      box-shadow:
+        0 8px 32px var(--card-shadow),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      transition: transform var(--transition), box-shadow var(--transition);
+      /* 滾動時漸入動畫 */
+      opacity: 0;
+      transform: translateY(24px);
+    }
+
+    .glass-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    }
+
+    .glass-card:hover {
+      box-shadow:
+        0 12px 40px var(--card-shadow),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+
+    /* ============================
+       表單元素通用樣式
+       ============================ */
+    .field-group {
+      margin-bottom: 24px;
+    }
+
+    .field-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .field-label {
+      display: block;
+      font-weight: 500;
+      font-size: 0.95rem;
+      color: var(--text-label);
+      margin-bottom: 10px;
+      letter-spacing: 0.5px;
+    }
+
+    .field-label .required-mark {
+      color: var(--rose-quartz);
+      margin-left: 4px;
+      font-size: 0.8rem;
+    }
+
+    /* ============================
+       文字輸入框
+       ============================ */
+    .crystal-input {
+      width: 100%;
+      padding: 14px 18px;
+      background: var(--input-bg);
+      border: 1.5px solid var(--input-border);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-family: var(--font-zh);
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+    }
+
+    .crystal-input::placeholder {
+      color: rgba(240, 230, 255, 0.35);
+      font-weight: 300;
+    }
+
+    .crystal-input:focus {
+      border-color: var(--lavender);
+      background: rgba(255, 255, 255, 0.12);
+      box-shadow:
+        0 0 0 3px rgba(183, 148, 246, 0.2),
+        0 0 20px rgba(183, 148, 246, 0.15);
+    }
+
+    /* 輸入驗證錯誤狀態 */
+    .crystal-input.input-error {
+      border-color: #ff6b8a;
+      box-shadow: 0 0 0 3px rgba(255, 107, 138, 0.2);
+    }
+
+    textarea.crystal-input {
+      min-height: 120px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+
+    /* 錯誤搖晃動畫 */
+    @keyframes shake {
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      20% {
+        transform: translateX(-6px);
+      }
+
+      40% {
+        transform: translateX(6px);
+      }
+
+      60% {
+        transform: translateX(-4px);
+      }
+
+      80% {
+        transform: translateX(4px);
+      }
+    }
+
+    .shake {
+      animation: shake 0.5s ease-in-out;
+    }
+
+    .error-text {
+      display: none;
+      color: #ff8faa;
+      font-size: 0.8rem;
+      margin-top: 6px;
+      padding-left: 4px;
+    }
+
+    .field-group.has-error .error-text {
+      display: block;
+      animation: fade-in-up 0.3s ease-out;
+    }
+
+    @keyframes fade-in-up {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ============================
+       單選按鈕群組（預算）
+       ============================ */
+    .radio-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 10px;
+    }
+
+    .radio-option {
+      position: relative;
+    }
+
+    .radio-option input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .radio-option label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 16px;
+      background: var(--input-bg);
+      border: 1.5px solid var(--input-border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 0.88rem;
+      text-align: center;
+      transition: all var(--transition);
+      user-select: none;
+    }
+
+    .radio-option label:hover {
+      background: rgba(183, 148, 246, 0.15);
+      border-color: var(--lavender);
+    }
+
+    .radio-option input[type="radio"]:checked+label {
+      background: linear-gradient(135deg, rgba(155, 89, 182, 0.35), rgba(183, 148, 246, 0.25));
+      border-color: var(--lavender);
+      box-shadow: 0 0 15px rgba(183, 148, 246, 0.25);
+      color: #fff;
+      font-weight: 500;
+    }
+
+    /* ============================
+       滑桿控制器（淨手圍）
+       ============================ */
+    .slider-container {
+      padding: 8px 0;
+    }
+
+    .slider-value-display {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .slider-value-display .value {
+      font-family: var(--font-en);
+      font-size: 2.4rem;
+      font-weight: 700;
+      background: var(--gradient-accent);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .slider-value-display .unit {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      margin-left: 4px;
+    }
+
+    .crystal-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      background: linear-gradient(90deg, var(--amethyst), var(--lavender), var(--rose-quartz));
+      border-radius: 3px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .crystal-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--gradient-btn);
+      border: 3px solid rgba(255, 255, 255, 0.6);
+      box-shadow: 0 0 12px rgba(183, 148, 246, 0.5);
+      cursor: pointer;
+      transition: box-shadow var(--transition), transform var(--transition);
+    }
+
+    .crystal-slider::-webkit-slider-thumb:hover {
+      box-shadow: 0 0 20px rgba(183, 148, 246, 0.7);
+      transform: scale(1.15);
+    }
+
+    .crystal-slider::-moz-range-thumb {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--gradient-btn);
+      border: 3px solid rgba(255, 255, 255, 0.6);
+      box-shadow: 0 0 12px rgba(183, 148, 246, 0.5);
+      cursor: pointer;
+    }
+
+    .slider-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    /* ============================
+       色彩色票選擇器
+       ============================ */
+    .swatch-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .swatch-option {
+      position: relative;
+    }
+
+    .swatch-option input[type="checkbox"] {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .swatch-option label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 12px 8px;
+      background: var(--input-bg);
+      border: 1.5px solid var(--input-border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all var(--transition);
+      user-select: none;
+      min-width: 72px;
+    }
+
+    .swatch-circle {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      transition: transform var(--transition), box-shadow var(--transition);
+    }
+
+    .swatch-label {
+      font-size: 0.72rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      transition: color var(--transition);
+    }
+
+    .swatch-option label:hover {
+      background: rgba(183, 148, 246, 0.12);
+    }
+
+    .swatch-option label:hover .swatch-circle {
+      transform: scale(1.1);
+      box-shadow: 0 0 12px rgba(183, 148, 246, 0.4);
+    }
+
+    .swatch-option input[type="checkbox"]:checked+label {
+      background: rgba(183, 148, 246, 0.2);
+      border-color: var(--lavender);
+      box-shadow: 0 0 15px rgba(183, 148, 246, 0.2);
+    }
+
+    .swatch-option input[type="checkbox"]:checked+label .swatch-circle {
+      transform: scale(1.1);
+      box-shadow: 0 0 14px rgba(183, 148, 246, 0.5);
+    }
+
+    .swatch-option input[type="checkbox"]:checked+label .swatch-label {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    /* 各色系色票的漸層背景 */
+    .swatch-pink {
+      background: linear-gradient(135deg, #ffb6c1, #ff69b4) !important;
+    }
+
+    .swatch-purple {
+      background: linear-gradient(135deg, #b794f6, #9b59b6) !important;
+    }
+
+    .swatch-green {
+      background: linear-gradient(135deg, #85e89d, #34d058) !important;
+    }
+
+    .swatch-gold {
+      background: linear-gradient(135deg, #ffd700, #daa520) !important;
+    }
+
+    .swatch-black {
+      background: linear-gradient(135deg, #444, #111) !important;
+    }
+
+    .swatch-clear {
+      background: linear-gradient(135deg, #f0e6ff, #fff) !important;
+    }
+
+    .swatch-all {
+      background: conic-gradient(#ffb6c1, #b794f6, #85e89d, #ffd700, #444, #f0e6ff, #ffb6c1) !important;
+    }
+
+    /* ============================
+       多選核取方塊（期望目標）
+       ============================ */
+    .checkbox-group {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .checkbox-option {
+      position: relative;
+    }
+
+    .checkbox-option input[type="checkbox"] {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .checkbox-option label {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 18px;
+      background: var(--input-bg);
+      border: 1.5px solid var(--input-border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all var(--transition);
+      user-select: none;
+    }
+
+    .checkbox-option label .emoji-icon {
+      font-size: 1.4rem;
+      flex-shrink: 0;
+      transition: transform var(--transition);
+    }
+
+    .checkbox-option label .goal-text {
+      font-size: 0.92rem;
+      color: var(--text-secondary);
+      transition: color var(--transition);
+    }
+
+    .checkbox-option label .check-indicator {
+      margin-left: auto;
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      border: 2px solid var(--input-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all var(--transition);
+    }
+
+    .checkbox-option label:hover {
+      background: rgba(183, 148, 246, 0.12);
+      border-color: rgba(183, 148, 246, 0.5);
+    }
+
+    .checkbox-option label:hover .emoji-icon {
+      transform: scale(1.15);
+    }
+
+    .checkbox-option input[type="checkbox"]:checked+label {
+      background: linear-gradient(135deg, rgba(155, 89, 182, 0.25), rgba(247, 168, 196, 0.15));
+      border-color: var(--lavender);
+      box-shadow: 0 0 18px rgba(183, 148, 246, 0.15);
+    }
+
+    .checkbox-option input[type="checkbox"]:checked+label .goal-text {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .checkbox-option input[type="checkbox"]:checked+label .check-indicator {
+      background: var(--gradient-btn);
+      border-color: transparent;
+    }
+
+    .checkbox-option input[type="checkbox"]:checked+label .check-indicator::after {
+      content: '✓';
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    /* ============================
+       預算範圍特殊樣式
+       ============================ */
+    .budget-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 10px;
+    }
+
+    .budget-group .radio-option label {
+      font-size: 0.82rem;
+      padding: 12px 10px;
+    }
+
+    /* ============================
+       送出按鈕
+       ============================ */
+    .submit-section {
+      text-align: center;
+      padding-top: 8px;
+    }
+
+    .submit-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 16px 48px;
+      background: var(--gradient-btn);
+      color: #fff;
+      font-family: var(--font-zh);
+      font-size: 1.05rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      letter-spacing: 2px;
+      box-shadow:
+        0 6px 24px rgba(155, 89, 182, 0.4),
+        0 2px 8px rgba(0, 0, 0, 0.2);
+      transition: all var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .submit-btn::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg,
+          transparent 30%,
+          rgba(255, 255, 255, 0.15) 50%,
+          transparent 70%);
+      transform: translateX(-100%);
+      transition: transform 0.6s;
+    }
+
+    .submit-btn:hover::before {
+      transform: translateX(100%);
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow:
+        0 10px 32px rgba(155, 89, 182, 0.5),
+        0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .submit-btn:active {
+      transform: translateY(0);
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* ============================
+       頁尾區塊
+       ============================ */
+    .form-footer {
+      text-align: center;
+      padding: 36px 20px 20px;
+      opacity: 0;
+      transform: translateY(16px);
+    }
+
+    .form-footer.visible {
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 0.6s ease-out 0.2s, transform 0.6s ease-out 0.2s;
+    }
+
+    .footer-privacy {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+      line-height: 1.6;
+    }
+
+    .footer-privacy .lock-icon {
+      display: inline-block;
+      margin-right: 4px;
+    }
+
+    .footer-brand {
+      font-size: 0.7rem;
+      color: rgba(240, 230, 255, 0.35);
+      letter-spacing: 1px;
+    }
+
+    .footer-brand span {
+      background: var(--gradient-accent);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 500;
+    }
+
+    /* ============================
+       載入中覆蓋層
+       ============================ */
+    .loading-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(26, 14, 62, 0.85);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .loading-overlay.active {
+      display: flex;
+      animation: overlay-in 0.3s ease-out;
+    }
+
+    @keyframes overlay-in {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    /* 水晶旋轉載入動畫 */
+    .crystal-spinner {
+      width: 60px;
+      height: 60px;
+      position: relative;
+    }
+
+    .crystal-spinner::before,
+    .crystal-spinner::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+    }
+
+    .crystal-spinner::before {
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: 3px solid transparent;
+      border-top-color: var(--lavender);
+      border-right-color: var(--rose-quartz);
+      animation: spin 1s linear infinite;
+    }
+
+    .crystal-spinner::after {
+      top: 8px;
+      left: 8px;
+      width: calc(100% - 16px);
+      height: calc(100% - 16px);
+      border: 3px solid transparent;
+      border-bottom-color: var(--amethyst);
+      border-left-color: var(--lavender);
+      animation: spin 0.6s linear reverse infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .loading-text {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      letter-spacing: 2px;
+    }
+
+    /* ============================
+       成功頁面
+       ============================ */
+    .success-page {
+      display: none;
+      text-align: center;
+      padding: 80px 24px;
+      min-height: 80vh;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    .success-page.active {
+      display: flex;
+      animation: success-enter 0.8s ease-out;
+    }
+
+    @keyframes success-enter {
+      from {
+        opacity: 0;
+        transform: scale(0.85) translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .success-icon {
+      font-size: 4rem;
+      margin-bottom: 24px;
+      animation: success-bounce 1s ease-out;
+    }
+
+    @keyframes success-bounce {
+      0% {
+        transform: scale(0);
+      }
+
+      50% {
+        transform: scale(1.3);
+      }
+
+      70% {
+        transform: scale(0.9);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    .success-page h2 {
+      font-family: var(--font-en);
+      font-size: clamp(1.4rem, 4vw, 2rem);
+      background: var(--gradient-accent);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 16px;
+      line-height: 1.4;
+    }
+
+    .success-page p {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      max-width: 420px;
+      line-height: 1.7;
+    }
+
+    /* 紙花效果容器 */
+    .confetti-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 999;
+      overflow: hidden;
+    }
+
+    .confetti-piece {
+      position: absolute;
+      top: -10px;
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      animation: confetti-fall linear forwards;
+    }
+
+    @keyframes confetti-fall {
+      0% {
+        opacity: 1;
+        transform: translateY(0) rotate(0deg) scale(1);
+      }
+
+      100% {
+        opacity: 0;
+        transform: translateY(100vh) rotate(720deg) scale(0.3);
+      }
+    }
+
+    /* ============================
+       錯誤訊息區塊
+       ============================ */
+    .error-message {
+      display: none;
+      background: rgba(255, 107, 138, 0.12);
+      border: 1px solid rgba(255, 107, 138, 0.3);
+      border-radius: var(--radius-sm);
+      padding: 18px 22px;
+      margin-top: 16px;
+      text-align: center;
+    }
+
+    .error-message.active {
+      display: block;
+      animation: fade-in-up 0.4s ease-out;
+    }
+
+    .error-message p {
+      color: #ff8faa;
+      font-size: 0.9rem;
+      margin-bottom: 12px;
+    }
+
+    .retry-btn {
+      padding: 10px 28px;
+      background: rgba(255, 107, 138, 0.2);
+      border: 1px solid rgba(255, 107, 138, 0.4);
+      border-radius: 50px;
+      color: #ff8faa;
+      font-family: var(--font-zh);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+
+    .retry-btn:hover {
+      background: rgba(255, 107, 138, 0.3);
+      transform: translateY(-1px);
+    }
+
+    /* ============================
+       分區標題
+       ============================ */
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(183, 148, 246, 0.15);
+    }
+
+    .section-title .section-icon {
+      font-size: 1.2rem;
+    }
+
+    .section-title h2 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text-label);
+      letter-spacing: 1px;
+    }
+
+    /* ============================
+       RWD 響應式調整
+       ============================ */
+    @media (max-width: 600px) {
+      .main-container {
+        padding: 16px 12px 48px;
+      }
+
+      .glass-card {
+        padding: 24px 18px;
+      }
+
+      .radio-group {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .budget-group {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .swatch-group {
+        gap: 8px;
+        justify-content: center;
+      }
+
+      .swatch-option label {
+        min-width: 64px;
+        padding: 8px 8px 6px;
+      }
+
+      .swatch-circle {
+        width: 30px;
+        height: 30px;
+      }
+
+      .submit-btn {
+        width: 100%;
+        padding: 16px 32px;
+      }
+
+      .form-header {
+        padding: 32px 16px 28px;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .radio-group {
+        grid-template-columns: 1fr;
+      }
+
+      .budget-group {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ============================
+       無障礙：focus-visible 樣式
+       ============================ */
+    :focus-visible {
+      outline: 2px solid var(--lavender);
+      outline-offset: 2px;
+    }
+
+    /* ============================
+       捲軸美化
+       ============================ */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(183, 148, 246, 0.3);
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(183, 148, 246, 0.5);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- LOGO 浮水印背景 -->
+  <div class="bg-logo-watermark"></div>
+
+  <!-- 背景粒子動畫容器 -->
+  <div class="particle-canvas" id="particleCanvas"></div>
+
+  <!-- 漂浮環境光暈 -->
+  <div class="ambient-glow g1"></div>
+  <div class="ambient-glow g2"></div>
+  <div class="ambient-glow g3"></div>
+
+  <!-- 載入中覆蓋層 -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="crystal-spinner"></div>
+    <div class="loading-text">✨ 正在傳送您的水晶能量諮詢 ✨</div>
+  </div>
+
+  <!-- 紙花效果容器 -->
+  <div class="confetti-container" id="confettiContainer"></div>
+
+  <!-- ========================
+       主要表單區域
+       ======================== -->
+  <div class="main-container" id="formContainer">
+
+    <!-- 頂部標題 Header -->
+    <header class="form-header">
+      <!-- 水晶寶石裝飾 SVG -->
+      <div class="crystal-icon-row">
+        <!-- 菱形水晶 SVG -->
+        <svg viewBox="0 0 64 64" fill="none">
+          <polygon points="32,4 58,32 32,60 6,32" fill="url(#grad1)" opacity="0.9" />
+          <polygon points="32,4 58,32 32,36" fill="rgba(255,255,255,0.2)" />
+          <polygon points="32,4 6,32 32,36" fill="rgba(255,255,255,0.1)" />
+          <defs>
+            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#b794f6" />
+              <stop offset="100%" style="stop-color:#f7a8c4" />
+            </linearGradient>
+          </defs>
+        </svg>
+        <!-- 六角水晶 SVG -->
+        <svg viewBox="0 0 64 64" fill="none">
+          <polygon points="32,2 56,18 56,46 32,62 8,46 8,18" fill="url(#grad2)" opacity="0.85" />
+          <polygon points="32,2 56,18 32,32" fill="rgba(255,255,255,0.2)" />
+          <line x1="32" y1="2" x2="32" y2="62" stroke="rgba(255,255,255,0.15)" stroke-width="0.8" />
+          <defs>
+            <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#9b59b6" />
+              <stop offset="100%" style="stop-color:#b794f6" />
+            </linearGradient>
+          </defs>
+        </svg>
+        <!-- 三角水晶 SVG -->
+        <svg viewBox="0 0 64 64" fill="none">
+          <polygon points="32,4 60,58 4,58" fill="url(#grad3)" opacity="0.9" />
+          <polygon points="32,4 46,58 32,58" fill="rgba(255,255,255,0.15)" />
+          <polygon points="32,4 32,58 18,58" fill="rgba(255,255,255,0.08)" />
+          <defs>
+            <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#f7a8c4" />
+              <stop offset="100%" style="stop-color:#9b59b6" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+
+      <h1>✨ 水晶能量專屬諮詢 ✨</h1>
+      <p class="subtitle">讓我們為您找到最適合的水晶夥伴</p>
+      <div class="header-divider"></div>
+    </header>
+
+    <!-- 諮詢表單 -->
+    <form id="crystalForm" novalidate>
+
+      <!-- 第一區：基本資料 -->
+      <div class="glass-card" data-animate>
+        <div class="section-title">
+          <span class="section-icon">💎</span>
+          <h2>基本資料</h2>
+        </div>
+
+        <!-- 1. 客人姓名 -->
+        <div class="field-group" id="nameGroup">
+          <label class="field-label" for="name">
+            客人姓名
+            <span class="required-mark">*</span>
+          </label>
+          <input type="text" id="name" name="name" class="crystal-input" placeholder="請輸入您的姓名" required
+            autocomplete="name">
+          <div class="error-text">請輸入您的姓名</div>
+        </div>
+
+        <!-- 2. 聯絡方式 -->
+        <div class="field-group" id="contactGroup">
+          <label class="field-label" for="contact">
+            聯絡方式
+            <span class="required-mark">*</span>
+          </label>
+          <input type="text" id="contact" name="contact" class="crystal-input" placeholder="LINE ID / 手機號碼 / Email"
+            required autocomplete="email">
+          <div class="error-text">請輸入 LINE ID、手機號碼或 Email</div>
+        </div>
+
+        <!-- 3. 性別 -->
+        <div class="field-group" id="genderGroup">
+          <label class="field-label">性別</label>
+          <div class="radio-group">
+            <div class="radio-option">
+              <input type="radio" id="genderFemale" name="gender" value="女性">
+              <label for="genderFemale">女性</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="genderMale" name="gender" value="男性">
+              <label for="genderMale">男性</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="genderPrivate" name="gender" value="不透露" checked>
+              <label for="genderPrivate">不透露</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. 出生日期 -->
+        <div class="field-group" id="birthDateGroup">
+          <label class="field-label" for="birthDate">
+            出生日期 (國曆)
+            <span class="required-mark">*</span>
+          </label>
+          <input type="date" id="birthDate" name="birthDate" class="crystal-input" required>
+          <div class="error-text">請選擇您的出生日期</div>
+        </div>
+
+        <!-- 5. 出生時間 -->
+        <div class="field-group" id="birthTimeGroup">
+          <label class="field-label" for="birthTime">
+            出生時間 (選填)
+          </label>
+          <input type="time" id="birthTime" name="birthTime" class="crystal-input">
+        </div>
+      </div>
+
+      <!-- 第二區：手圍尺寸 -->
+      <div class="glass-card" data-animate>
+        <div class="section-title">
+          <span class="section-icon">📿</span>
+          <h2>手圍尺寸</h2>
+        </div>
+
+        <!-- 6. 淨手圍（視覺滑桿） -->
+        <div class="field-group" id="wristGroup">
+          <label class="field-label">淨手圍</label>
+          <div class="slider-container">
+            <div class="slider-value-display">
+              <span class="value" id="wristValue">15.0</span>
+              <span class="unit">cm</span>
+            </div>
+            <input type="range" id="wristSize" name="wristSize" class="crystal-slider" min="13" max="20" step="0.5"
+              value="15">
+            <div class="slider-labels">
+              <span>13 cm</span>
+              <span>20 cm</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 第三區：色彩偏好 -->
+      <div class="glass-card" data-animate>
+        <div class="section-title">
+          <span class="section-icon">🎨</span>
+          <h2>偏好色系</h2>
+        </div>
+
+        <!-- 5. 偏好色系（色票選擇器） -->
+        <div class="field-group" id="colorGroup">
+          <div class="swatch-group">
+            <div class="swatch-option">
+              <input type="checkbox" id="color1" name="colorPreference" value="粉紅色系">
+              <label for="color1">
+                <div class="swatch-circle swatch-pink"></div>
+                <span class="swatch-label">粉紅色系</span>
+              </label>
+            </div>
+            <div class="swatch-option">
+              <input type="checkbox" id="color2" name="colorPreference" value="紫色系">
+              <label for="color2">
+                <div class="swatch-circle swatch-purple"></div>
+                <span class="swatch-label">紫色系</span>
+              </label>
+            </div>
+            <div class="swatch-option">
+              <input type="checkbox" id="color3" name="colorPreference" value="綠色系">
+              <label for="color3">
+                <div class="swatch-circle swatch-green"></div>
+                <span class="swatch-label">綠色系</span>
+              </label>
+            </div>
+            <div class="swatch-option">
+              <input type="checkbox" id="color4" name="colorPreference" value="黃金色系">
+              <label for="color4">
+                <div class="swatch-circle swatch-gold"></div>
+                <span class="swatch-label">黃金色系</span>
+              </label>
+            </div>
+            <div class="swatch-option">
+              <input type="checkbox" id="color5" name="colorPreference" value="黑色系">
+              <label for="color5">
+                <div class="swatch-circle swatch-black"></div>
+                <span class="swatch-label">黑色系</span>
+              </label>
+            </div>
+            <div class="swatch-option">
+              <input type="checkbox" id="color6" name="colorPreference" value="透明/白色系">
+              <label for="color6">
+                <div class="swatch-circle swatch-clear"></div>
+                <span class="swatch-label">透明/白色</span>
+              </label>
+            </div>
+            <div class="swatch-option">
+              <input type="checkbox" id="color7" name="colorPreference" value="不限">
+              <label for="color7">
+                <div class="swatch-circle swatch-all"></div>
+                <span class="swatch-label">不限</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 精密能量客製演算學 -->
+      <div class="glass-card" data-animate>
+        <div class="section-title">
+          <span class="section-icon">🔮</span>
+          <h2>精密能量客製演算</h2>
+        </div>
+
+        <!-- 5. 諮詢分析方法 (多選) -->
+        <div class="field-group" id="methodsGroup">
+          <label class="field-label">請選擇您要啟動的能量分析模組（可複選）</label>
+          <div class="checkbox-group"
+            style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); display: grid;">
+            <div class="checkbox-option">
+              <input type="checkbox" id="method1" name="calculationMethod" value="生命靈數" checked>
+              <label for="method1" style="padding: 10px 12px; justify-content: center; text-align: center;">
+                <span class="goal-text" style="font-size: 0.88rem;">生命靈數</span>
+              </label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="method2" name="calculationMethod" value="生辰五行" checked>
+              <label for="method2" style="padding: 10px 12px; justify-content: center; text-align: center;">
+                <span class="goal-text" style="font-size: 0.88rem;">生辰五行</span>
+              </label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="method3" name="calculationMethod" value="脈輪能量" checked>
+              <label for="method3" style="padding: 10px 12px; justify-content: center; text-align: center;">
+                <span class="goal-text" style="font-size: 0.88rem;">脈輪能量</span>
+              </label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="method4" name="calculationMethod" value="星座生肖" checked>
+              <label for="method4" style="padding: 10px 12px; justify-content: center; text-align: center;">
+                <span class="goal-text" style="font-size: 0.88rem;">星座生肖</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. 目標脈輪調和 (多選) -->
+        <div class="field-group" id="chakrasGroup">
+          <label class="field-label">請選擇您目前最需要平衡的脈輪（可複選）</label>
+          <div class="checkbox-group">
+            <div class="checkbox-option">
+              <input type="checkbox" id="chakra1" name="targetChakra" value="海底輪">
+              <label for="chakra1">
+                <span class="emoji-icon">🔴</span>
+                <span class="goal-text">海底輪 — 避邪、防小人、安全感、排出身體病氣</span>
+                <span class="check-indicator"></span>
+              </label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="chakra2" name="targetChakra" value="臍輪">
+              <label for="chakra2">
+                <span class="emoji-icon">🟠</span>
+                <span class="goal-text">臍輪 — 情緒平衡、創造力、自信心與人際吸引力</span>
+                <span class="check-indicator"></span>
+              </label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="chakra3" name="targetChakra" value="太陽神經叢">
+              <label for="chakra3">
+                <span class="emoji-icon">🟡</span>
+                <span class="goal-text">太陽神經叢 — 主導魄力、財富格局、意志力與偏財運</span>
+                <span class="check-indicator"></span>
+              </label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="chakra4" name="targetChakra" value="心輪">
+              <label for="chakra4">
+                <span class="emoji-icon">🟢</span>
+                <span class="goal-text">心輪 — 增進親密關係、自我包容、釋放焦慮與事業正財</span>
+                <span class="check-indicator"></span>
+              </label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="chakra5" name="targetChakra" value="喉輪">
+              <label for="chakra5">
+                <span class="emoji-icon">🔵</span>
+                <span class="goal-text">喉輪 — 強化言語說服力、業務口才、冷靜溝通與表達</span>
+                <span class="check-indicator"></span>
+              </label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="chakra6" name="targetChakra" value="眉心輪">
+              <label for="chakra6">
+                <span class="emoji-icon">🟣</span>
+                <span class="goal-text">眉心輪 — 激發冥想直覺、深度洞察力、學業考運與平靜睡眠</span>
+                <span class="check-indicator"></span>
+              </label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="chakra7" name="targetChakra" value="頂輪">
+              <label for="chakra7">
+                <span class="emoji-icon">⚪</span>
+                <span class="goal-text">頂輪 — 靈性啟發、高維智慧、消除負能量與全面場域淨化</span>
+                <span class="check-indicator"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 第四區：期望目標 -->
+      <div class="glass-card" data-animate>
+        <div class="section-title">
+          <span class="section-icon">🔮</span>
+          <h2>期望目標</h2>
+        </div>
+
+        <!-- 6. 期望目標（多選） -->
+        <div class="field-group" id="goalGroup">
+          <label class="field-label">請選擇您期望改善的方向（可複選）</label>
+          <div class="checkbox-group">
+            <div class="checkbox-option">
+              <input type="checkbox" id="goal1" name="energyGoal" value="招正財/事業運">
+              <label for="goal1">
+                <span class="emoji-icon">💰</span>
+                <span class="goal-text">招正財 / 事業運</span>
+                <span class="check-indicator"></span>
+              </label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="goal2" name="energyGoal" value="招偏財/業績/守財">
+              <label for="goal2">
+                <span class="emoji-icon">🪙</span>
+                <span class="goal-text">招偏財 / 業績 / 守財</span>
+                <span class="check-indicator"></span>
+              </label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="goal3" name="energyGoal" value="桃花與人緣">
+              <label for="goal3">
+                <span class="emoji-icon">💕</span>
+                <span class="goal-text">桃花與人緣</span>
+                <span class="check-indicator"></span>
+              </label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="goal4" name="energyGoal" value="感情與婚姻">
+              <label for="goal4">
+                <span class="emoji-icon">💍</span>
+                <span class="goal-text">感情與婚姻</span>
+                <span class="check-indicator"></span>
+              </label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="goal5" name="energyGoal" value="避邪與防小人">
+              <label for="goal5">
+                <span class="emoji-icon">🛡️</span>
+                <span class="goal-text">避邪與防小人</span>
+                <span class="check-indicator"></span>
+              </label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="goal6" name="energyGoal" value="健康與心靈療癒">
+              <label for="goal6">
+                <span class="emoji-icon">🧘</span>
+                <span class="goal-text">健康與心靈療癒</span>
+                <span class="check-indicator"></span>
+              </label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="goal7" name="energyGoal" value="智慧與專注力">
+              <label for="goal7">
+                <span class="emoji-icon">🧠</span>
+                <span class="goal-text">智慧與專注力</span>
+                <span class="check-indicator"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 第五區：狀態描述 -->
+      <div class="glass-card" data-animate>
+        <div class="section-title">
+          <span class="section-icon">📝</span>
+          <h2>補充說明</h2>
+        </div>
+
+        <!-- 7. 狀態描述 -->
+        <div class="field-group" id="descriptionGroup">
+          <label class="field-label" for="description">狀態描述</label>
+          <textarea id="description" name="description" class="crystal-input"
+            placeholder="請描述您目前的狀況或想改善的方面..."></textarea>
+        </div>
+      </div>
+
+      <!-- 第六區：預算範圍 -->
+      <div class="glass-card" data-animate>
+        <div class="section-title">
+          <span class="section-icon">💎</span>
+          <h2>預算範圍</h2>
+        </div>
+
+        <!-- 8. 預算範圍 -->
+        <div class="field-group" id="budgetGroup">
+          <label class="field-label">請選擇您的預算範圍</label>
+          <div class="budget-group">
+            <div class="radio-option">
+              <input type="radio" id="budget1" name="budget" value="$1,000以下">
+              <label for="budget1">$1,000以下</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="budget2" name="budget" value="$1,000-$3,000">
+              <label for="budget2">$1,000-$3,000</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="budget3" name="budget" value="$3,000-$5,000">
+              <label for="budget3">$3,000-$5,000</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="budget4" name="budget" value="$5,000-$10,000">
+              <label for="budget4">$5,000-$10,000</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="budget5" name="budget" value="$10,000以上">
+              <label for="budget5">$10,000以上</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="budget6" name="budget" value="不限預算">
+              <label for="budget6">不限預算</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 送出按鈕區塊 -->
+      <div class="glass-card" data-animate>
+        <div class="submit-section">
+          <button type="submit" class="submit-btn" id="submitBtn">
+            <span>✨</span>
+            <span>送出諮詢表單</span>
+            <span>✨</span>
+          </button>
+        </div>
+
+        <!-- 錯誤訊息顯示區 -->
+        <div class="error-message" id="errorMessage">
+          <p>😔 表單送出時發生錯誤，請稍後再試</p>
+          <button type="button" class="retry-btn" id="retryBtn">重新送出</button>
+        </div>
+      </div>
+    </form>
+
+    <!-- 頁尾 -->
+    <footer class="form-footer" data-animate>
+      <p class="footer-privacy">
+        <span class="lock-icon">🔒</span>
+        您的資料將被安全保管，僅供水晶諮詢用途使用
+      </p>
+      <p class="footer-brand">
+        Powered by <span>Crystal Energy Studio</span>
+      </p>
+    </footer>
+  </div>
+
+  <!-- ========================
+       成功頁面（送出後顯示）
+       ======================== -->
+  <div class="success-page" id="successPage">
+    <div class="success-icon">💎</div>
+    <h2>✨ 諮詢表單已送出！✨</h2>
+    <p>感謝您的信任，我們會盡快與您聯繫，<br>為您打造最適合的水晶能量方案。</p>
+
+    <!-- AI 推薦結果精美展示區塊 -->
+    <div id="aiRecommendationCard" class="glass-card"
+      style="display: none; margin-top: 32px; text-align: left; max-width: 560px; width: 100%; border: 1.5px solid rgba(183, 148, 246, 0.4); box-shadow: 0 8px 32px rgba(45, 27, 105, 0.4); opacity: 1; transform: none;">
+      <h3
+        style="color: var(--text-label); margin-bottom: 16px; font-size: 1.15rem; font-weight: 600; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(183, 148, 246, 0.2); padding-bottom: 10px;">
+        <span>🔮</span> 您的專屬水晶能量初步評估
+      </h3>
+      <div id="aiRecommendationText"
+        style="font-size: 0.95rem; color: var(--text-primary); white-space: pre-wrap; line-height: 1.8; letter-spacing: 0.5px;">
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ============================
+       Google Apps Script Web App 提交網址
+       （部署時請替換為實際網址）
+       ============================ */
+    const SUBMIT_URL = 'GOOGLE_APPS_SCRIPT_WEB_APP_URL';
+
+    // 取得實際的提交 URL (支援本地測試與生產環境自動切換)
+    function getSubmitUrl() {
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return '/api/crystal/submit';
+      }
+      return SUBMIT_URL;
+    }
+
+    /* ============================
+       DOM 元素快取
+       ============================ */
+    const form = document.getElementById('crystalForm');
+    const formContainer = document.getElementById('formContainer');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const successPage = document.getElementById('successPage');
+    const errorMessage = document.getElementById('errorMessage');
+    const submitBtn = document.getElementById('submitBtn');
+    const retryBtn = document.getElementById('retryBtn');
+    const wristSlider = document.getElementById('wristSize');
+    const wristValueDisplay = document.getElementById('wristValue');
+    const confettiContainer = document.getElementById('confettiContainer');
+
+    /* 防止重複送出的旗標 */
+    let isSubmitting = false;
+
+    /* ============================
+       背景粒子星光產生器
+       ============================ */
+    function createParticles() {
+      const canvas = document.getElementById('particleCanvas');
+      /* 根據視窗寬度決定粒子數量，行動裝置較少以提升效能 */
+      const count = window.innerWidth < 600 ? 20 : 40;
+
+      for (let i = 0; i < count; i++) {
+        const sparkle = document.createElement('div');
+        sparkle.classList.add('sparkle');
+
+        /* 隨機尺寸：2px 到 5px */
+        const size = Math.random() * 3 + 2;
+        sparkle.style.width = size + 'px';
+        sparkle.style.height = size + 'px';
+
+        /* 隨機水平位置 */
+        sparkle.style.left = Math.random() * 100 + '%';
+
+        /* 隨機起始垂直位置 */
+        sparkle.style.top = (Math.random() * 100 + 100) + '%';
+
+        /* 隨機動畫時長：8 到 20 秒 */
+        const duration = Math.random() * 12 + 8;
+        sparkle.style.animationDuration = duration + 's';
+
+        /* 隨機延遲，讓粒子分散出現 */
+        sparkle.style.animationDelay = Math.random() * duration + 's';
+
+        canvas.appendChild(sparkle);
+      }
+    }
+
+    /* ============================
+       滾動漸入動畫觀察器
+       ============================ */
+    function initScrollAnimations() {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+              /* 元素進入視窗後不再重複觸發 */
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        {
+          threshold: 0.1,
+          rootMargin: '0px 0px -40px 0px'
+        }
+      );
+
+      /* 觀察所有帶有 data-animate 屬性的元素 */
+      document.querySelectorAll('[data-animate]').forEach((el) => {
+        observer.observe(el);
+      });
+    }
+
+    /* ============================
+       滑桿即時數值更新
+       ============================ */
+    wristSlider.addEventListener('input', function () {
+      wristValueDisplay.textContent = parseFloat(this.value).toFixed(1);
+    });
+
+    /* ============================
+       表單驗證邏輯
+       ============================ */
+    function validateForm() {
+      let isValid = true;
+      /* 清除所有先前的錯誤狀態 */
+      document.querySelectorAll('.field-group').forEach((g) => {
+        g.classList.remove('has-error');
+      });
+      document.querySelectorAll('.crystal-input').forEach((inp) => {
+        inp.classList.remove('input-error');
+      });
+
+      /* 驗證姓名（必填） */
+      const nameInput = document.getElementById('name');
+      if (!nameInput.value.trim()) {
+        markFieldError('nameGroup', nameInput);
+        isValid = false;
+      }
+
+      /* 驗證聯絡方式（必填） */
+      const contactInput = document.getElementById('contact');
+      if (!contactInput.value.trim()) {
+        markFieldError('contactGroup', contactInput);
+        isValid = false;
+      }
+
+      /* 驗證出生日期（必填） */
+      const birthDateInput = document.getElementById('birthDate');
+      if (!birthDateInput.value) {
+        markFieldError('birthDateGroup', birthDateInput);
+        isValid = false;
+      }
+
+      /* 如果驗證失敗，滾動到第一個錯誤欄位 */
+      if (!isValid) {
+        const firstError = document.querySelector('.field-group.has-error');
+        if (firstError) {
+          firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+
+      return isValid;
+    }
+
+    /* 標記單一欄位為錯誤狀態 */
+    function markFieldError(groupId, inputEl) {
+      const group = document.getElementById(groupId);
+      group.classList.add('has-error');
+      if (inputEl) {
+        inputEl.classList.add('input-error');
+        /* 添加搖晃動畫 */
+        inputEl.classList.add('shake');
+        inputEl.addEventListener('animationend', () => {
+          inputEl.classList.remove('shake');
+        }, { once: true });
+      }
+    }
+
+    /* 即時清除錯誤狀態（使用者開始輸入時） */
+    document.querySelectorAll('.crystal-input').forEach((input) => {
+      input.addEventListener('input', function () {
+        const group = this.closest('.field-group');
+        if (group) {
+          group.classList.remove('has-error');
+          this.classList.remove('input-error');
+        }
+      });
+    });
+
+    /* ============================
+       收集表單資料
+       ============================ */
+    function collectFormData() {
+      /* 收集偏好色系（多選） */
+      const colorPreferences = Array.from(
+        document.querySelectorAll('input[name="colorPreference"]:checked')
+      ).map((cb) => cb.value);
+
+      /* 收集期望目標（多選） */
+      const energyGoals = Array.from(
+        document.querySelectorAll('input[name="energyGoal"]:checked')
+      ).map((cb) => cb.value);
+
+      /* 收集分析計算方法（多選） */
+      const calculationMethods = Array.from(
+        document.querySelectorAll('input[name="calculationMethod"]:checked')
+      ).map((cb) => cb.value);
+
+      /* 收集目標脈輪調和（多選） */
+      const targetChakras = Array.from(
+        document.querySelectorAll('input[name="targetChakra"]:checked')
+      ).map((cb) => cb.value);
+
+      /* 取得單選值 */
+      const genderEl = document.querySelector('input[name="gender"]:checked');
+      const budgetEl = document.querySelector('input[name="budget"]:checked');
+
+      return {
+        name: document.getElementById('name').value.trim(),
+        contact: document.getElementById('contact').value.trim(),
+        gender: genderEl ? genderEl.value : '',
+        birthDate: document.getElementById('birthDate').value,
+        birthTime: document.getElementById('birthTime').value,
+        preference: '手鏈/手環',
+        wristSize: parseFloat(wristSlider.value).toFixed(1),
+        colorPreference: colorPreferences,
+        energyGoal: energyGoals,
+        calculationMethod: calculationMethods,
+        targetChakra: targetChakras,
+        description: document.getElementById('description').value.trim(),
+        budget: budgetEl ? budgetEl.value : '',
+        /* 記錄提交時間 */
+        submittedAt: new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' })
+      };
+    }
+
+    /* ============================
+       紙花慶祝動畫
+       ============================ */
+    function launchConfetti() {
+      const colors = [
+        '#b794f6', '#f7a8c4', '#9b59b6',
+        '#f0e6ff', '#ffd700', '#85e89d',
+        '#ff69b4', '#dda0dd'
+      ];
+
+      /* 產生 80 片紙花 */
+      for (let i = 0; i < 80; i++) {
+        const piece = document.createElement('div');
+        piece.classList.add('confetti-piece');
+
+        /* 隨機顏色 */
+        piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+
+        /* 隨機起始水平位置 */
+        piece.style.left = Math.random() * 100 + '%';
+
+        /* 隨機尺寸 */
+        const size = Math.random() * 8 + 6;
+        piece.style.width = size + 'px';
+        piece.style.height = size * (Math.random() * 0.6 + 0.6) + 'px';
+
+        /* 隨機圓角 */
+        piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+
+        /* 隨機動畫時長與延遲 */
+        piece.style.animationDuration = (Math.random() * 2 + 1.5) + 's';
+        piece.style.animationDelay = Math.random() * 0.8 + 's';
+
+        confettiContainer.appendChild(piece);
+      }
+
+      /* 3.5 秒後清除紙花 */
+      setTimeout(() => {
+        confettiContainer.innerHTML = '';
+      }, 3500);
+    }
+
+    /* ============================
+       顯示載入中覆蓋層
+       ============================ */
+    function showLoading() {
+      loadingOverlay.classList.add('active');
+    }
+
+    function hideLoading() {
+      loadingOverlay.classList.remove('active');
+    }
+
+    /* ============================
+       顯示成功頁面
+       ============================ */
+    function showSuccess(recommendation) {
+      hideLoading();
+      formContainer.style.display = 'none';
+      successPage.classList.add('active');
+
+      const recCard = document.getElementById('aiRecommendationCard');
+      const recText = document.getElementById('aiRecommendationText');
+
+      if (recommendation && recCard && recText) {
+        recText.textContent = recommendation;
+        recCard.style.display = 'block';
+      } else if (recCard) {
+        recCard.style.display = 'none';
+      }
+
+      launchConfetti();
+
+      /* 捲動到頁面頂部 */
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    /* ============================
+       顯示錯誤訊息
+       ============================ */
+    function showError(message) {
+      hideLoading();
+      errorMessage.classList.add('active');
+      if (message) {
+        errorMessage.querySelector('p').textContent = message;
+      }
+      /* 重新啟用送出按鈕 */
+      submitBtn.disabled = false;
+      isSubmitting = false;
+    }
+
+    function hideError() {
+      errorMessage.classList.remove('active');
+    }
+
+    /* ============================
+       表單提交處理
+       ============================ */
+    async function handleSubmit(e) {
+      e.preventDefault();
+
+      /* 防止重複送出 */
+      if (isSubmitting) return;
+
+      /* 隱藏先前的錯誤訊息 */
+      hideError();
+
+      /* 執行驗證 */
+      if (!validateForm()) return;
+
+      /* 標記為送出中，停用按鈕 */
+      isSubmitting = true;
+      submitBtn.disabled = true;
+
+      /* 收集表單資料 */
+      const data = collectFormData();
+
+      /* 顯示載入動畫 */
+      showLoading();
+
+      try {
+        const url = getSubmitUrl();
+        const isLocal = url.startsWith('/');
+
+        const fetchOptions = {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        };
+
+        // 如果是跨域的 Apps Script Web App，保留 no-cors 避免 CORS 報錯
+        if (!isLocal) {
+          fetchOptions.mode = 'no-cors';
+        }
+
+        const response = await fetch(url, fetchOptions);
+
+        let recommendation = '';
+        if (isLocal) {
+          const result = await response.json();
+          if (result.status === 'success' && result.data && result.data.recommendation) {
+            recommendation = result.data.recommendation;
+          }
+        }
+
+        showSuccess(recommendation);
+
+      } catch (error) {
+        console.error('表單提交錯誤：', error);
+        showError('😔 網路連線異常，請檢查網路後重試');
+      }
+    }
+
+    /* 綁定表單送出事件 */
+    form.addEventListener('submit', handleSubmit);
+
+    /* 重試按鈕事件 */
+    retryBtn.addEventListener('click', function () {
+      hideError();
+      handleSubmit(new Event('submit', { cancelable: true }));
+    });
+
+    /* ============================
+       頁面初始化
+       ============================ */
+    document.addEventListener('DOMContentLoaded', function () {
+      /* 產生背景星光粒子 */
+      createParticles();
+
+      /* 初始化滾動動畫 */
+      initScrollAnimations();
+
+      /* 設定滑桿初始值顯示 */
+      wristValueDisplay.textContent = parseFloat(wristSlider.value).toFixed(1);
+    });
+  </script>
+</body>
+
+</html>
