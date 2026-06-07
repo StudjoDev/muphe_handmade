@@ -84,10 +84,11 @@ https://docs.google.com/spreadsheets/d/1aBcDeFgHiJkLmNoPqRsTuVwXyZ/edit
 
 ### 步驟 2：建立檔案架構
 
-需要建立以下 4 個檔案：
+需要建立以下 5 個檔案：
 
 | 檔案名稱             | 用途                       |
 |---------------------|---------------------------|
+| `appsscript.json`   | 專案 manifest、時區、Web App 與授權範圍 |
 | `Config.gs`         | 設定檔（API 金鑰、ID 等）    |
 | `Recommendation.gs` | AI 水晶推薦邏輯              |
 | `Notification.gs`   | LINE 通知功能               |
@@ -98,16 +99,17 @@ https://docs.google.com/spreadsheets/d/1aBcDeFgHiJkLmNoPqRsTuVwXyZ/edit
 1. 在左側檔案列表中，點選 **「+」** 按鈕
 2. 選擇 **「指令碼」**
 3. 輸入檔案名稱（不需要輸入 `.gs` 副檔名）
-4. 重複以上步驟，直到建立所有 4 個檔案
+4. 重複以上步驟，直到建立所有 5 個檔案
 
 ### 步驟 3：貼上程式碼
 
 將每個檔案的程式碼貼入對應的 Apps Script 檔案中：
 
-1. **Config.gs**：貼上設定檔程式碼
-2. **Recommendation.gs**：貼上 AI 推薦邏輯程式碼
-3. **Notification.gs**：貼上 LINE 通知程式碼
-4. **Code.gs**：貼上主程式程式碼
+1. **appsscript.json**：貼上 manifest 設定
+2. **Config.gs**：貼上設定檔程式碼
+3. **Recommendation.gs**：貼上 AI 推薦邏輯程式碼
+4. **Notification.gs**：貼上 LINE 通知程式碼
+5. **Code.gs**：貼上主程式程式碼
 
 ### 步驟 4：更新 Config.gs 設定
 
@@ -755,7 +757,7 @@ function sendLineMessage(message) {
 - [ ] 「諮詢紀錄」工作表已建立，含 17 個欄位標題
 - [ ] 如啟用手鍊 profile，「手鍊檔案」工作表已建立，含程式定義的 A 到 V 欄位
 - [ ] Spreadsheet ID 已複製並填入 Config.gs
-- [ ] Apps Script 4 個檔案已建立並貼上程式碼
+- [ ] Apps Script 5 個檔案已建立並貼上程式碼
 - [ ] Config.gs 中的設定值已更新
 - [ ] Web App 已部署，URL 已複製
 - [ ] CSV 檔案已建立並可在 Google Drive 中找到
