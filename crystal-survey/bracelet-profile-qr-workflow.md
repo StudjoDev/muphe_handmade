@@ -113,7 +113,14 @@
 
 4. 在 Apps Script 編輯器可手動執行 `generateBraceletProfileCredentials()` 產生 `profileId`、`accessCode`、`accessToken`。不可使用客人姓名、電話、Email、訂單編號、試算表 row number。
 5. 每次修改 Apps Script 後，都要到「部署」->「管理部署作業」-> 編輯 ->「版本」選擇「新版本」->「部署」。只儲存程式碼不會更新既有 Web App。
-6. 部署後用一筆測試 profile 驗證：
+6. 若使用 `clasp` 部署，先在 `crystal-survey/google-apps-script` clone 既有 Apps Script 專案，確認 `.clasp.json` 內是正確 `scriptId`，再從 repo 根目錄執行：
+
+   ```bash
+   scripts/deploy-apps-script.sh AKfycby3nWx_LCW3fM5FonV_5BoOiKT6_19GR8L7D4EUqD0b_a4EekZmjwZiDzXNgjWarmgT "braceletProfile API update"
+   ```
+
+   `AKfyc...` 是 Web App deployment id；它不是 `scriptId`。缺少 `scriptId` 時不能用 CLI 部署。
+7. 部署後用一筆測試 profile 驗證：
    - `是否公開 = 公開` 的 token 可在 `bracelet.html?token=...` 打開 profile。
    - 未公開、停用或不存在的 token 顯示查無資料。
    - profile 頁原始碼與畫面不含姓名、聯絡方式、生日、地址、預算、內部備註。
