@@ -1,6 +1,6 @@
 # 水晶能量諮詢系統 — 完整部署指南
 
-> 本指南涵蓋「水晶能量諮詢系統」從零開始的完整部署流程，包含 Google Sheets、CSV 統一紀錄、Apps Script、LINE Messaging API、Web App 部署及測試驗證。
+> 本指南涵蓋「水晶能量諮詢系統」從零開始的完整部署流程，包含 Google Sheets、CSV 統一紀錄、Apps Script、LINE Messaging API、Web App 部署、手鍊檔案 QR 小卡及測試驗證。
 
 ---
 
@@ -13,7 +13,8 @@
 5. [五、Google Forms 設定（選用）](#五google-forms-設定選用)
 6. [六、LINE 圖文選單設定](#六line-圖文選單設定)
 7. [七、測試驗證](#七測試驗證)
-8. [八、常見問題排解](#八常見問題排解)
+8. [八、手鍊檔案與 QR 小卡作業](#八手鍊檔案與-qr-小卡作業)
+9. [九、常見問題排解](#九常見問題排解)
 
 ---
 
@@ -63,7 +64,13 @@ https://docs.google.com/spreadsheets/d/1aBcDeFgHiJkLmNoPqRsTuVwXyZ/edit
 |-----------|--------------------------------------|
 | A（時間戳記）| 日期時間格式：`yyyy/MM/dd HH:mm:ss`   |
 | E（淨手圍） | 數字格式，小數點 1 位                   |
-| K（處理狀態）| 建立下拉選單：待處理、處理中、已完成、已取消 |
+| P（處理狀態）| 建立下拉選單：待處理、處理中、已完成、已取消 |
+
+### 步驟 6：（選用）建立手鍊檔案分頁
+
+若要啟用「每條手鍊一個 QR profile」的小卡流程，請在同一份 Google Sheets 新增 **手鍊檔案** 分頁。此分頁只放公開 profile 所需的整理後內容，不要把客人聯絡方式、生日、地址、付款或出貨資料放進公開欄位。
+
+完整欄位、QR 產生、印製與隱私規則請參考：[`bracelet-profile-qr-workflow.md`](bracelet-profile-qr-workflow.md)。
 
 ---
 
@@ -511,13 +518,33 @@ const SUBMIT_URL = 'https://script.google.com/macros/s/AKfycbxxxxxxxxxxxxxxxxxxx
 
 ---
 
-## 八、常見問題排解
+## 八、手鍊檔案與 QR 小卡作業
+
+手鍊檔案流程用於出貨或交付前，將每條手鍊整理成一個可由 QR 小卡開啟的公開 profile。公開 profile 只顯示晶種、手鍊名稱、情境、配戴提醒、淨化保養與一般儀式文字；客人姓名、聯絡方式、生日、地址、預算、付款、出貨、內部備註都不得出現在 QR URL 或公開頁。
+
+詳細操作文件：[`bracelet-profile-qr-workflow.md`](bracelet-profile-qr-workflow.md)
+
+### 快速摘要
+
+1. 在 Google Sheets 新增 **手鍊檔案** 分頁，欄位依程式的 `BRACELET_PROFILE_HEADER_ROW` 建立，包含 `建立時間`、`查詢碼`、`查詢Token`、`是否公開`、`手鏈名稱`、`場景`、`水晶配置`、`配戴指南`、`保養說明`、`日常儀式`、`店主小語` 等。
+2. QR 公開頁 URL 應使用不含個資的 token，例如 `https://studjodev.github.io/muphe_handmade/bracelet.html?token={查詢Token}`。不可使用 row number、電話、Email、姓名、訂單編號作為公開識別碼。
+3. 只有 `是否公開 = 公開` 或 `已公開` 且顧客同意的資料列可以產生 QR 小卡。
+4. QR code 內容只放公開頁 URL，代碼則印在小卡上作為手動輸入備援。產生 QR 後先在手機相機與 LINE 掃描器測試。
+5. 小卡建議使用名片尺寸或印刷廠模板，QR 實際寬度至少 22mm，並保留完整 quiet zone。
+6. 印製樣張後，掃描第一張、最後一張、隨機一張；入包裝前再掃一次，確認手鍊名稱與實體手鍊一致。
+7. 顧客撤回或要求刪除時，將 `是否公開` 改為空白或停用，並移除公開內容。
+
+---
+
+## 九、常見問題排解
 
 ### 問題 1：CORS 錯誤
 
 **現象**：在瀏覽器控制台看到 CORS（跨來源資源共享）錯誤。
 
 **原因**：前端直接向 Apps Script Web App 發送 AJAX 請求時，可能遇到 CORS 限制。
+
+> 手鍊檔案查詢頁已內建 JSONP fallback，對應 Apps Script 的 `?action=braceletProfile&callback=...` 回應。若只是在 `bracelet.html` 查詢手鍊檔案，不需要額外設定 CORS header。
 
 **解決方案**：
 
@@ -726,6 +753,7 @@ function sendLineMessage(message) {
 ### Google 相關
 - [ ] Google Sheets「水晶諮詢資料庫」已建立
 - [ ] 「諮詢紀錄」工作表已建立，含 17 個欄位標題
+- [ ] 如啟用手鍊 profile，「手鍊檔案」工作表已建立，含程式定義的 A 到 V 欄位
 - [ ] Spreadsheet ID 已複製並填入 Config.gs
 - [ ] Apps Script 4 個檔案已建立並貼上程式碼
 - [ ] Config.gs 中的設定值已更新
@@ -752,6 +780,10 @@ function sendLineMessage(message) {
 - [ ] AI 推薦自動生成正常
 - [ ] LINE 通知接收正常
 - [ ] 圖文選單各按鈕功能正常
+- [ ] 手鍊 profile URL 只顯示公開內容，不含客資、地址、付款、出貨或內部備註
+- [ ] QR code 只包含公開 profile URL，手機相機與 LINE 掃描器都能開啟
+- [ ] 小卡樣張已掃碼驗證，入包裝前已再次確認對應正確手鍊
+- [ ] 顧客撤回或刪除請求可透過清空或停用 `是否公開` 停用公開頁
 
 ---
 

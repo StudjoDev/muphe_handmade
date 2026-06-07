@@ -367,6 +367,9 @@ const WEB_APP_URL_PLACEHOLDER = "GOOGLE_APPS_SCRIPT_WEB_APP_URL";
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby3nWx_LCW3fM5FonV_5BoOiKT6_19GR8L7D4EUqD0b_a4EekZmjwZiDzXNgjWarmgT/exec";
 const DEFAULT_WRIST_SIZE = "15.5";
 
+window.MUPHE_WEB_APP_URL_PLACEHOLDER = WEB_APP_URL_PLACEHOLDER;
+window.MUPHE_WEB_APP_URL = WEB_APP_URL;
+
 const state = {
   filters: {
     scene: "全部",
@@ -757,101 +760,119 @@ function closeMobileNav() {
   mobileNav.classList.remove("is-open");
 }
 
-document.addEventListener("click", (event) => {
-  const sceneButton = event.target.closest("[data-scene]");
-  const heroScene = event.target.closest("[data-hero-scene]");
-  const productButton = event.target.closest("[data-open-product]");
-  const addButton = event.target.closest("[data-add-cart]");
-  const qtyButton = event.target.closest("[data-qty]");
+const hasShopExperience =
+  sceneGrid &&
+  productGrid &&
+  resultCount &&
+  productDrawer &&
+  productDetail &&
+  cartDrawer &&
+  cartCount &&
+  cartItems &&
+  cartTotal &&
+  orderForm &&
+  orderPayload &&
+  orderSubmit &&
+  orderError &&
+  mobileNav;
 
-  if (sceneButton) {
-    updateFilter("scene", sceneButton.dataset.scene);
-    document.querySelector("#shop").scrollIntoView({ behavior: "smooth" });
-  }
+if (hasShopExperience) {
+  document.addEventListener("click", (event) => {
+    const sceneButton = event.target.closest("[data-scene]");
+    const heroScene = event.target.closest("[data-hero-scene]");
+    const productButton = event.target.closest("[data-open-product]");
+    const addButton = event.target.closest("[data-add-cart]");
+    const qtyButton = event.target.closest("[data-qty]");
 
-  if (heroScene) {
-    updateFilter("scene", heroScene.dataset.heroScene);
-  }
+    if (sceneButton) {
+      updateFilter("scene", sceneButton.dataset.scene);
+      document.querySelector("#shop").scrollIntoView({ behavior: "smooth" });
+    }
 
-  if (productButton) {
-    openProduct(productButton.dataset.openProduct);
-  }
+    if (heroScene) {
+      updateFilter("scene", heroScene.dataset.heroScene);
+    }
 
-  if (addButton) {
-    addToCart(addButton.dataset.addCart);
-    closeDrawer(productDrawer);
-    openDrawer(cartDrawer);
-  }
+    if (productButton) {
+      openProduct(productButton.dataset.openProduct);
+    }
 
-  if (qtyButton) {
-    changeQty(qtyButton.dataset.qty, Number(qtyButton.dataset.delta));
-  }
+    if (addButton) {
+      addToCart(addButton.dataset.addCart);
+      closeDrawer(productDrawer);
+      openDrawer(cartDrawer);
+    }
 
-  if (event.target.matches("[data-reset-filters]")) {
-    resetFilters();
-  }
+    if (qtyButton) {
+      changeQty(qtyButton.dataset.qty, Number(qtyButton.dataset.delta));
+    }
 
-  if (event.target.closest("[data-product-close]")) {
-    closeDrawer(productDrawer);
-  }
+    if (event.target.matches("[data-reset-filters]")) {
+      resetFilters();
+    }
 
-  if (event.target.closest("[data-cart-open]")) {
-    openDrawer(cartDrawer);
-  }
+    if (event.target.closest("[data-product-close]")) {
+      closeDrawer(productDrawer);
+    }
 
-  if (event.target.closest("[data-cart-close]")) {
-    closeDrawer(cartDrawer);
-  }
+    if (event.target.closest("[data-cart-open]")) {
+      openDrawer(cartDrawer);
+    }
 
-  if (event.target.matches("[data-menu-toggle]") || event.target.closest("[data-menu-toggle]")) {
-    mobileNav.classList.toggle("is-open");
-  }
+    if (event.target.closest("[data-cart-close]")) {
+      closeDrawer(cartDrawer);
+    }
 
-  if (event.target.closest(".mobile-nav a")) {
-    closeMobileNav();
-  }
+    if (event.target.matches("[data-menu-toggle]") || event.target.closest("[data-menu-toggle]")) {
+      mobileNav.classList.toggle("is-open");
+    }
 
-  if (event.target === productDrawer) {
-    closeDrawer(productDrawer);
-  }
+    if (event.target.closest(".mobile-nav a")) {
+      closeMobileNav();
+    }
 
-  if (event.target === cartDrawer) {
-    closeDrawer(cartDrawer);
-  }
-});
+    if (event.target === productDrawer) {
+      closeDrawer(productDrawer);
+    }
 
-document.addEventListener("change", (event) => {
-  const filter = event.target.closest("[data-filter]");
+    if (event.target === cartDrawer) {
+      closeDrawer(cartDrawer);
+    }
+  });
 
-  if (filter) {
-    updateFilter(filter.dataset.filter, filter.value);
-  }
-});
+  document.addEventListener("change", (event) => {
+    const filter = event.target.closest("[data-filter]");
 
-document.addEventListener("input", (event) => {
-  const wristInput = event.target.closest("[data-wrist]");
+    if (filter) {
+      updateFilter(filter.dataset.filter, filter.value);
+    }
+  });
 
-  if (wristInput) {
-    updateWristSize(wristInput.dataset.wrist, wristInput.value);
-  }
+  document.addEventListener("input", (event) => {
+    const wristInput = event.target.closest("[data-wrist]");
 
-  if (event.target.closest(".order-form")) {
-    hideOrderError();
-  }
-});
+    if (wristInput) {
+      updateWristSize(wristInput.dataset.wrist, wristInput.value);
+    }
 
-orderForm.addEventListener("submit", submitOrder);
+    if (event.target.closest(".order-form")) {
+      hideOrderError();
+    }
+  });
 
-document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") {
-    closeDrawer(productDrawer);
-    closeDrawer(cartDrawer);
-    closeMobileNav();
-  }
-});
+  orderForm.addEventListener("submit", submitOrder);
 
-populateFilters();
-syncFilterControls();
-renderScenes();
-renderProducts();
-renderCart();
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeDrawer(productDrawer);
+      closeDrawer(cartDrawer);
+      closeMobileNav();
+    }
+  });
+
+  populateFilters();
+  syncFilterControls();
+  renderScenes();
+  renderProducts();
+  renderCart();
+}

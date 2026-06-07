@@ -22,6 +22,9 @@ const SHEET_NAME = '諮詢紀錄';
 /** 訂單工作表名稱 */
 const ORDER_SHEET_NAME = 'Orders';
 
+/** 手鏈公開檔案工作表名稱 */
+const BRACELET_PROFILE_SHEET_NAME = '手鍊檔案';
+
 /** 店主通知 Email；留空時嘗試使用 Apps Script 執行帳號 Email */
 const OWNER_EMAIL = 'muphe.handmade@gmail.com';
 
@@ -142,4 +145,56 @@ const ORDER_HEADER_ROW = [
   '出貨狀態',
   '後台備註',
   '原始Payload'
+];
+
+/** 手鏈公開檔案欄位在試算表中的位置（1-indexed） */
+const BRACELET_PROFILE_COLUMNS = {
+  CREATED_AT: 1,        // A 欄 — 建立時間
+  UPDATED_AT: 2,        // B 欄 — 更新時間
+  PROFILE_ID: 3,        // C 欄 — 檔案 ID
+  ACCESS_CODE: 4,       // D 欄 — QR/短碼查詢碼
+  ACCESS_TOKEN: 5,      // E 欄 — QR token
+  PUBLISHED: 6,         // F 欄 — 是否公開
+  DISPLAY_NAME: 7,      // G 欄 — 公開顯示名稱
+  BRACELET_NAME: 8,     // H 欄 — 手鏈名稱
+  SCENE: 9,             // I 欄 — 場景
+  SUMMARY: 10,          // J 欄 — 公開摘要
+  CRYSTALS: 11,         // K 欄 — 水晶配置
+  ENERGY_FOCUS: 12,     // L 欄 — 能量主題
+  CHAKRA_FOCUS: 13,     // M 欄 — 脈輪主題
+  DESIGN_NOTES: 14,     // N 欄 — 設計說明
+  WEARING_GUIDE: 15,    // O 欄 — 配戴指南
+  CARE_INSTRUCTIONS: 16,// P 欄 — 保養說明
+  RITUAL_TEXT: 17,      // Q 欄 — 日常儀式
+  MAKER_NOTE: 18,       // R 欄 — 店主小語
+  IMAGE_URL: 19,        // S 欄 — 圖片網址
+  PRODUCT_URL: 20,      // T 欄 — 商品或公開頁網址
+  PUBLISHED_AT: 21,     // U 欄 — 公開時間
+  INTERNAL_NOTES: 22    // V 欄 — 內部備註（不對外輸出）
+};
+
+/** 手鏈公開檔案工作表標題列 */
+const BRACELET_PROFILE_HEADER_ROW = [
+  '建立時間',
+  '更新時間',
+  '檔案ID',
+  '查詢碼',
+  '查詢Token',
+  '是否公開',
+  '公開顯示名稱',
+  '手鏈名稱',
+  '場景',
+  '公開摘要',
+  '水晶配置',
+  '能量主題',
+  '脈輪主題',
+  '設計說明',
+  '配戴指南',
+  '保養說明',
+  '日常儀式',
+  '店主小語',
+  '圖片網址',
+  '商品或公開頁網址',
+  '公開時間',
+  '內部備註'
 ];

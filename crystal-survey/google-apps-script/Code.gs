@@ -29,6 +29,11 @@
  */
 function doGet(e) {
   try {
+    const action = normalizeRequestAction(getRequestParameter(e, 'action'));
+    if (action === 'braceletprofile') {
+      return handleBraceletProfileLookup(e);
+    }
+
     // 嘗試載入外部 HTML 模板
     const htmlOutput = HtmlService.createHtmlOutputFromFile('crystal-form')
       .setTitle('✨ 水晶能量專屬諮詢')
@@ -92,6 +97,405 @@ function doPost(e) {
       isError: true
     });
   }
+}
+
+// ============================
+// 🔎 手鏈公開檔案 API
+// ============================
+
+/**
+ * 手鏈公開檔案查詢入口。
+ * 支援 ?action=braceletProfile&code=... 或 ?action=braceletProfile&token=...
+ * @param {Object} e - HTTP GET 事件物件
+ * @returns {TextOutput} JSON 或 JSONP 文字回應
+ */
+function handleBraceletProfileLookup(e) {
+  try {
+    const accessCode = normalizeBraceletAccessCode(getRequestParameter(e, 'code'));
+    const accessToken = normalizeBraceletAccessToken(getRequestParameter(e, 'token'));
+
+    if (!accessCode && !accessToken) {
+      return createJsonTextOutput(e, {
+        success: false,
+        error: {
+          code: 'missing_lookup',
+          message: '請提供 code 或 token 查詢手鏈檔案'
+        }
+      });
+    }
+
+    if (!isBraceletLookupLengthAllowed(accessCode, accessToken)) {
+      return createJsonTextOutput(e, {
+        success: false,
+        error: {
+          code: 'invalid_lookup',
+          message: '查詢碼或 token 格式不正確'
+        }
+      });
+    }
+
+    const profile = findPublishedBraceletProfile(accessCode, accessToken);
+    if (!profile) {
+      return createJsonTextOutput(e, {
+        success: false,
+        error: {
+          code: 'not_found',
+          message: '找不到已公開的手鏈檔案'
+        }
+      });
+    }
+
+    return createJsonTextOutput(e, {
+      success: true,
+      data: profile,
+      retrievedAt: formatApiTimestamp(new Date())
+    });
+
+  } catch (error) {
+    console.error('【手鏈檔案查詢錯誤】' + error.toString());
+    return createJsonTextOutput(e, {
+      success: false,
+      error: {
+        code: 'server_error',
+        message: '系統目前無法查詢手鏈檔案'
+      }
+    });
+  }
+}
+
+/**
+ * 從手鏈檔案工作表查詢已公開的手鏈檔案。
+ * 未公開或不存在的資料都回傳 null，避免對外洩漏狀態。
+ * @param {string} accessCode - 正規化後的查詢碼
+ * @param {string} accessToken - 正規化後的 token
+ * @returns {Object|null} 公開檔案資料
+ */
+function findPublishedBraceletProfile(accessCode, accessToken) {
+  const sheet = getOrCreateSheet(
+    BRACELET_PROFILE_SHEET_NAME,
+    BRACELET_PROFILE_HEADER_ROW,
+    getBraceletProfileColumnWidths()
+  );
+  const lastRow = sheet.getLastRow();
+
+  if (lastRow <= 1) {
+    return null;
+  }
+
+  const rows = sheet
+    .getRange(2, 1, lastRow - 1, BRACELET_PROFILE_HEADER_ROW.length)
+    .getDisplayValues();
+
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    if (!isBraceletProfilePublished(row)) {
+      continue;
+    }
+
+    const rowCode = normalizeBraceletAccessCode(getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.ACCESS_CODE));
+    const rowToken = normalizeBraceletAccessToken(getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.ACCESS_TOKEN));
+    const isCodeMatch = Boolean(accessCode && rowCode && rowCode === accessCode);
+    const isTokenMatch = Boolean(accessToken && rowToken && rowToken === accessToken);
+
+    if (isCodeMatch || isTokenMatch) {
+      return buildPublicBraceletProfile(row);
+    }
+  }
+
+  return null;
+}
+
+/**
+ * 將完整工作表列轉成對外安全的公開手鏈檔案。
+ * 不輸出 token、聯絡方式、地址、生日、生時或內部備註。
+ * @param {Array} row - 工作表列資料
+ * @returns {Object} 對外公開資料
+ */
+function buildPublicBraceletProfile(row) {
+  return {
+    profileId: getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.PROFILE_ID),
+    displayName: getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.DISPLAY_NAME),
+    braceletName: getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.BRACELET_NAME),
+    scene: getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.SCENE),
+    summary: getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.SUMMARY),
+    crystals: splitPublicListValue(getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.CRYSTALS)),
+    energyFocus: splitPublicListValue(getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.ENERGY_FOCUS)),
+    chakraFocus: splitPublicListValue(getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.CHAKRA_FOCUS)),
+    designNotes: getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.DESIGN_NOTES),
+    wearingGuide: splitPublicListValue(getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.WEARING_GUIDE)),
+    careInstructions: splitPublicListValue(getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.CARE_INSTRUCTIONS)),
+    ritual: splitPublicListValue(getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.RITUAL_TEXT)),
+    makerNote: getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.MAKER_NOTE),
+    imageUrl: getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.IMAGE_URL),
+    productUrl: getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.PRODUCT_URL),
+    publishedAt: getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.PUBLISHED_AT),
+    updatedAt: getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.UPDATED_AT)
+  };
+}
+
+/**
+ * 產生一組可填入手鏈檔案工作表的檔案 ID、查詢碼與 token。
+ * 在 Apps Script 編輯器中手動執行，或由後台操作流程呼叫。
+ * @returns {Object} 新憑證
+ */
+function generateBraceletProfileCredentials() {
+  const sheet = getOrCreateSheet(
+    BRACELET_PROFILE_SHEET_NAME,
+    BRACELET_PROFILE_HEADER_ROW,
+    getBraceletProfileColumnWidths()
+  );
+
+  return withScriptLock(function() {
+    return {
+      profileId: generateBraceletProfileId(),
+      accessCode: generateBraceletProfileAccessCode(sheet),
+      accessToken: generateBraceletProfileAccessToken()
+    };
+  });
+}
+
+/**
+ * 產生手鏈檔案 ID。
+ * @returns {string} 檔案 ID
+ */
+function generateBraceletProfileId() {
+  const token = Utilities.getUuid().replace(/-/g, '').substring(0, 12).toUpperCase();
+  return 'BP-' + token;
+}
+
+/**
+ * 產生不易混淆且不與現有資料重複的短查詢碼。
+ * @param {Sheet} sheet - 手鏈檔案工作表
+ * @returns {string} 查詢碼
+ */
+function generateBraceletProfileAccessCode(sheet) {
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const code = 'MUPHE-' + generateReadableCodeSegment(4) + '-' + generateReadableCodeSegment(4);
+    if (!braceletAccessCodeExists(sheet, code)) {
+      return code;
+    }
+  }
+
+  return 'MUPHE-' + generateReadableCodeSegment(4) + '-' + generateReadableCodeSegment(6);
+}
+
+/**
+ * 產生高熵 token，適合放入 QR URL。
+ * @returns {string} token
+ */
+function generateBraceletProfileAccessToken() {
+  return Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '');
+}
+
+/**
+ * 檢查查詢碼是否已存在。
+ * @param {Sheet} sheet - 手鏈檔案工作表
+ * @param {string} accessCode - 查詢碼
+ * @returns {boolean} 是否存在
+ */
+function braceletAccessCodeExists(sheet, accessCode) {
+  const normalizedCode = normalizeBraceletAccessCode(accessCode);
+  const lastRow = sheet.getLastRow();
+  if (!normalizedCode || lastRow <= 1) {
+    return false;
+  }
+
+  const values = sheet
+    .getRange(2, BRACELET_PROFILE_COLUMNS.ACCESS_CODE, lastRow - 1, 1)
+    .getDisplayValues();
+
+  return values.some(function(row) {
+    return normalizeBraceletAccessCode(row[0]) === normalizedCode;
+  });
+}
+
+/**
+ * 產生一段容易人工讀取的短碼，排除 I/O/1/0 等易混淆字元。
+ * @param {number} length - 長度
+ * @returns {string} 短碼片段
+ */
+function generateReadableCodeSegment(length) {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let segment = '';
+  for (let i = 0; i < length; i++) {
+    segment += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return segment;
+}
+
+/**
+ * 正規化 action 參數。
+ * @param {*} value - 原始 action
+ * @returns {string} 正規化 action
+ */
+function normalizeRequestAction(value) {
+  return normalizeHalfWidthText(value).toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+/**
+ * 正規化手鏈查詢碼；忽略大小寫、空白與連字號等分隔符。
+ * @param {*} value - 原始查詢碼
+ * @returns {string} 正規化查詢碼
+ */
+function normalizeBraceletAccessCode(value) {
+  return normalizeHalfWidthText(value).toUpperCase().replace(/[^A-Z0-9]/g, '');
+}
+
+/**
+ * 正規化 token；保留大小寫，只移除意外輸入的空白。
+ * @param {*} value - 原始 token
+ * @returns {string} 正規化 token
+ */
+function normalizeBraceletAccessToken(value) {
+  return normalizeHalfWidthText(value).trim().replace(/\s+/g, '');
+}
+
+/**
+ * 將全形英數符號轉成半形，讓人工輸入的查詢碼更穩定。
+ * @param {*} value - 原始文字
+ * @returns {string} 半形文字
+ */
+function normalizeHalfWidthText(value) {
+  return String(value === null || typeof value === 'undefined' ? '' : value)
+    .replace(/[！-～]/g, function(character) {
+      return String.fromCharCode(character.charCodeAt(0) - 0xFEE0);
+    })
+    .replace(/　/g, ' ');
+}
+
+/**
+ * 限制查詢字串長度，避免異常長輸入造成不必要處理。
+ * @param {string} accessCode - 正規化查詢碼
+ * @param {string} accessToken - 正規化 token
+ * @returns {boolean} 是否允許
+ */
+function isBraceletLookupLengthAllowed(accessCode, accessToken) {
+  return (!accessCode || accessCode.length <= 64) && (!accessToken || accessToken.length <= 128);
+}
+
+/**
+ * 判斷手鏈檔案是否公開。
+ * @param {Array} row - 工作表列資料
+ * @returns {boolean} 是否公開
+ */
+function isBraceletProfilePublished(row) {
+  const value = getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.PUBLISHED).toLowerCase();
+  return [
+    '1',
+    'true',
+    'yes',
+    'y',
+    'published',
+    'publish',
+    '公開',
+    '已公開',
+    '已發布',
+    '上架'
+  ].indexOf(value) !== -1;
+}
+
+/**
+ * 取得手鏈檔案欄位文字。
+ * @param {Array} row - 工作表列資料
+ * @param {number} columnIndex - 1-indexed 欄位位置
+ * @returns {string} 欄位文字
+ */
+function getBraceletProfileCell(row, columnIndex) {
+  return String(row[columnIndex - 1] || '').trim();
+}
+
+/**
+ * 將公開列表欄位轉成陣列。
+ * @param {string} value - 原始欄位文字
+ * @returns {Array} 清理後列表
+ */
+function splitPublicListValue(value) {
+  const text = String(value || '').trim();
+  if (!text) {
+    return [];
+  }
+
+  return text
+    .split(/\r?\n|[,，、;；]/)
+    .map(function(item) {
+      return item.trim();
+    })
+    .filter(function(item) {
+      return item !== '';
+    });
+}
+
+/**
+ * 建立 JSON 或 JSONP TextOutput。
+ * Apps Script ContentService 無法設定自訂 CORS header；JSONP callback 可支援跨網域瀏覽器讀取。
+ * @param {Object} e - Web App 事件
+ * @param {Object} payload - 回應內容
+ * @returns {TextOutput} 文字回應
+ */
+function createJsonTextOutput(e, payload) {
+  const callback = getRequestParameter(e, 'callback') || getRequestParameter(e, 'jsonp');
+  if (callback) {
+    const safeCallback = normalizeJsonpCallback(callback);
+    if (!safeCallback) {
+      return ContentService
+        .createTextOutput(JSON.stringify({
+          success: false,
+          error: {
+            code: 'invalid_callback',
+            message: 'JSONP callback 名稱不正確'
+          }
+        }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    return ContentService
+      .createTextOutput(safeCallback + '(' + JSON.stringify(payload) + ');')
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
+
+  return ContentService
+    .createTextOutput(JSON.stringify(payload))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+/**
+ * JSONP callback 名稱白名單驗證。
+ * @param {*} value - 原始 callback
+ * @returns {string} 合法 callback；不合法回傳空字串
+ */
+function normalizeJsonpCallback(value) {
+  const callback = String(value || '').trim();
+  if (/^[A-Za-z_$][0-9A-Za-z_$]*(\.[A-Za-z_$][0-9A-Za-z_$]*)*$/.test(callback)) {
+    return callback;
+  }
+  return '';
+}
+
+/**
+ * 取得單一請求參數。
+ * @param {Object} e - Web App 事件
+ * @param {string} name - 參數名稱
+ * @returns {string} 參數值
+ */
+function getRequestParameter(e, name) {
+  if (!e || !e.parameter || typeof e.parameter[name] === 'undefined') {
+    return '';
+  }
+
+  const value = e.parameter[name];
+  if (Array.isArray(value)) {
+    return value[0] || '';
+  }
+  return value || '';
+}
+
+/**
+ * API 時間格式。
+ * @param {Date} date - 日期
+ * @returns {string} 格式化時間
+ */
+function formatApiTimestamp(date) {
+  return Utilities.formatDate(date, Session.getScriptTimeZone(), 'yyyy/MM/dd HH:mm:ss');
 }
 
 // ============================
@@ -670,6 +1074,36 @@ function getOrderColumnWidths() {
   };
 }
 
+/**
+ * 手鏈公開檔案工作表欄寬。
+ */
+function getBraceletProfileColumnWidths() {
+  const widths = {};
+  widths[BRACELET_PROFILE_COLUMNS.CREATED_AT] = 150;
+  widths[BRACELET_PROFILE_COLUMNS.UPDATED_AT] = 150;
+  widths[BRACELET_PROFILE_COLUMNS.PROFILE_ID] = 150;
+  widths[BRACELET_PROFILE_COLUMNS.ACCESS_CODE] = 150;
+  widths[BRACELET_PROFILE_COLUMNS.ACCESS_TOKEN] = 320;
+  widths[BRACELET_PROFILE_COLUMNS.PUBLISHED] = 90;
+  widths[BRACELET_PROFILE_COLUMNS.DISPLAY_NAME] = 140;
+  widths[BRACELET_PROFILE_COLUMNS.BRACELET_NAME] = 160;
+  widths[BRACELET_PROFILE_COLUMNS.SCENE] = 140;
+  widths[BRACELET_PROFILE_COLUMNS.SUMMARY] = 280;
+  widths[BRACELET_PROFILE_COLUMNS.CRYSTALS] = 220;
+  widths[BRACELET_PROFILE_COLUMNS.ENERGY_FOCUS] = 220;
+  widths[BRACELET_PROFILE_COLUMNS.CHAKRA_FOCUS] = 180;
+  widths[BRACELET_PROFILE_COLUMNS.DESIGN_NOTES] = 320;
+  widths[BRACELET_PROFILE_COLUMNS.WEARING_GUIDE] = 260;
+  widths[BRACELET_PROFILE_COLUMNS.CARE_INSTRUCTIONS] = 260;
+  widths[BRACELET_PROFILE_COLUMNS.RITUAL_TEXT] = 260;
+  widths[BRACELET_PROFILE_COLUMNS.MAKER_NOTE] = 260;
+  widths[BRACELET_PROFILE_COLUMNS.IMAGE_URL] = 260;
+  widths[BRACELET_PROFILE_COLUMNS.PRODUCT_URL] = 260;
+  widths[BRACELET_PROFILE_COLUMNS.PUBLISHED_AT] = 150;
+  widths[BRACELET_PROFILE_COLUMNS.INTERNAL_NOTES] = 260;
+  return widths;
+}
+
 // ============================
 // 🛠️ 輔助函數
 // ============================
@@ -858,12 +1292,19 @@ function initializeSheet() {
   try {
     const sheet = getOrCreateSheet();
     const orderSheet = getOrCreateSheet(ORDER_SHEET_NAME, ORDER_HEADER_ROW, getOrderColumnWidths());
+    const braceletProfileSheet = getOrCreateSheet(
+      BRACELET_PROFILE_SHEET_NAME,
+      BRACELET_PROFILE_HEADER_ROW,
+      getBraceletProfileColumnWidths()
+    );
     const csvUrl = syncCsvMirrorWithLock(sheet);
     console.log('✅ 試算表初始化完成！');
     console.log('  諮詢工作表名稱：' + sheet.getName());
     console.log('  訂單工作表名稱：' + orderSheet.getName());
+    console.log('  手鏈公開檔案工作表名稱：' + braceletProfileSheet.getName());
     console.log('  諮詢欄位數量：' + HEADER_ROW.length);
     console.log('  訂單欄位數量：' + ORDER_HEADER_ROW.length);
+    console.log('  手鏈公開檔案欄位數量：' + BRACELET_PROFILE_HEADER_ROW.length);
     
     // 顯示試算表 URL
     const spreadsheet = sheet.getParent();

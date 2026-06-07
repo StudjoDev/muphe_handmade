@@ -1,0 +1,643 @@
+<!doctype html>
+<html lang="zh-Hant">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>手鍊檔案查詢｜沐菲 MUPHÉ Handmade</title>
+  <meta name="description" content="使用 QR Code 或手鍊代碼查詢 MUPHÉ Handmade 客製手鍊的公開配戴、保養與晶種檔案。" />
+  <link rel="icon" type="image/jpeg" href="pic/LOGO.jpg" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body class="bracelet-page">
+  <header class="site-header" data-header>
+    <a class="brand-lockup" href="index.html" aria-label="回到 MUPHÉ Handmade 首頁">
+      <img src="pic/LOGO.jpg" alt="MUPHÉ Handmade 沐菲方形品牌標誌" />
+      <span>
+        <strong>MUPHÉ Handmade</strong>
+      </span>
+    </a>
+
+    <nav class="desktop-nav" aria-label="主導覽">
+      <a href="index.html#shop">手作手鍊</a>
+      <a href="index.html#guide">水晶百科</a>
+      <a href="bracelet.html" aria-current="page">手鍊檔案</a>
+      <a href="index.html#faq">購物須知</a>
+    </nav>
+
+    <div class="header-actions">
+      <a class="bracelet-header-cta" href="index.html#shop">訂製手鍊</a>
+      <button class="icon-button menu-toggle" type="button" aria-label="開啟選單" data-menu-toggle>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </header>
+
+  <div class="mobile-nav" data-mobile-nav aria-label="手機導覽">
+    <a href="index.html#shop">手作手鍊</a>
+    <a href="index.html#guide">水晶百科</a>
+    <a href="bracelet.html" aria-current="page">手鍊檔案</a>
+    <a href="index.html#faq">購物須知</a>
+  </div>
+
+  <main id="top" data-bracelet-app>
+    <section class="bracelet-hero" aria-labelledby="bracelet-title">
+      <div class="bracelet-hero-copy reveal">
+        <p class="eyebrow">Bracelet Profile</p>
+        <h1 id="bracelet-title">妳的手鍊檔案</h1>
+        <p>
+          掃描包裝上的 QR Code，或輸入手鍊代碼，查看這條手鍊的場景、意圖、晶種與日常照顧提醒。
+        </p>
+      </div>
+
+      <div class="bracelet-lookup reveal" data-lookup-card>
+        <form class="bracelet-code-form" data-code-form>
+          <label for="bracelet-code">手鍊代碼</label>
+          <div class="bracelet-code-row">
+            <input
+              id="bracelet-code"
+              name="code"
+              type="text"
+              autocomplete="off"
+              inputmode="latin"
+              maxlength="64"
+              placeholder="例如 MUPHE-2026-001"
+              aria-describedby="bracelet-code-help"
+              data-code-input
+            />
+            <button class="primary-link" type="submit">查詢</button>
+          </div>
+          <p id="bracelet-code-help">QR Code 會自動帶入代碼；手動輸入時不用區分大小寫。</p>
+        </form>
+
+        <div class="bracelet-status" aria-live="polite" data-profile-status></div>
+      </div>
+    </section>
+
+    <section class="bracelet-profile-section" aria-labelledby="profile-heading" data-profile-section hidden>
+      <div class="bracelet-profile-shell" data-profile-content></div>
+    </section>
+
+    <section class="bracelet-support-strip" aria-label="手鍊服務">
+      <div>
+        <p class="eyebrow">Aftercare</p>
+        <h2>需要調整手圍或重新客製？</h2>
+      </div>
+      <div class="bracelet-support-actions">
+        <a class="primary-link" href="crystal-survey/frontend/crystal-form.html">聯繫店主</a>
+        <a class="secondary-link" href="index.html#shop">回到手鍊系列</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <img class="footer-logo" src="pic/LOGO.jpg" alt="MUPHÉ Handmade 沐菲方形品牌標誌" loading="lazy" />
+    <div>
+      <strong>MUPHÉ Handmade 沐菲</strong>
+      <p>每一條手作水晶，都保留一份能被查詢、配戴與照顧的日常檔案。</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+  <script>
+    (() => {
+      const WEB_APP_URL_PLACEHOLDER =
+        window.MUPHE_WEB_APP_URL_PLACEHOLDER || "GOOGLE_APPS_SCRIPT_WEB_APP_URL";
+      const WEB_APP_URL = window.MUPHE_WEB_APP_URL || "GOOGLE_APPS_SCRIPT_WEB_APP_URL";
+      const PROFILE_ACTION = "braceletProfile";
+
+      const form = document.querySelector("[data-code-form]");
+      const codeInput = document.querySelector("[data-code-input]");
+      const statusRegion = document.querySelector("[data-profile-status]");
+      const profileSection = document.querySelector("[data-profile-section]");
+      const profileContent = document.querySelector("[data-profile-content]");
+      const mobileNav = document.querySelector("[data-mobile-nav]");
+      const menuToggle = document.querySelector("[data-menu-toggle]");
+
+      const fieldKeys = {
+        name: ["braceletName", "bracelet_name", "name", "title", "手鍊名稱", "手链名称"],
+        scene: ["scene", "lifeScene", "scenario", "場景", "使用場景"],
+        displayName: ["displayName", "display_name", "customerAlias", "公開顯示名稱", "暱稱"],
+        intention: ["summary", "intention", "intent", "wish", "purpose", "公開摘要", "設計意圖", "心願", "意圖"],
+        crystals: ["crystals", "crystalList", "crystal_list", "stones", "晶種", "水晶清單", "水晶列表"],
+        energyFocus: ["energyFocus", "energy_focus", "能量主題", "能量焦點"],
+        chakraFocus: ["chakraFocus", "chakra_focus", "脈輪主題", "脈輪焦點"],
+        wearingGuide: ["wearingGuide", "wearing", "wearGuide", "wearing_guide", "配戴指南", "佩戴指南"],
+        careGuide: ["careInstructions", "careGuide", "care", "care_guide", "保養說明", "保養指南", "照顧方式"],
+        ritual: ["ritual", "dailyRitual", "ritualGuide", "儀式", "日常儀式"],
+        makerNote: ["makerNote", "maker_note", "designNotes", "design_notes", "artistNote", "設計說明", "製作者備註", "店主小語"],
+        photo: ["photo", "photoUrl", "photo_url", "image", "imageUrl", "image_url", "照片"],
+        contactUrl: ["contactUrl", "contact_url", "lineUrl", "supportUrl", "聯繫連結"],
+        orderUrl: ["productUrl", "product_url", "orderUrl", "order_url", "shopUrl", "reorderUrl", "商品或公開頁網址", "訂購連結"],
+      };
+
+      function normalizeString(value) {
+        if (value === null || value === undefined) return "";
+        if (Array.isArray(value)) return value.map(normalizeString).filter(Boolean).join("、");
+        if (typeof value === "object") return "";
+        return String(value).trim();
+      }
+
+      function escapeHtml(value) {
+        return normalizeString(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function pick(source, keys) {
+        if (!source || typeof source !== "object") return "";
+
+        for (const key of keys) {
+          const value = source[key];
+          const hasStructuredValue =
+            Array.isArray(value) ? value.length > 0 : value && typeof value === "object" && Object.keys(value).length > 0;
+          if (hasStructuredValue || (value !== null && value !== undefined && normalizeString(value))) {
+            return value;
+          }
+        }
+
+        return "";
+      }
+
+      function getEndpointUrl(query, extraParams = {}) {
+        if (!WEB_APP_URL || WEB_APP_URL === WEB_APP_URL_PLACEHOLDER) {
+          return "";
+        }
+
+        const endpoint = new URL(WEB_APP_URL, window.location.href);
+        endpoint.searchParams.set("type", PROFILE_ACTION);
+        endpoint.searchParams.set("action", PROFILE_ACTION);
+        endpoint.searchParams.set("source", "bracelet-page");
+
+        if (query.code) endpoint.searchParams.set("code", query.code);
+        if (query.token) endpoint.searchParams.set("token", query.token);
+
+        Object.entries(extraParams).forEach(([key, value]) => {
+          endpoint.searchParams.set(key, value);
+        });
+
+        return endpoint.toString();
+      }
+
+      function normalizeHref(value) {
+        const text = normalizeString(value);
+        if (!text) return "";
+
+        try {
+          const url = new URL(text, window.location.href);
+          const allowedProtocols = ["http:", "https:", "mailto:", "tel:"];
+          if (allowedProtocols.includes(url.protocol)) {
+            return url.href;
+          }
+        } catch (error) {
+          return "";
+        }
+
+        return "";
+      }
+
+      function showStatus(kind, title, message) {
+        const isLoading = kind === "loading";
+        statusRegion.hidden = false;
+        statusRegion.dataset.state = kind;
+        statusRegion.setAttribute("role", kind === "error" ? "alert" : "status");
+        statusRegion.innerHTML = `
+          <div class="bracelet-status-content">
+            <span class="${isLoading ? "bracelet-spinner" : "bracelet-status-dot"}" aria-hidden="true"></span>
+            <div>
+              <strong>${escapeHtml(title)}</strong>
+              <p>${escapeHtml(message)}</p>
+            </div>
+          </div>
+        `;
+      }
+
+      function hideProfile() {
+        profileSection.hidden = true;
+        profileContent.innerHTML = "";
+      }
+
+      function showIdle() {
+        hideProfile();
+        showStatus("idle", "輸入代碼查詢", "公開檔案只會顯示手鍊資訊，不顯示購買人或私人聯絡資料。");
+      }
+
+      function parseTextList(value) {
+        if (!value) return [];
+        if (Array.isArray(value)) {
+          return value.map(normalizeString).filter(Boolean);
+        }
+
+        const text = normalizeString(value);
+        if (!text) return [];
+
+        return text
+          .split(/\n|；|;/)
+          .map((item) => item.trim())
+          .filter(Boolean);
+      }
+
+      function parseCrystalString(value) {
+        const text = normalizeString(value);
+        if (!text) return null;
+        const match = text.match(/^(.+?)(?:[:：]| - |－)(.+)$/);
+
+        if (match) {
+          return {
+            name: match[1].trim(),
+            meaning: match[2].trim(),
+          };
+        }
+
+        return { name: text, meaning: "" };
+      }
+
+      function normalizeCrystals(value) {
+        if (!value) return [];
+
+        if (Array.isArray(value)) {
+          return value
+            .map((item) => {
+              if (typeof item === "object" && item) {
+                return {
+                  name: normalizeString(pick(item, ["name", "crystal", "stone", "晶種", "名稱"])),
+                  meaning: normalizeString(pick(item, ["meaning", "effect", "note", "intention", "含義", "意義", "功效"])),
+                };
+              }
+
+              return parseCrystalString(item);
+            })
+            .filter((item) => item && item.name);
+        }
+
+        if (typeof value === "object") {
+          return Object.entries(value)
+            .map(([name, meaning]) => ({
+              name: normalizeString(name),
+              meaning: normalizeString(meaning),
+            }))
+            .filter((item) => item.name);
+        }
+
+        const text = normalizeString(value);
+        const delimiter = /[\n；;]/.test(text) ? /\n|；|;/ : /、|,/;
+
+        return text
+          .split(delimiter)
+          .map(parseCrystalString)
+          .filter((item) => item && item.name);
+      }
+
+      function findProfileSource(payload) {
+        const candidates = [
+          payload && payload.profile,
+          payload && payload.braceletProfile,
+          payload && payload.publicProfile,
+          payload && payload.bracelet,
+          payload && payload.data && payload.data.profile,
+          payload && payload.data && payload.data.bracelet,
+          payload && payload.data,
+          payload && payload.result && payload.result.profile,
+          payload && payload.result,
+          payload && payload.record,
+          payload,
+        ];
+
+        return candidates.find((candidate) => {
+          if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) return false;
+          return Object.values(fieldKeys).some((keys) =>
+            keys.some((key) => candidate[key] !== null && candidate[key] !== undefined),
+          );
+        });
+      }
+
+      function normalizeProfile(payload) {
+        if (!payload || typeof payload !== "object") {
+          throw new Error("回傳格式不是有效的手鍊檔案。");
+        }
+
+        if (payload.success === false || payload.ok === false || payload.status === "error") {
+          throw new Error(
+            normalizeString(payload.error && payload.error.message) ||
+              normalizeString(payload.message) ||
+              "目前查不到這組手鍊代碼。",
+          );
+        }
+
+        const source = findProfileSource(payload);
+        if (!source) {
+          throw new Error("目前查不到這組手鍊代碼。");
+        }
+
+        const profile = {
+          name: normalizeString(pick(source, fieldKeys.name)),
+          scene: normalizeString(pick(source, fieldKeys.scene)),
+          displayName: normalizeString(pick(source, fieldKeys.displayName)),
+          intention: normalizeString(pick(source, fieldKeys.intention)),
+          crystals: normalizeCrystals(pick(source, fieldKeys.crystals)),
+          energyFocus: parseTextList(pick(source, fieldKeys.energyFocus)),
+          chakraFocus: parseTextList(pick(source, fieldKeys.chakraFocus)),
+          wearingGuide: parseTextList(pick(source, fieldKeys.wearingGuide)),
+          careGuide: parseTextList(pick(source, fieldKeys.careGuide)),
+          ritual: parseTextList(pick(source, fieldKeys.ritual)),
+          makerNote: parseTextList(pick(source, fieldKeys.makerNote)),
+          photo: normalizeHref(pick(source, fieldKeys.photo)),
+          contactUrl: normalizeHref(pick(source, fieldKeys.contactUrl)) || "crystal-survey/frontend/crystal-form.html",
+          orderUrl: normalizeHref(pick(source, fieldKeys.orderUrl)) || "index.html#shop",
+        };
+
+        const hasPublicContent =
+          profile.name ||
+          profile.scene ||
+          profile.displayName ||
+          profile.intention ||
+          profile.crystals.length ||
+          profile.energyFocus.length ||
+          profile.chakraFocus.length ||
+          profile.wearingGuide.length ||
+          profile.careGuide.length ||
+          profile.ritual.length ||
+          profile.makerNote.length;
+
+        if (!hasPublicContent) {
+          throw new Error("這份檔案尚未開放公開內容。");
+        }
+
+        return profile;
+      }
+
+      async function requestProfile(query) {
+        const endpoint = getEndpointUrl(query);
+
+        if (!endpoint) {
+          throw new Error("手鍊檔案查詢網址尚未設定，請先更新 Google Apps Script Web App URL。");
+        }
+
+        try {
+          const response = await fetch(endpoint, {
+            method: "GET",
+            cache: "no-store",
+            redirect: "follow",
+          });
+          const text = await response.text();
+
+          if (!response.ok) {
+            throw new Error("查詢服務暫時無法回應。");
+          }
+
+          try {
+            return JSON.parse(text);
+          } catch (error) {
+            throw new Error("查詢服務尚未回傳手鍊檔案資料。");
+          }
+        } catch (error) {
+          return requestProfileJsonp(query, error);
+        }
+      }
+
+      function requestProfileJsonp(query, originalError) {
+        return new Promise((resolve, reject) => {
+          const callbackName = `mupheBraceletProfile${Date.now()}${Math.floor(Math.random() * 1000)}`;
+          const endpoint = getEndpointUrl(query, { callback: callbackName });
+
+          if (!endpoint) {
+            reject(originalError);
+            return;
+          }
+
+          const script = document.createElement("script");
+          const timeout = window.setTimeout(() => {
+            cleanup();
+            reject(originalError);
+          }, 9000);
+
+          function cleanup() {
+            window.clearTimeout(timeout);
+            delete window[callbackName];
+            script.remove();
+          }
+
+          window[callbackName] = (payload) => {
+            cleanup();
+            resolve(payload);
+          };
+
+          script.onerror = () => {
+            cleanup();
+            reject(originalError);
+          };
+          script.src = endpoint;
+          document.body.append(script);
+        });
+      }
+
+      function getCustomerErrorMessage(error) {
+        const message = normalizeString(error && error.message);
+        const networkFailures = ["Failed to fetch", "Load failed", "NetworkError"];
+
+        if (!message || networkFailures.some((failure) => message.includes(failure))) {
+          return "目前無法連線到手鍊檔案服務，請稍後再試或聯繫店主。";
+        }
+
+        return message;
+      }
+
+      function renderList(items) {
+        if (!items.length) return `<p class="profile-muted">尚未提供。</p>`;
+
+        return `
+          <ul class="profile-note-list">
+            ${items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
+          </ul>
+        `;
+      }
+
+      function renderCrystals(crystals) {
+        if (!crystals.length) return `<p class="profile-muted">尚未提供。</p>`;
+
+        return `
+          <div class="profile-crystal-list">
+            ${crystals
+              .map(
+                (crystal) => `
+                  <article>
+                    <strong>${escapeHtml(crystal.name)}</strong>
+                    ${crystal.meaning ? `<p>${escapeHtml(crystal.meaning)}</p>` : ""}
+                  </article>
+                `,
+              )
+              .join("")}
+          </div>
+        `;
+      }
+
+      function renderProfile(profile) {
+        const photoMarkup = profile.photo
+          ? `<img src="${escapeHtml(profile.photo)}" alt="${escapeHtml(profile.name || "MUPHÉ 手鍊")} 照片" loading="lazy" data-profile-photo />`
+          : `
+            <div class="profile-photo-fallback">
+              <img src="pic/LOGO.jpg" alt="" />
+              <span>Made by MUPHÉ</span>
+            </div>
+          `;
+
+        profileContent.innerHTML = `
+          <div class="bracelet-profile-hero">
+            <div class="profile-photo-frame">${photoMarkup}</div>
+            <div class="profile-summary">
+              ${profile.scene ? `<span class="product-scene">${escapeHtml(profile.scene)}</span>` : ""}
+              <h2 id="profile-heading" tabindex="-1">${escapeHtml(profile.name || "MUPHÉ 手鍊檔案")}</h2>
+              ${profile.displayName ? `<p class="profile-for">為 ${escapeHtml(profile.displayName)} 整理的公開檔案</p>` : ""}
+              ${profile.intention ? `<p>${escapeHtml(profile.intention)}</p>` : ""}
+              <div class="profile-actions">
+                <a class="primary-link" href="${escapeHtml(profile.contactUrl)}">聯繫店主</a>
+                <a class="secondary-link" href="${escapeHtml(profile.orderUrl)}">訂製或加購</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="bracelet-profile-grid">
+            <section class="profile-panel profile-panel-wide" aria-labelledby="profile-crystals-title">
+              <p class="eyebrow">Crystals</p>
+              <h3 id="profile-crystals-title">晶種與含義</h3>
+              ${renderCrystals(profile.crystals)}
+            </section>
+
+            ${
+              profile.energyFocus.length || profile.chakraFocus.length
+                ? `
+                  <section class="profile-panel profile-panel-wide" aria-labelledby="profile-focus-title">
+                    <p class="eyebrow">Focus</p>
+                    <h3 id="profile-focus-title">能量焦點</h3>
+                    ${renderList([...profile.energyFocus, ...profile.chakraFocus])}
+                  </section>
+                `
+                : ""
+            }
+
+            <section class="profile-panel" aria-labelledby="profile-wearing-title">
+              <p class="eyebrow">Wearing</p>
+              <h3 id="profile-wearing-title">配戴指南</h3>
+              ${renderList(profile.wearingGuide)}
+            </section>
+
+            <section class="profile-panel" aria-labelledby="profile-care-title">
+              <p class="eyebrow">Care</p>
+              <h3 id="profile-care-title">保養指南</h3>
+              ${renderList(profile.careGuide)}
+            </section>
+
+            <section class="profile-panel" aria-labelledby="profile-ritual-title">
+              <p class="eyebrow">Ritual</p>
+              <h3 id="profile-ritual-title">日常儀式</h3>
+              ${renderList(profile.ritual)}
+            </section>
+
+            <section class="profile-panel" aria-labelledby="profile-note-title">
+              <p class="eyebrow">Maker Note</p>
+              <h3 id="profile-note-title">店主小語</h3>
+              ${renderList(profile.makerNote)}
+            </section>
+          </div>
+        `;
+
+        const photo = profileContent.querySelector("[data-profile-photo]");
+        if (photo) {
+          photo.addEventListener("error", () => {
+            photo.closest(".profile-photo-frame").innerHTML = `
+              <div class="profile-photo-fallback">
+                <img src="pic/LOGO.jpg" alt="" />
+                <span>Made by MUPHÉ</span>
+              </div>
+            `;
+          });
+        }
+
+        profileSection.hidden = false;
+        statusRegion.hidden = true;
+        document.title = `${profile.name || "手鍊檔案"}｜沐菲 MUPHÉ Handmade`;
+        document.getElementById("profile-heading").focus({ preventScroll: true });
+        profileSection.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      async function lookupProfile(query) {
+        const normalizedQuery = {
+          code: normalizeString(query.code).toUpperCase(),
+          token: normalizeString(query.token),
+        };
+
+        if (!normalizedQuery.code && !normalizedQuery.token) {
+          showIdle();
+          codeInput.focus();
+          return;
+        }
+
+        hideProfile();
+        showStatus("loading", "正在讀取手鍊檔案", "請稍候，正在向 MUPHÉ 檔案服務確認公開資料。");
+
+        try {
+          const payload = await requestProfile(normalizedQuery);
+          const profile = normalizeProfile(payload);
+          renderProfile(profile);
+        } catch (error) {
+          showStatus(
+            "error",
+            "查詢失敗",
+            getCustomerErrorMessage(error),
+          );
+          hideProfile();
+        }
+      }
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const code = normalizeString(codeInput.value).toUpperCase();
+
+        if (!code) {
+          showStatus("error", "請輸入手鍊代碼", "代碼通常印在保養卡或 QR Code 貼紙旁。");
+          codeInput.focus();
+          return;
+        }
+
+        codeInput.value = code;
+        const nextUrl = new URL(window.location.href);
+        nextUrl.searchParams.set("code", code);
+        nextUrl.searchParams.delete("token");
+        window.history.replaceState({}, "", nextUrl);
+        lookupProfile({ code });
+      });
+
+      if (menuToggle && mobileNav) {
+        menuToggle.addEventListener("click", () => {
+          mobileNav.classList.toggle("is-open");
+        });
+        mobileNav.addEventListener("click", (event) => {
+          if (event.target.closest("a")) {
+            mobileNav.classList.remove("is-open");
+          }
+        });
+      }
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const initialCode = normalizeString(urlParams.get("code")).toUpperCase();
+      const initialToken = normalizeString(urlParams.get("token"));
+
+      if (initialCode) {
+        codeInput.value = initialCode;
+      }
+
+      if (initialCode || initialToken) {
+        lookupProfile({ code: initialCode, token: initialToken });
+      } else {
+        showIdle();
+      }
+    })();
+  </script>
+</body>
+
+</html>
