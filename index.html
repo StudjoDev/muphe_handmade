@@ -417,13 +417,47 @@
         <span></span>
       </button>
       <h2>購物車</h2>
-      <div class="cart-items" data-cart-items></div>
-      <div class="cart-summary">
-        <span>小計</span>
-        <strong data-cart-total>NT$0</strong>
-      </div>
-      <button class="checkout-button" type="button">前往結帳</button>
-      <p>此為前端展示版，後續可接入 SHOPLINE、Shopify 或自架結帳流程。</p>
+      <form class="order-form" data-order-form method="post">
+        <input type="hidden" name="payload" data-order-payload />
+        <input class="hp-field" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+        <div class="cart-items" data-cart-items></div>
+        <div class="cart-summary">
+          <span>小計</span>
+          <strong data-cart-total>NT$0</strong>
+        </div>
+
+        <div class="order-fields" aria-label="訂購人資料">
+          <label class="order-field">
+            姓名
+            <input type="text" name="customerName" autocomplete="name" required />
+          </label>
+          <label class="order-field">
+            聯絡方式
+            <input type="text" name="customerContact" placeholder="LINE ID / 手機 / Email" required />
+          </label>
+          <label class="order-field">
+            交付方式
+            <select name="deliveryMethod" required>
+              <option value="undecided">先與我確認</option>
+              <option value="shipping">宅配 / 店到店</option>
+              <option value="meetup">面交</option>
+            </select>
+          </label>
+          <label class="order-field">
+            地址或面交備註
+            <textarea name="address" rows="3" placeholder="可先留空，店主後續會與您確認"></textarea>
+          </label>
+          <label class="order-field">
+            訂單備註
+            <textarea name="note" rows="3" placeholder="想調整色系、晶種或送禮需求都可以寫在這裡"></textarea>
+          </label>
+        </div>
+
+        <p class="order-error" data-order-error hidden></p>
+        <button class="checkout-button" type="submit" data-order-submit>送出訂單，等待店主聯繫</button>
+        <p class="order-note">送出後不會立即付款。店主會依照商品、手圍與配送需求聯繫確認。</p>
+      </form>
     </div>
   </aside>
 

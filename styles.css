@@ -50,7 +50,8 @@ a {
 
 button,
 select,
-input {
+input,
+textarea {
   font: inherit;
 }
 
@@ -1146,7 +1147,7 @@ details p {
 }
 
 .cart-panel {
-  max-width: 460px;
+  max-width: 520px;
 }
 
 .cart-items {
@@ -1163,12 +1164,17 @@ details p {
 }
 
 .cart-item {
-  align-items: center;
+  align-items: start;
   border-bottom: 1px solid rgba(36, 26, 43, 0.12);
   display: grid;
   gap: 12px;
   grid-template-columns: 1fr auto;
   padding: 0 0 14px;
+}
+
+.cart-item-main {
+  display: grid;
+  gap: 7px;
 }
 
 .cart-item strong {
@@ -1180,6 +1186,26 @@ details p {
   display: block;
   font-size: 0.9rem;
   margin-top: 4px;
+}
+
+.cart-item label {
+  align-items: center;
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.82rem;
+  font-weight: 800;
+  gap: 7px;
+}
+
+.cart-item input {
+  background: #fffdf8;
+  border: 1px solid rgba(36, 26, 43, 0.16);
+  border-radius: var(--radius);
+  color: var(--ink);
+  min-height: 34px;
+  padding: 0 8px;
+  width: 88px;
 }
 
 .qty-controls {
@@ -1210,10 +1236,73 @@ details p {
   font-size: 1.4rem;
 }
 
-.cart-panel > p {
+.order-fields {
+  border-top: 1px solid rgba(36, 26, 43, 0.12);
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+  padding-top: 18px;
+}
+
+.order-field {
+  color: var(--muted);
+  display: grid;
+  font-size: 0.84rem;
+  font-weight: 900;
+  gap: 7px;
+}
+
+.order-field input,
+.order-field select,
+.order-field textarea {
+  background: #fffdf8;
+  border: 1px solid rgba(36, 26, 43, 0.16);
+  border-radius: var(--radius);
+  color: var(--ink);
+  min-height: 46px;
+  padding: 10px 12px;
+  resize: vertical;
+  width: 100%;
+}
+
+.order-field input:focus,
+.order-field select:focus,
+.order-field textarea:focus,
+.cart-item input:focus {
+  border-color: var(--teal);
+  outline: 3px solid rgba(31, 111, 103, 0.14);
+}
+
+.order-error {
+  background: rgba(199, 122, 116, 0.12);
+  border: 1px solid rgba(199, 122, 116, 0.34);
+  border-radius: var(--radius);
+  color: #8b403b;
+  font-size: 0.9rem;
+  font-weight: 800;
+  margin: 16px 0 0;
+  padding: 12px;
+}
+
+.checkout-button:disabled {
+  background: rgba(36, 26, 43, 0.2);
+  color: rgba(36, 26, 43, 0.48);
+  cursor: not-allowed;
+}
+
+.order-note {
   color: var(--muted);
   font-size: 0.88rem;
   margin: 14px 0 0;
+}
+
+.hp-field {
+  height: 1px;
+  left: -9999px;
+  opacity: 0;
+  position: absolute;
+  top: auto;
+  width: 1px;
 }
 
 .reveal {
@@ -1452,7 +1541,8 @@ details p {
   .shop-controls,
   .product-grid,
   .guide-card-grid,
-  .detail-row {
+  .detail-row,
+  .cart-item {
     grid-template-columns: 1fr;
   }
 

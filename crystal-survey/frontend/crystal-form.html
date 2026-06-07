@@ -407,6 +407,15 @@
       line-height: 1.6;
     }
 
+    .hp-field {
+      height: 1px;
+      left: -9999px;
+      opacity: 0;
+      position: absolute;
+      top: auto;
+      width: 1px;
+    }
+
     /* 錯誤搖晃動畫 */
     @keyframes shake {
 
@@ -1313,7 +1322,9 @@
     </header>
 
     <!-- 諮詢表單 -->
-    <form id="crystalForm" novalidate>
+    <form id="crystalForm" method="post" novalidate>
+      <input type="hidden" name="payload" id="payloadField">
+      <input class="hp-field" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
 
       <!-- 第一區：基本資料 -->
       <div class="glass-card" data-animate>
@@ -1755,13 +1766,10 @@
        （部署到 GitHub Pages 前，請替換為實際 Web App URL）
        ============================ */
     const SUBMIT_URL_PLACEHOLDER = 'GOOGLE_APPS_SCRIPT_WEB_APP_URL';
-    const SUBMIT_URL = 'GOOGLE_APPS_SCRIPT_WEB_APP_URL';
+    const SUBMIT_URL = 'https://script.google.com/macros/s/AKfycby3nWx_LCW3fM5FonV_5BoOiKT6_19GR8L7D4EUqD0b_a4EekZmjwZiDzXNgjWarmgT/exec';
 
-    // 取得實際的提交 URL (支援本地測試與生產環境自動切換)
+    // 取得實際的提交 URL
     function getSubmitUrl() {
-      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        return '/api/crystal/submit';
-      }
       if (!SUBMIT_URL || SUBMIT_URL === SUBMIT_URL_PLACEHOLDER) {
         return '';
       }
@@ -1951,6 +1959,8 @@
       const budgetEl = document.querySelector('input[name="budget"]:checked');
 
       return {
+        type: 'consultation',
+        source: 'crystal-form',
         name: document.getElementById('name').value.trim(),
         contact: document.getElementById('contact').value.trim(),
         gender: genderEl ? genderEl.value : '',
@@ -2067,7 +2077,7 @@
     /* ============================
        表單提交處理
        ============================ */
-    async function handleSubmit(e) {
+    function handleSubmit(e) {
       e.preventDefault();
 
       /* 防止重複送出 */
@@ -2096,32 +2106,15 @@
           return;
         }
 
-        const isLocal = url.startsWith('/');
-
-        const fetchOptions = {
-          method: 'POST',
-          headers: {
-            'Content-Type': isLocal ? 'application/json' : 'text/plain;charset=utf-8'
-          },
-          body: JSON.stringify(data)
-        };
-
-        // GitHub Pages 跨域送到 Apps Script 時使用 no-cors 與 text/plain JSON
-        if (!isLocal) {
-          fetchOptions.mode = 'no-cors';
+        const honeypot = form.querySelector('[name="website"]');
+        if (honeypot && honeypot.value) {
+          hideLoading();
+          return;
         }
 
-        const response = await fetch(url, fetchOptions);
-
-        let recommendation = '';
-        if (isLocal) {
-          const result = await response.json();
-          if (result.status === 'success' && result.data && result.data.recommendation) {
-            recommendation = result.data.recommendation;
-          }
-        }
-
-        showSuccess(recommendation);
+        document.getElementById('payloadField').value = JSON.stringify(data);
+        form.action = url;
+        HTMLFormElement.prototype.submit.call(form);
 
       } catch (error) {
         console.error('表單提交錯誤：', error);

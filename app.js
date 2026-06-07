@@ -363,6 +363,10 @@ const products = [
   },
 ];
 
+const WEB_APP_URL_PLACEHOLDER = "GOOGLE_APPS_SCRIPT_WEB_APP_URL";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby3nWx_LCW3fM5FonV_5BoOiKT6_19GR8L7D4EUqD0b_a4EekZmjwZiDzXNgjWarmgT/exec";
+const DEFAULT_WRIST_SIZE = "15.5";
+
 const state = {
   filters: {
     scene: "全部",
@@ -386,6 +390,10 @@ const cartDrawer = document.querySelector("[data-cart-drawer]");
 const cartCount = document.querySelector("[data-cart-count]");
 const cartItems = document.querySelector("[data-cart-items]");
 const cartTotal = document.querySelector("[data-cart-total]");
+const orderForm = document.querySelector("[data-order-form]");
+const orderPayload = document.querySelector("[data-order-payload]");
+const orderSubmit = document.querySelector("[data-order-submit]");
+const orderError = document.querySelector("[data-order-error]");
 const mobileNav = document.querySelector("[data-mobile-nav]");
 
 function makeProductImage(product, detail = false) {
@@ -509,6 +517,14 @@ function findProduct(id) {
   return products.find((product) => product.id === id);
 }
 
+function getWebAppUrl() {
+  if (!WEB_APP_URL || WEB_APP_URL === WEB_APP_URL_PLACEHOLDER) {
+    return "";
+  }
+
+  return WEB_APP_URL;
+}
+
 function renderProductDetail(product) {
   productDetail.innerHTML = `
     <div class="detail-visual">${makeProductImage(product, true)}</div>
@@ -569,7 +585,7 @@ function addToCart(id) {
   if (item) {
     item.qty += 1;
   } else {
-    state.cart.push({ id, qty: 1 });
+    state.cart.push({ id, qty: 1, wristSize: DEFAULT_WRIST_SIZE });
   }
 
   renderCart();
@@ -588,15 +604,27 @@ function changeQty(id, delta) {
   renderCart();
 }
 
-function renderCart() {
-  const totalQty = state.cart.reduce((sum, item) => sum + item.qty, 0);
-  const totalPrice = state.cart.reduce((sum, item) => {
+function updateWristSize(id, value) {
+  const item = state.cart.find((cartItem) => cartItem.id === id);
+  if (!item) return;
+
+  item.wristSize = value || DEFAULT_WRIST_SIZE;
+}
+
+function getCartTotal() {
+  return state.cart.reduce((sum, item) => {
     const product = findProduct(item.id);
     return product ? sum + product.price * item.qty : sum;
   }, 0);
+}
+
+function renderCart() {
+  const totalQty = state.cart.reduce((sum, item) => sum + item.qty, 0);
+  const totalPrice = getCartTotal();
 
   cartCount.textContent = totalQty;
   cartTotal.textContent = currency.format(totalPrice);
+  orderSubmit.disabled = !state.cart.length;
 
   if (!state.cart.length) {
     cartItems.innerHTML = `<p class="cart-empty">購物車目前是空的。從場景選一款今天需要的狀態裝備。</p>`;
@@ -606,11 +634,28 @@ function renderCart() {
   cartItems.innerHTML = state.cart
     .map((item) => {
       const product = findProduct(item.id);
+      if (!product) return "";
+
+      const wristSize = item.wristSize || DEFAULT_WRIST_SIZE;
+
       return `
         <div class="cart-item">
-          <div>
+          <div class="cart-item-main">
             <strong>${product.name}</strong>
             <span>${currency.format(product.price)} · ${product.scene}</span>
+            <label>
+              手圍
+              <input
+                type="number"
+                min="13"
+                max="20"
+                step="0.5"
+                value="${wristSize}"
+                data-wrist="${product.id}"
+                aria-label="${product.name} 手圍"
+              />
+              cm
+            </label>
           </div>
           <div class="qty-controls">
             <button type="button" aria-label="減少 ${product.name} 數量" data-qty="${product.id}" data-delta="-1">-</button>
@@ -621,6 +666,81 @@ function renderCart() {
       `;
     })
     .join("");
+}
+
+function showOrderError(message) {
+  orderError.textContent = message;
+  orderError.hidden = false;
+}
+
+function hideOrderError() {
+  orderError.textContent = "";
+  orderError.hidden = true;
+}
+
+function buildOrderPayload() {
+  const formData = new FormData(orderForm);
+  const items = state.cart
+    .map((item) => {
+      const product = findProduct(item.id);
+      if (!product) return null;
+
+      return {
+        id: product.id,
+        name: product.name,
+        scene: product.scene,
+        color: product.color,
+        price: product.price,
+        qty: item.qty,
+        wristSize: item.wristSize || DEFAULT_WRIST_SIZE,
+      };
+    })
+    .filter(Boolean);
+
+  return {
+    type: "order",
+    customer: {
+      name: String(formData.get("customerName") || "").trim(),
+      contact: String(formData.get("customerContact") || "").trim(),
+      deliveryMethod: String(formData.get("deliveryMethod") || "undecided"),
+      address: String(formData.get("address") || "").trim(),
+      note: String(formData.get("note") || "").trim(),
+    },
+    items,
+    subtotal: getCartTotal(),
+    currency: "TWD",
+    source: "site-cart",
+    submittedAt: new Date().toLocaleString("zh-TW", { timeZone: "Asia/Taipei" }),
+  };
+}
+
+function submitOrder(event) {
+  event.preventDefault();
+  hideOrderError();
+
+  if (!state.cart.length) {
+    showOrderError("購物車目前是空的，請先選擇商品。");
+    return;
+  }
+
+  if (!orderForm.reportValidity()) {
+    return;
+  }
+
+  const webAppUrl = getWebAppUrl();
+  if (!webAppUrl) {
+    showOrderError("訂單收件網址尚未設定，請先部署 Google Apps Script Web App 並更新 WEB_APP_URL。");
+    return;
+  }
+
+  const honeypot = orderForm.querySelector('[name="website"]');
+  if (honeypot && honeypot.value) {
+    return;
+  }
+
+  orderPayload.value = JSON.stringify(buildOrderPayload());
+  orderForm.action = webAppUrl;
+  HTMLFormElement.prototype.submit.call(orderForm);
 }
 
 function resetFilters() {
@@ -707,6 +827,20 @@ document.addEventListener("change", (event) => {
     updateFilter(filter.dataset.filter, filter.value);
   }
 });
+
+document.addEventListener("input", (event) => {
+  const wristInput = event.target.closest("[data-wrist]");
+
+  if (wristInput) {
+    updateWristSize(wristInput.dataset.wrist, wristInput.value);
+  }
+
+  if (event.target.closest(".order-form")) {
+    hideOrderError();
+  }
+});
+
+orderForm.addEventListener("submit", submitOrder);
 
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {

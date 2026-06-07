@@ -50,57 +50,47 @@ function doGet(e) {
  * HTTP POST 請求處理
  * 接收 HTML5 表單或外部 Webhook 的 POST 資料
  * @param {Object} e - HTTP POST 事件物件
- * @returns {TextOutput} JSON 格式的回應
+ * @returns {HtmlOutput} HTML 格式的回應頁
  */
 function doPost(e) {
   try {
-    let formData = {};
+    const payload = parseIncomingPayload(e);
 
-    // Apps Script Web App 常會收到 text/plain JSON（來自 GitHub Pages no-cors fetch）
-    if (e.postData && e.postData.contents) {
-      try {
-        formData = JSON.parse(e.postData.contents);
-      } catch (parseError) {
-        if (e.parameter && Object.keys(e.parameter).length > 0) {
-          formData = e.parameter;
-        } else {
-          throw new Error('無法解析 JSON 請求內容');
-        }
-      }
-    } else if (e.parameter && Object.keys(e.parameter).length > 0) {
-      // URL-encoded 格式（來自傳統表單 POST）
-      formData = e.parameter;
-    } else {
-      throw new Error('無法解析的請求格式');
+    if (isHoneypotSubmission(e, payload)) {
+      return renderSubmissionPage({
+        title: '資料已收到',
+        headline: '表單已送出',
+        message: '感謝您的填寫，我們會盡快處理。'
+      });
     }
 
-    // 統一處理提交資料
-    const result = processSubmission(formData);
+    if (payload.type === 'order') {
+      const orderResult = processOrder(payload);
+      return renderSubmissionPage({
+        title: '訂單已送出',
+        headline: '訂單已送出',
+        message: '訂單編號：' + orderResult.orderId + '。店主會依照商品、手圍與配送需求與您聯繫確認付款方式。',
+        reference: orderResult.orderId
+      });
+    }
 
-    // 回傳成功回應（JSON 格式）
-    return ContentService
-      .createTextOutput(JSON.stringify({
-        status: 'success',
-        message: '諮詢表單已成功送出！',
-        data: {
-          name: formData.name || '',
-          recommendation: result.recommendation || '',
-          csvUrl: result.csvUrl || ''
-        }
-      }))
-      .setMimeType(ContentService.MimeType.JSON);
+    const consultationResult = processSubmission(payload);
+    return renderSubmissionPage({
+      title: '諮詢表單已送出',
+      headline: '諮詢表單已送出',
+      message: '感謝您的信任，我們已收到資料並會盡快與您聯繫。',
+      reference: consultationResult.name || ''
+    });
 
   } catch (error) {
     console.error('【doPost 錯誤】' + error.toString());
 
-    // 回傳錯誤回應
-    return ContentService
-      .createTextOutput(JSON.stringify({
-        status: 'error',
-        message: '提交失敗，請稍後再試。',
-        error: error.toString()
-      }))
-      .setMimeType(ContentService.MimeType.JSON);
+    return renderSubmissionPage({
+      title: '提交失敗',
+      headline: '提交失敗',
+      message: '系統目前無法完成送出，請稍後再試或直接聯繫店主。',
+      isError: true
+    });
   }
 }
 
@@ -169,14 +159,11 @@ function onFormSubmit(e) {
         console.error('【CSV 同步失敗】' + csvError.toString());
       }
 
-      // 發送 LINE 通知
-      sendConsultationNotification({
-        name: formData.name,
-        gender: formData.gender,
-        energyGoal: formData.energyGoal,
-        budget: formData.budget,
-        recommendation: recommendation
-      });
+      // 發送 Email 通知
+      sendOwnerEmail(
+        '[MUPHÉ] 新諮詢 - ' + (formData.name || '未填姓名'),
+        formatConsultationEmailBody(formData, recommendation, sheet.getParent().getUrl())
+      );
 
       console.log('【Google Form 觸發】✅ 已處理第 ' + row + ' 列資料');
     } else {
@@ -201,9 +188,18 @@ function onFormSubmit(e) {
  * @returns {Object} 處理結果
  */
 function processSubmission(data) {
+  return processConsultation(data);
+}
+
+/**
+ * 處理諮詢表單提交
+ * @param {Object} data - 諮詢資料
+ * @returns {Object} 處理結果
+ */
+function processConsultation(data) {
   try {
     // 步驟 1：取得試算表
-    const sheet = getOrCreateSheet();
+    const sheet = getOrCreateSheet(SHEET_NAME, HEADER_ROW, getConsultationColumnWidths());
 
     // 步驟 2：準備資料列
     const timestamp = Utilities.formatDate(
@@ -212,14 +208,14 @@ function processSubmission(data) {
       'yyyy/MM/dd HH:mm:ss'
     );
 
-    // 步驟 3：產生 AI 推薦
+    // 步驟 3：產生規則推薦；若 GEMINI_API_KEY 留空，Recommendation.gs 會自動使用本地規則
     const recommendation = generateRecommendation(data);
 
     // 格式化可能為陣列的欄位為逗號分隔字串以寫入試算表
-    const colorPreferenceStr = Array.isArray(data.colorPreference) ? data.colorPreference.join(', ') : (data.colorPreference || '');
-    const energyGoalStr = Array.isArray(data.energyGoal) ? data.energyGoal.join(', ') : (data.energyGoal || '');
-    const calculationMethodStr = Array.isArray(data.calculationMethod) ? data.calculationMethod.join(', ') : (data.calculationMethod || '');
-    const targetChakraStr = Array.isArray(data.targetChakra) ? data.targetChakra.join(', ') : (data.targetChakra || '');
+    const colorPreferenceStr = normalizeListValue(data.colorPreference);
+    const energyGoalStr = normalizeListValue(data.energyGoal);
+    const calculationMethodStr = normalizeListValue(data.calculationMethod);
+    const targetChakraStr = normalizeListValue(data.targetChakra);
 
     // 步驟 4：組建 17 欄資料列
     const rowData = [
@@ -242,7 +238,7 @@ function processSubmission(data) {
       ''                                      // 17. Q 欄 — 備註紀錄（空白）
     ];
 
-    // 步驟 5：寫入試算表，並同步更新同一份 CSV 紀錄檔
+    // 步驟 5：寫入試算表；CSV mirror 預設停用以降低 Drive 操作量
     const csvUrl = withScriptLock(function() {
       sheet.appendRow(rowData);
       SpreadsheetApp.flush();
@@ -258,15 +254,12 @@ function processSubmission(data) {
       console.log('【CSV 同步】✅ 已更新：' + csvUrl);
     }
 
-    // 步驟 6：發送 LINE 通知（失敗不影響資料寫入）
+    // 步驟 6：發送 Email 通知（失敗不影響資料寫入）
     try {
-      sendConsultationNotification({
-        name: data.name,
-        gender: data.gender,
-        energyGoal: energyGoalStr,
-        budget: data.budget,
-        recommendation: recommendation
-      });
+      sendOwnerEmail(
+        '[MUPHÉ] 新諮詢 - ' + (data.name || '未填姓名'),
+        formatConsultationEmailBody(data, recommendation, sheet.getParent().getUrl())
+      );
     } catch (notifyError) {
       console.error('【通知發送失敗】' + notifyError.toString());
       // 通知失敗不影響主流程
@@ -275,13 +268,406 @@ function processSubmission(data) {
     return {
       success: true,
       recommendation: recommendation,
-      csvUrl: csvUrl || ''
+      csvUrl: csvUrl || '',
+      name: data.name || ''
     };
 
   } catch (error) {
-    console.error('【processSubmission 錯誤】' + error.toString());
+    console.error('【processConsultation 錯誤】' + error.toString());
     throw error;
   }
+}
+
+/**
+ * 處理購物車訂單
+ * @param {Object} payload - 訂單 payload
+ * @returns {Object} 處理結果
+ */
+function processOrder(payload) {
+  try {
+    const customer = payload.customer || {};
+    const items = normalizeOrderItems(payload.items || []);
+
+    if (!customer.name || !customer.contact) {
+      throw new Error('訂單缺少姓名或聯絡方式');
+    }
+
+    if (!items.length) {
+      throw new Error('訂單沒有商品');
+    }
+
+    const sheet = getOrCreateSheet(ORDER_SHEET_NAME, ORDER_HEADER_ROW, getOrderColumnWidths());
+    const timestamp = Utilities.formatDate(
+      new Date(),
+      Session.getScriptTimeZone(),
+      'yyyy/MM/dd HH:mm:ss'
+    );
+    const subtotal = calculateOrderSubtotal(items);
+    const totalQty = items.reduce(function(sum, item) {
+      return sum + item.qty;
+    }, 0);
+
+    const result = withScriptLock(function() {
+      const orderId = generateOrderId(sheet);
+      const rowData = [
+        timestamp,
+        orderId,
+        customer.name || '',
+        customer.contact || '',
+        formatDeliveryMethod(customer.deliveryMethod),
+        customer.address || '',
+        customer.note || '',
+        formatOrderItems(items),
+        totalQty,
+        subtotal,
+        payload.currency || 'TWD',
+        payload.source || 'site-cart',
+        DEFAULT_STATUS,
+        '未付款',
+        '未出貨',
+        '',
+        JSON.stringify(payload)
+      ];
+
+      sheet.appendRow(rowData);
+      SpreadsheetApp.flush();
+
+      return {
+        orderId: orderId,
+        sheetUrl: sheet.getParent().getUrl()
+      };
+    });
+
+    try {
+      sendOwnerEmail(
+        '[MUPHÉ] 新訂單 ' + result.orderId + ' - ' + customer.name,
+        formatOrderEmailBody(result.orderId, customer, items, subtotal, result.sheetUrl)
+      );
+    } catch (notifyError) {
+      console.error('【訂單通知發送失敗】' + notifyError.toString());
+    }
+
+    console.log('【訂單寫入】✅ 已寫入訂單：' + result.orderId);
+    return {
+      success: true,
+      orderId: result.orderId,
+      sheetUrl: result.sheetUrl
+    };
+
+  } catch (error) {
+    console.error('【processOrder 錯誤】' + error.toString());
+    throw error;
+  }
+}
+
+/**
+ * 解析 Apps Script Web App 收到的 payload。
+ * 支援標準 form POST 的 payload hidden field，也保留 JSON body 相容性。
+ * @param {Object} e - Web App 事件
+ * @returns {Object} payload
+ */
+function parseIncomingPayload(e) {
+  let payload = null;
+
+  if (e && e.parameter && e.parameter.payload) {
+    payload = JSON.parse(e.parameter.payload);
+  } else if (e && e.postData && e.postData.contents) {
+    try {
+      payload = JSON.parse(e.postData.contents);
+    } catch (parseError) {
+      if (e.parameter && Object.keys(e.parameter).length > 0) {
+        payload = Object.assign({}, e.parameter);
+      }
+    }
+  } else if (e && e.parameter && Object.keys(e.parameter).length > 0) {
+    payload = Object.assign({}, e.parameter);
+  }
+
+  if (!payload) {
+    throw new Error('無法解析的請求格式');
+  }
+
+  if (!payload.type) {
+    payload.type = 'consultation';
+  }
+
+  return payload;
+}
+
+/**
+ * honeypot 防垃圾提交；命中時不寫入資料。
+ * @param {Object} e - Web App 事件
+ * @param {Object} payload - 解析後 payload
+ * @returns {boolean} 是否命中 honeypot
+ */
+function isHoneypotSubmission(e, payload) {
+  const fieldValue = e && e.parameter ? e.parameter.website : '';
+  return Boolean(fieldValue || (payload && payload.website));
+}
+
+/**
+ * 統一渲染 Web App 回應頁。
+ * @param {Object} options - 頁面設定
+ * @returns {HtmlOutput} HTML 回應
+ */
+function renderSubmissionPage(options) {
+  const returnUrl = (
+    typeof STORE_SITE_URL !== 'undefined' &&
+    STORE_SITE_URL &&
+    STORE_SITE_URL.indexOf('your-domain.example') === -1
+  ) ? STORE_SITE_URL : '';
+
+  const returnLink = returnUrl
+    ? '<a href="' + escapeHtml(returnUrl) + '">返回 MUPHÉ Handmade</a>'
+    : '<p class="hint">您可以關閉此頁，回到原本的網站視窗。</p>';
+
+  const html = [
+    '<!doctype html>',
+    '<html lang="zh-Hant">',
+    '<head>',
+    '<meta charset="utf-8">',
+    '<meta name="viewport" content="width=device-width, initial-scale=1">',
+    '<title>' + escapeHtml(options.title || 'MUPHÉ Handmade') + '</title>',
+    '<style>',
+    'body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f7f0e4;color:#241a2b;font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.7;padding:24px;}',
+    '.card{width:min(100%,560px);background:#fffaf0;border:1px solid rgba(36,26,43,.12);border-radius:8px;box-shadow:0 22px 70px rgba(36,26,43,.14);padding:34px;text-align:center;}',
+    '.mark{font-size:42px;margin-bottom:10px;}',
+    'h1{font-size:2rem;line-height:1.2;margin:0 0 14px;}',
+    'p{color:#756c76;margin:0 0 18px;}',
+    'a{align-items:center;background:#4b2d5f;border-radius:999px;color:#fffaf0;display:inline-flex;font-weight:900;justify-content:center;min-height:48px;padding:0 22px;text-decoration:none;}',
+    '.error a{background:#8b403b;}',
+    '.hint{font-size:.92rem;margin-bottom:0;}',
+    '</style>',
+    '</head>',
+    '<body>',
+    '<main class="card ' + (options.isError ? 'error' : '') + '">',
+    '<div class="mark">' + (options.isError ? '!' : 'OK') + '</div>',
+    '<h1>' + escapeHtml(options.headline || options.title || '') + '</h1>',
+    '<p>' + escapeHtml(options.message || '') + '</p>',
+    returnLink,
+    '</main>',
+    '</body>',
+    '</html>'
+  ].join('');
+
+  return HtmlService
+    .createHtmlOutput(html)
+    .setTitle(options.title || 'MUPHÉ Handmade')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1.0');
+}
+
+/**
+ * HTML 轉義。
+ * @param {*} value - 任意值
+ * @returns {string} 安全文字
+ */
+function escapeHtml(value) {
+  return String(value === null || typeof value === 'undefined' ? '' : value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
+ * 陣列或字串統一成逗號分隔字串。
+ * @param {Array|string} value - 欄位值
+ * @returns {string} 格式化字串
+ */
+function normalizeListValue(value) {
+  if (Array.isArray(value)) {
+    return value.join(', ');
+  }
+  return value || '';
+}
+
+/**
+ * 訂單品項標準化。
+ * @param {Array} items - 原始訂單品項
+ * @returns {Array} 標準化品項
+ */
+function normalizeOrderItems(items) {
+  return items
+    .map(function(item) {
+      return {
+        id: item.id || '',
+        name: item.name || '',
+        scene: item.scene || '',
+        color: item.color || '',
+        price: Math.max(0, Number(item.price) || 0),
+        qty: Math.max(1, Number(item.qty) || 1),
+        wristSize: item.wristSize || ''
+      };
+    })
+    .filter(function(item) {
+      return item.id && item.name;
+    });
+}
+
+/**
+ * 計算訂單小計。
+ * @param {Array} items - 標準化品項
+ * @returns {number} 小計
+ */
+function calculateOrderSubtotal(items) {
+  return items.reduce(function(sum, item) {
+    return sum + item.price * item.qty;
+  }, 0);
+}
+
+/**
+ * 交付方式顯示文字。
+ * @param {string} value - deliveryMethod
+ * @returns {string} 顯示文字
+ */
+function formatDeliveryMethod(value) {
+  const labels = {
+    shipping: '宅配 / 店到店',
+    meetup: '面交',
+    undecided: '先與我確認'
+  };
+  return labels[value] || labels.undecided;
+}
+
+/**
+ * 商品摘要文字。
+ * @param {Array} items - 標準化品項
+ * @returns {string} 摘要
+ */
+function formatOrderItems(items) {
+  return items.map(function(item) {
+    return [
+      item.qty + ' x ' + item.name,
+      '手圍 ' + (item.wristSize || '未填') + ' cm',
+      item.scene,
+      item.color,
+      'NT$' + item.price
+    ].join(' / ');
+  }).join('\n');
+}
+
+/**
+ * 產生當日流水訂單編號。
+ * @param {Sheet} sheet - 訂單工作表
+ * @returns {string} 訂單編號
+ */
+function generateOrderId(sheet) {
+  const dateText = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyyMMdd');
+  const prefix = 'MUPHE-' + dateText + '-';
+  const lastRow = sheet.getLastRow();
+
+  if (lastRow <= 1) {
+    return prefix + '0001';
+  }
+
+  const orderIds = sheet.getRange(2, 2, lastRow - 1, 1).getDisplayValues();
+  const todayCount = orderIds.filter(function(row) {
+    return String(row[0] || '').indexOf(prefix) === 0;
+  }).length;
+
+  return prefix + Utilities.formatString('%04d', todayCount + 1);
+}
+
+/**
+ * 訂單 Email 內容。
+ */
+function formatOrderEmailBody(orderId, customer, items, subtotal, sheetUrl) {
+  return [
+    '新訂單通知',
+    '',
+    '訂單編號：' + orderId,
+    '客人姓名：' + (customer.name || ''),
+    '聯絡方式：' + (customer.contact || ''),
+    '交付方式：' + formatDeliveryMethod(customer.deliveryMethod),
+    '地址或面交備註：' + (customer.address || '未填'),
+    '訂單備註：' + (customer.note || '未填'),
+    '',
+    '商品明細：',
+    formatOrderItems(items),
+    '',
+    '小計：NT$' + subtotal,
+    '',
+    'Google Sheet：' + sheetUrl
+  ].join('\n');
+}
+
+/**
+ * 諮詢 Email 內容。
+ */
+function formatConsultationEmailBody(data, recommendation, sheetUrl) {
+  return [
+    '新諮詢通知',
+    '',
+    '客人姓名：' + (data.name || ''),
+    '聯絡方式：' + (data.contact || ''),
+    '性別：' + (data.gender || '未填'),
+    '生日：' + (data.birthDate || '未填') + ' ' + (data.birthTime || ''),
+    '淨手圍：' + (data.wristSize || '未填'),
+    '偏好色系：' + normalizeListValue(data.colorPreference),
+    '期望目標：' + normalizeListValue(data.energyGoal),
+    '分析方法：' + normalizeListValue(data.calculationMethod),
+    '目標脈輪：' + normalizeListValue(data.targetChakra),
+    '預算範圍：' + (data.budget || '未填'),
+    '',
+    '狀態描述：',
+    data.description || '未填',
+    '',
+    '規則推薦：',
+    recommendation || '未產生',
+    '',
+    'Google Sheet：' + sheetUrl
+  ].join('\n');
+}
+
+/**
+ * 諮詢工作表欄寬。
+ */
+function getConsultationColumnWidths() {
+  const widths = {};
+  widths[COLUMNS.TIMESTAMP] = 150;
+  widths[COLUMNS.NAME] = 100;
+  widths[COLUMNS.CONTACT] = 140;
+  widths[COLUMNS.GENDER] = 90;
+  widths[COLUMNS.BIRTH_DATE] = 120;
+  widths[COLUMNS.BIRTH_TIME] = 80;
+  widths[COLUMNS.PREFERENCE] = 100;
+  widths[COLUMNS.WRIST_SIZE] = 80;
+  widths[COLUMNS.COLOR_PREFERENCE] = 150;
+  widths[COLUMNS.ENERGY_GOAL] = 180;
+  widths[COLUMNS.CALCULATION_METHOD] = 150;
+  widths[COLUMNS.TARGET_CHAKRA] = 180;
+  widths[COLUMNS.DESCRIPTION] = 250;
+  widths[COLUMNS.BUDGET] = 120;
+  widths[COLUMNS.AI_RECOMMENDATION] = 400;
+  widths[COLUMNS.STATUS] = 100;
+  widths[COLUMNS.NOTES] = 200;
+  return widths;
+}
+
+/**
+ * 訂單工作表欄寬。
+ */
+function getOrderColumnWidths() {
+  return {
+    1: 150,
+    2: 190,
+    3: 110,
+    4: 160,
+    5: 120,
+    6: 220,
+    7: 220,
+    8: 380,
+    9: 90,
+    10: 100,
+    11: 70,
+    12: 100,
+    13: 100,
+    14: 100,
+    15: 100,
+    16: 220,
+    17: 420
+  };
 }
 
 // ============================
@@ -291,11 +677,17 @@ function processSubmission(data) {
 /**
  * 取得或建立工作表
  * 若指定的工作表不存在，自動建立並寫入標題列
+ * @param {string} sheetName - 工作表名稱
+ * @param {Array} headerRow - 標題列
+ * @param {Object} columnWidths - 欄寬設定
  * @returns {Sheet} Google Sheets 工作表物件
  */
-function getOrCreateSheet() {
+function getOrCreateSheet(sheetName, headerRow, columnWidths) {
   try {
     let spreadsheet;
+    const targetSheetName = sheetName || SHEET_NAME;
+    const headers = headerRow || HEADER_ROW;
+    const widths = columnWidths || getConsultationColumnWidths();
 
     // 嘗試透過 ID 開啟試算表
     if (SPREADSHEET_ID && SPREADSHEET_ID !== '在此貼上您的試算表ID') {
@@ -310,39 +702,25 @@ function getOrCreateSheet() {
     }
 
     // 取得指定工作表
-    let sheet = spreadsheet.getSheetByName(SHEET_NAME);
+    let sheet = spreadsheet.getSheetByName(targetSheetName);
 
     // 若工作表不存在，自動建立
     if (!sheet) {
-      sheet = spreadsheet.insertSheet(SHEET_NAME);
+      sheet = spreadsheet.insertSheet(targetSheetName);
       // 寫入標題列
-      sheet.getRange(1, 1, 1, HEADER_ROW.length).setValues([HEADER_ROW]);
+      sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
       // 設定標題列格式（粗體、背景色）
-      const headerRange = sheet.getRange(1, 1, 1, HEADER_ROW.length);
+      const headerRange = sheet.getRange(1, 1, 1, headers.length);
       headerRange.setFontWeight('bold');
       headerRange.setBackground('#E8D5F5');
       headerRange.setHorizontalAlignment('center');
       // 凍結標題列
       sheet.setFrozenRows(1);
       // 設定欄寬
-      sheet.setColumnWidth(COLUMNS.TIMESTAMP, 150);
-      sheet.setColumnWidth(COLUMNS.NAME, 100);
-      sheet.setColumnWidth(COLUMNS.CONTACT, 120);
-      sheet.setColumnWidth(COLUMNS.GENDER, 90);
-      sheet.setColumnWidth(COLUMNS.BIRTH_DATE, 120);
-      sheet.setColumnWidth(COLUMNS.BIRTH_TIME, 80);
-      sheet.setColumnWidth(COLUMNS.PREFERENCE, 100);
-      sheet.setColumnWidth(COLUMNS.WRIST_SIZE, 80);
-      sheet.setColumnWidth(COLUMNS.COLOR_PREFERENCE, 150);
-      sheet.setColumnWidth(COLUMNS.ENERGY_GOAL, 180);
-      sheet.setColumnWidth(COLUMNS.CALCULATION_METHOD, 150);
-      sheet.setColumnWidth(COLUMNS.TARGET_CHAKRA, 180);
-      sheet.setColumnWidth(COLUMNS.DESCRIPTION, 250);
-      sheet.setColumnWidth(COLUMNS.BUDGET, 120);
-      sheet.setColumnWidth(COLUMNS.AI_RECOMMENDATION, 400);
-      sheet.setColumnWidth(COLUMNS.STATUS, 100);
-      sheet.setColumnWidth(COLUMNS.NOTES, 200);
-      console.log('【工作表】✅ 已自動建立工作表：' + SHEET_NAME);
+      Object.keys(widths).forEach(function(columnIndex) {
+        sheet.setColumnWidth(Number(columnIndex), widths[columnIndex]);
+      });
+      console.log('【工作表】✅ 已自動建立工作表：' + targetSheetName);
     }
 
     return sheet;
@@ -479,10 +857,13 @@ function csvEscape(value) {
 function initializeSheet() {
   try {
     const sheet = getOrCreateSheet();
+    const orderSheet = getOrCreateSheet(ORDER_SHEET_NAME, ORDER_HEADER_ROW, getOrderColumnWidths());
     const csvUrl = syncCsvMirrorWithLock(sheet);
     console.log('✅ 試算表初始化完成！');
-    console.log('  工作表名稱：' + sheet.getName());
-    console.log('  欄位數量：' + HEADER_ROW.length);
+    console.log('  諮詢工作表名稱：' + sheet.getName());
+    console.log('  訂單工作表名稱：' + orderSheet.getName());
+    console.log('  諮詢欄位數量：' + HEADER_ROW.length);
+    console.log('  訂單欄位數量：' + ORDER_HEADER_ROW.length);
     
     // 顯示試算表 URL
     const spreadsheet = sheet.getParent();

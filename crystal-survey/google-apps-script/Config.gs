@@ -14,17 +14,26 @@
 // ============================
 
 /** Google 試算表 ID（從試算表網址中取得） */
-const SPREADSHEET_ID = '在此貼上您的試算表ID';
+const SPREADSHEET_ID = '11SDppP_22QDU2ZvgcouUwVyraRlgwdvhaCOrruvcp1I';
 
 /** 工作表名稱（試算表下方的分頁名稱） */
 const SHEET_NAME = '諮詢紀錄';
+
+/** 訂單工作表名稱 */
+const ORDER_SHEET_NAME = 'Orders';
+
+/** 店主通知 Email；留空時嘗試使用 Apps Script 執行帳號 Email */
+const OWNER_EMAIL = 'muphe.handmade@gmail.com';
+
+/** 成功頁返回網站的網址 */
+const STORE_SITE_URL = 'https://studjodev.github.io/muphe_handmade/index.html';
 
 // ============================
 // 🧾 CSV 備份設定
 // ============================
 
 /** 是否在每次送出後，同步更新同一份 CSV 紀錄檔 */
-const CSV_MIRROR_ENABLED = true;
+const CSV_MIRROR_ENABLED = false;
 
 /** CSV 檔案名稱（會在 Google Drive 中建立或更新同名檔案） */
 const CSV_FILE_NAME = 'muphe_crystal_consultation_records.csv';
@@ -60,7 +69,7 @@ const LINE_PUSH_API_URL = 'https://api.line.me/v2/bot/message/push';
 // ============================
 
 /** Gemini API Key（從 Google AI Studio 取得） */
-const GEMINI_API_KEY = '在此貼上您的GEMINI_API_KEY';
+const GEMINI_API_KEY = '';
 
 /** Gemini API 模型端點 */
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
@@ -112,4 +121,25 @@ const HEADER_ROW = [
   'AI初步推薦',
   '處理狀態',
   '備註紀錄'
+];
+
+/** 訂單工作表標題列 */
+const ORDER_HEADER_ROW = [
+  '時間戳記',
+  '訂單編號',
+  '客人姓名',
+  '聯絡方式',
+  '交付方式',
+  '地址或面交備註',
+  '訂單備註',
+  '商品明細',
+  '商品數量',
+  '小計',
+  '幣別',
+  '來源',
+  '處理狀態',
+  '付款狀態',
+  '出貨狀態',
+  '後台備註',
+  '原始Payload'
 ];

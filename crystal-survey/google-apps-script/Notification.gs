@@ -119,6 +119,53 @@ function sendConsultationNotification(data) {
 }
 
 /**
+ * 取得店主通知 Email。
+ * OWNER_EMAIL 留空時，嘗試使用 Apps Script 執行帳號 Email。
+ * @returns {string} 收件 Email
+ */
+function getOwnerNotificationEmail() {
+  if (typeof OWNER_EMAIL !== 'undefined' && OWNER_EMAIL && OWNER_EMAIL !== '在此貼上收件Email') {
+    return OWNER_EMAIL;
+  }
+
+  try {
+    return Session.getEffectiveUser().getEmail() || '';
+  } catch (error) {
+    console.warn('【Email 通知】無法取得執行帳號 Email：' + error.toString());
+    return '';
+  }
+}
+
+/**
+ * 寄送店主 Email 通知。
+ * @param {string} subject - Email 主旨
+ * @param {string} body - 純文字內容
+ * @returns {boolean} 是否寄送成功
+ */
+function sendOwnerEmail(subject, body) {
+  try {
+    const recipient = getOwnerNotificationEmail();
+    if (!recipient) {
+      console.warn('【Email 通知】OWNER_EMAIL 尚未設定，跳過通知發送');
+      return false;
+    }
+
+    MailApp.sendEmail({
+      to: recipient,
+      subject: subject,
+      body: body,
+      name: 'MUPHÉ Handmade'
+    });
+
+    console.log('【Email 通知】✅ 已寄送至：' + recipient);
+    return true;
+  } catch (error) {
+    console.error('【Email 通知】❌ 發送失敗：' + error.toString());
+    return false;
+  }
+}
+
+/**
  * 測試通知功能（開發用）
  * 在 Apps Script 編輯器中直接執行此函數以測試 LINE 通知
  */
