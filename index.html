@@ -7,7 +7,7 @@
   <title>沐菲 MUPHÉ Handmade｜場景角色水晶手作</title>
   <meta name="description" content="沐菲 MUPHÉ Handmade 以人生場景角色導購，販售可客製手作水晶手鍊。" />
   <link rel="icon" type="image/png" href="pic/muphe_logo.png" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=hero-logo-bg-restored" />
 </head>
 
 <body>
@@ -22,7 +22,6 @@
     <nav class="desktop-nav" aria-label="主導覽">
       <a href="#shop">手作手鍊</a>
       <a href="#guide">水晶百科</a>
-      <a href="bracelet.html">手鍊檔案</a>
       <a href="#story">品牌故事</a>
       <a href="#faq">購物須知</a>
     </nav>
@@ -32,7 +31,7 @@
         <span></span>
         <span></span>
       </button>
-      <button class="cart-button" type="button" data-cart-open>
+      <button class="cart-button" type="button" data-cart-open hidden aria-hidden="true">
         <span class="cart-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none">
             <path d="M6.5 8h11l-1.1 10H7.6L6.5 8Z" stroke="currentColor" stroke-width="1.8" />
@@ -49,34 +48,27 @@
     <a href="#scene">場景選水晶</a>
     <a href="#shop">手作手鍊</a>
     <a href="#guide">水晶百科</a>
-    <a href="bracelet.html">手鍊檔案</a>
     <a href="#story">品牌故事</a>
     <a href="#faq">購物須知</a>
   </div>
 
   <main id="top">
-    <section class="hero" aria-labelledby="hero-title">
+    <section class="hero" aria-label="首頁形象區塊">
       <div class="hero-content reveal">
-        <h1 id="hero-title">
-          MUPHÉ Handmade
-          <span>把日常切換成你想要的狀態</span>
-        </h1>
         <p class="hero-copy">
-          今天想成為什麼樣的自己？從職場界線、上台發光到睡前關機，用手作水晶陪你換一個狀態。
+          歡迎光臨沐菲手作水晶，今天的妳還好嗎？想成為怎樣的自己呢？從職場、人際、戀愛、上台發光到睡前關機，用手作水晶陪你換一個狀態。
         </p>
         <div class="hero-actions">
           <a class="primary-link" href="crystal-survey/frontend/crystal-form.html" target="_blank" rel="noopener">
             填寫水晶諮詢表單
           </a>
-          <a class="secondary-link" href="#scene">開始場景導購</a>
-          <div style="display: flex; flex-basis: 100%;">
-            <a class="secondary-link" href="#shop">看可客製手鏈</a>
+          <div class="hero-secondary-actions">
+            <a class="secondary-link" href="#scene">開始場景導購</a>
+            <a class="secondary-link" href="bracelet.html">您的手鏈檔案</a>
           </div>
-        </div>
-        <div class="hero-scenes" aria-label="熱門場景">
-          <a href="#shop" data-hero-scene="職場防小人">職場防小人</a>
-          <a href="#shop" data-hero-scene="上台發光">上台發光</a>
-          <a href="#shop" data-hero-scene="深度關機沉睡">深度關機沉睡</a>
+          <div class="hero-shop-action">
+            <a class="secondary-link" href="#shop">客製手鏈參考</a>
+          </div>
         </div>
       </div>
     </section>
@@ -151,7 +143,7 @@
           <h2>首發 14 款可客製日常狀態手鏈</h2>
         </div>
         <p>
-          每一款都可依手圍客製，商品頁會說清楚：適合誰、什麼情境戴、用了哪些晶種、客製方式、淨化保養、包裝內容和可加購儀式。
+          每一款都可依手圍客製，商品頁會說清楚：適合誰、什麼情境戴、用了哪些晶種、客製方式、淨化保養和包裝內容。
         </p>
       </div>
 
@@ -385,8 +377,7 @@
   <footer class="site-footer">
     <img class="footer-logo" src="pic/muphe_logo.png" alt="MUPHÉ Handmade 沐菲品牌標誌" loading="lazy" />
     <div>
-      <strong>MUPHÉ Handmade 沐菲</strong>
-      <p>場景角色水晶手作，讓日常狀態有一個可以握在手上的入口。</p>
+      <strong>MUPHÉ Handmade 沐菲手作水晶</strong>
     </div>
   </footer>
 
@@ -400,7 +391,7 @@
     </div>
   </aside>
 
-  <aside class="drawer cart-drawer" data-cart-drawer aria-hidden="true" aria-label="購物車">
+  <aside class="drawer cart-drawer" data-cart-drawer aria-hidden="true" aria-label="購物車" hidden>
     <div class="drawer-panel cart-panel">
       <button class="icon-button close-button" type="button" aria-label="關閉購物車" data-cart-close>
         <span></span>
@@ -451,7 +442,7 @@
     </div>
   </aside>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=ritual-hidden"></script>
 </body>
 
 </html>

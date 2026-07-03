@@ -52,7 +52,6 @@ const products = [
     moment: "開會、協調、進辦公室前配戴，提醒自己把界線放回身上。",
     care: "以白水晶碎石或靜置淨化，避免長時間泡水。",
     pack: "手鍊、絨布袋、場景小卡、保養卡。",
-    ritual: "可加購 3 分鐘界線呼吸音頻。",
     palette: ["#21172b", "#5d3c72", "#f5f0e8", "#6b4f3f"],
   },
   {
@@ -70,7 +69,6 @@ const products = [
     moment: "會議、談合作、回覆訊息前配戴，讓語氣先降溫。",
     care: "以月光或白水晶淨化，避免強烈日曬。",
     pack: "手鍊、絨布袋、場景小卡、保養卡。",
-    ritual: "可加購會議前 90 秒冷靜音頻。",
     palette: ["#93b6c7", "#eff4f1", "#7d858a", "#596d76"],
   },
   {
@@ -88,7 +86,6 @@ const products = [
     moment: "上台前 15 分鐘配戴，搭配三次深呼吸整理說話節奏。",
     care: "以白水晶碎石淨化，避免碰撞造成表面刮痕。",
     pack: "手鍊、絨布袋、場景小卡、保養卡。",
-    ritual: "可加購上台發光引導音頻。",
     palette: ["#1f3f78", "#d8a63f", "#f9f6ec", "#6b90bb"],
   },
   {
@@ -106,7 +103,6 @@ const products = [
     moment: "面試、發表、直播或需要被看見的當天配戴。",
     care: "以乾布擦拭，避免長時間曝曬讓配件加速氧化。",
     pack: "手鍊、絨布袋、場景小卡、保養卡。",
-    ritual: "可加購自信站姿練習音頻。",
     palette: ["#d8a63f", "#f8efe0", "#c77841", "#fff9e7"],
   },
   {
@@ -124,7 +120,6 @@ const products = [
     moment: "睡前一小時配戴或放在床邊，搭配不滑手機的關機儀式。",
     care: "以白水晶或月光淨化，睡覺時可放床邊避免壓到彈力線。",
     pack: "手鍊、絨布袋、場景小卡、保養卡。",
-    ritual: "可加購 432Hz 水晶睡前音頻。",
     palette: ["#5d3c72", "#16151e", "#b8bfd1", "#eef3f4"],
   },
   {
@@ -142,7 +137,6 @@ const products = [
     moment: "洗澡後或睡前閱讀時配戴，把一天慢慢收掉。",
     care: "以乾布擦拭，避免泡澡或睡眠翻身時拉扯。",
     pack: "手鍊、絨布袋、場景小卡、保養卡。",
-    ritual: "可加購睡前身體掃描音頻。",
     palette: ["#9ba3a7", "#9bb3cc", "#f5f6f2", "#594f4b"],
   },
   {
@@ -160,7 +154,6 @@ const products = [
     moment: "聚會、家人溝通、約會前配戴，讓表達多一點溫度。",
     care: "粉晶避免長時間強光直曬，以白水晶碎石淨化。",
     pack: "手鍊、絨布袋、場景小卡、保養卡。",
-    ritual: "可加購柔和說話練習音頻。",
     palette: ["#f0c4ca", "#d8e5cf", "#fff7f6", "#c67b80"],
   },
   {
@@ -178,7 +171,6 @@ const products = [
     moment: "聚餐、展覽、活動日配戴，提醒自己保持舒服距離。",
     care: "避免劇烈碰撞，配戴後以軟布擦拭汗水。",
     pack: "手鍊、絨布袋、場景小卡、保養卡。",
-    ritual: "可加購社交後回收能量音頻。",
     palette: ["#7d9a72", "#f6f3e9", "#d8a63f", "#b5c776"],
   },
   {
@@ -196,7 +188,6 @@ const products = [
     moment: "談案、上架商品、記帳、定價和做決策時配戴。",
     care: "以白水晶碎石淨化，避免長時間泡水。",
     pack: "手鍊、絨布袋、場景小卡、保養卡。",
-    ritual: "可加購財務行動清單音頻。",
     palette: ["#2b7a58", "#d8a63f", "#16151e", "#8b6b35"],
   },
   {
@@ -214,7 +205,6 @@ const products = [
     moment: "選品、談價、做社群內容和盤點成本時配戴。",
     care: "以乾布擦拭，收納時避免和硬物摩擦。",
     pack: "手鍊、絨布袋、場景小卡、保養卡。",
-    ritual: "可加購選品前 3 問音頻。",
     palette: ["#6b4f3f", "#2b7a58", "#d8a63f", "#f6f1e8"],
   },
   {
@@ -232,7 +222,6 @@ const products = [
     moment: "約會、曖昧聊天、整理感情狀態時配戴。",
     care: "粉晶避免長時間強烈日照，日常以軟布擦拭。",
     pack: "手鍊、絨布袋、場景小卡、保養卡。",
-    ritual: "可加購自愛提醒音頻。",
     palette: ["#efb7c6", "#7b4e8c", "#fff5f7", "#c95f8f"],
   },
   {
@@ -250,7 +239,6 @@ const products = [
     moment: "約會前、等訊息時、想過度解讀對方時配戴。",
     care: "以白水晶碎石淨化，避免拉扯彈力線。",
     pack: "手鍊、絨布袋、場景小卡、保養卡。",
-    ritual: "可加購戀愛清醒提醒音頻。",
     palette: ["#f0c4ca", "#16151e", "#f8f7f2", "#b8bfd1"],
   },
   {
@@ -268,7 +256,6 @@ const products = [
     moment: "通勤、考試前、情緒上來時配戴，摸到珠子就做一次呼吸。",
     care: "避免碰撞和泡水，綠螢石較需溫柔收納。",
     pack: "手鍊、絨布袋、場景小卡、保養卡。",
-    ritual: "可加購 4-7-8 呼吸音頻。",
     palette: ["#83a98c", "#f6f4ed", "#9ba3a7", "#665d58"],
   },
   {
@@ -286,7 +273,6 @@ const products = [
     moment: "讀書、考前、交報告前配戴，提醒自己先穩再寫。",
     care: "以白水晶碎石淨化，避免螢石長時間曝曬。",
     pack: "手鍊、絨布袋、場景小卡、保養卡。",
-    ritual: "可加購考前穩定音頻。",
     palette: ["#5d3c72", "#93b6c7", "#f6f3ed", "#7d9a72"],
   },
 ];
@@ -305,6 +291,8 @@ const state = {
   },
   cart: [],
 };
+
+const CART_ENABLED = false;
 
 const currency = new Intl.NumberFormat("zh-TW", {
   style: "currency",
@@ -403,13 +391,17 @@ function renderProducts() {
               <span>${product.color}</span>
               <span>可客製</span>
             </div>
-            <div class="product-actions">
+            <div class="product-actions ${CART_ENABLED ? "" : "product-actions-single"}">
               <button class="quick-view-button" type="button" data-open-product="${product.id}">
                 看詳情
               </button>
-              <button class="add-button" type="button" data-add-cart="${product.id}">
-                加入購物車
-              </button>
+              ${
+                CART_ENABLED
+                  ? `<button class="add-button" type="button" data-add-cart="${product.id}">
+                      加入購物車
+                    </button>`
+                  : ""
+              }
             </div>
           </div>
         </article>
@@ -488,14 +480,14 @@ function renderProductDetail(product) {
           <strong>包裝內容</strong>
           <p>${product.pack}</p>
         </div>
-        <div class="detail-row">
-          <strong>可加購儀式</strong>
-          <p>${product.ritual}</p>
-        </div>
       </div>
-      <button class="detail-add-button" type="button" data-add-cart="${product.id}">
-        加入購物車
-      </button>
+      ${
+        CART_ENABLED
+          ? `<button class="detail-add-button" type="button" data-add-cart="${product.id}">
+              加入購物車
+            </button>`
+          : ""
+      }
     </div>
   `;
 }

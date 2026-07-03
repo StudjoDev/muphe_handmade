@@ -182,6 +182,11 @@ button {
     transform 180ms ease;
 }
 
+.cart-button[hidden],
+.cart-drawer[hidden] {
+  display: none !important;
+}
+
 .cart-button:hover {
   background: var(--plum);
   transform: translateY(-1px);
@@ -234,16 +239,16 @@ button {
 }
 
 .hero {
-  align-items: center;
+  align-items: flex-start;
   background:
     linear-gradient(
       90deg,
       rgba(255, 250, 240, 0.96) 0%,
       rgba(255, 250, 240, 0.86) 41%,
       rgba(255, 250, 240, 0.28) 72%,
-      rgba(255, 250, 240, 0.08) 100%
+      rgba(255, 250, 240, 0.18) 100%
     ),
-    url("assets/muphe-crystal-slab.jpg") center / cover;
+    url("pic/LOGO_背景.png") center / cover;
   display: flex;
   min-height: 88svh;
   padding: calc(var(--header-height) + 42px) max(24px, 7vw) 54px;
@@ -268,10 +273,13 @@ button {
     "Times New Roman",
     "Noto Serif TC",
     serif;
-  font-size: 8rem;
+  font-size: clamp(4.8rem, 7.5vw, 7.1rem);
   letter-spacing: 0;
   line-height: 0.9;
   margin: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
 }
 
 .hero h1 span {
@@ -292,12 +300,11 @@ button {
 .hero-copy {
   color: rgba(36, 26, 43, 0.78);
   font-size: 1.15rem;
-  margin: 24px 0 0;
+  margin: 0;
   max-width: 610px;
 }
 
-.hero-actions,
-.hero-scenes {
+.hero-actions {
   align-items: center;
   display: flex;
   flex-wrap: wrap;
@@ -320,6 +327,16 @@ button {
     color 180ms ease;
 }
 
+.hero-secondary-actions,
+.hero-shop-action {
+  display: flex;
+  gap: 12px;
+}
+
+.hero-shop-action {
+  flex-basis: 100%;
+}
+
 .primary-link {
   background: var(--plum);
   color: var(--paper);
@@ -338,20 +355,6 @@ button {
 .secondary-link:hover {
   background: rgba(255, 250, 240, 0.66);
   transform: translateY(-1px);
-}
-
-.hero-scenes {
-  margin-top: 24px;
-}
-
-.hero-scenes a {
-  background: rgba(255, 250, 240, 0.66);
-  border: 1px solid rgba(183, 139, 62, 0.38);
-  border-radius: 999px;
-  color: var(--plum);
-  font-size: 0.9rem;
-  font-weight: 700;
-  padding: 8px 13px;
 }
 
 .intro-strip {
@@ -709,6 +712,10 @@ button {
   gap: 8px;
   grid-template-columns: 1fr 1fr;
   margin-top: auto;
+}
+
+.product-actions-single {
+  grid-template-columns: 1fr;
 }
 
 .product-actions button {
@@ -1323,7 +1330,7 @@ details p {
 
 @media (max-width: 1180px) {
   .hero h1 {
-    font-size: 6.6rem;
+    font-size: clamp(4.2rem, 8vw, 6rem);
   }
 
   .hero h1 span {
@@ -1357,7 +1364,7 @@ details p {
 
 @media (max-width: 900px) {
   .hero h1 {
-    font-size: 5.2rem;
+    font-size: clamp(3.3rem, 10vw, 4.7rem);
   }
 
   .hero h1 span {
@@ -1378,9 +1385,9 @@ details p {
         180deg,
         rgba(255, 250, 240, 0.98) 0%,
         rgba(255, 250, 240, 0.91) 56%,
-        rgba(255, 250, 240, 0.22) 100%
+        rgba(255, 250, 240, 0.3) 100%
       ),
-      url("assets/muphe-crystal-slab.jpg") center bottom / cover;
+      url("pic/LOGO_背景.png") center bottom / cover;
     min-height: 88svh;
   }
 
@@ -1477,7 +1484,7 @@ details p {
   }
 
   .hero h1 {
-    font-size: 3.45rem;
+    font-size: clamp(2.3rem, 10vw, 3rem);
   }
 
   .hero h1 span {
@@ -1516,6 +1523,22 @@ details p {
 
   .primary-link,
   .secondary-link {
+    width: 100%;
+  }
+
+  .hero-secondary-actions {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .hero-secondary-actions .secondary-link {
+    padding: 0 14px;
+    width: auto;
+  }
+
+  .hero-shop-action {
     width: 100%;
   }
 
