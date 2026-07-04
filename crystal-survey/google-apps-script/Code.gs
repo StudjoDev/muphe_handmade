@@ -33,6 +33,9 @@ function doGet(e) {
     if (action === 'braceletprofile') {
       return handleBraceletProfileLookup(e);
     }
+    if (action === 'forgotbraceletcode') {
+      return handleForgotBraceletCodeLookup(e);
+    }
 
     // 嘗試載入外部 HTML 模板
     const htmlOutput = HtmlService.createHtmlOutputFromFile('crystal-form')
@@ -181,6 +184,59 @@ function handleBraceletProfileLookup(e) {
 }
 
 /**
+ * 忘記圖卡密碼查詢入口。
+ * 使用姓名與生日比對諮詢紀錄，只回傳查詢碼，不回傳生日、聯絡方式或其他個資。
+ * @param {Object} e - HTTP GET 事件物件
+ * @returns {TextOutput} JSON 或 JSONP 文字回應
+ */
+function handleForgotBraceletCodeLookup(e) {
+  try {
+    const name = getRequestParameter(e, 'name');
+    const birthDate = getRequestParameter(e, 'birthDate');
+
+    if (!normalizeCustomerLookupName(name) || !normalizeLookupBirthDate(birthDate)) {
+      return createJsonTextOutput(e, {
+        success: false,
+        error: {
+          code: 'missing_identity',
+          message: '請輸入姓名與生日'
+        }
+      });
+    }
+
+    const credential = findBraceletAccessCodeByCustomerIdentity(name, birthDate);
+    if (!credential) {
+      return createJsonTextOutput(e, {
+        success: false,
+        error: {
+          code: 'not_found',
+          message: '找不到符合的圖卡密碼，請確認姓名與生日是否與表單相同。'
+        }
+      });
+    }
+
+    return createJsonTextOutput(e, {
+      success: true,
+      data: {
+        accessCode: credential.accessCode,
+        profileUrl: credential.profileUrl
+      },
+      retrievedAt: formatApiTimestamp(new Date())
+    });
+
+  } catch (error) {
+    console.error('【忘記圖卡密碼查詢錯誤】' + error.toString());
+    return createJsonTextOutput(e, {
+      success: false,
+      error: {
+        code: 'server_error',
+        message: '系統目前無法找回圖卡密碼'
+      }
+    });
+  }
+}
+
+/**
  * 從手鏈檔案工作表查詢已公開的手鏈檔案。
  * 未公開或不存在的資料都回傳 null，避免對外洩漏狀態。
  * @param {string} accessCode - 正規化後的查詢碼
@@ -220,6 +276,108 @@ function findPublishedBraceletProfile(accessCode, accessToken) {
   }
 
   return null;
+}
+
+/**
+ * 使用姓名與生日找回由諮詢表單建立的公開圖卡查詢碼。
+ * @param {*} name - 使用者輸入姓名
+ * @param {*} birthDate - 使用者輸入生日
+ * @returns {Object|null} 查詢憑證
+ */
+function findBraceletAccessCodeByCustomerIdentity(name, birthDate) {
+  const normalizedName = normalizeCustomerLookupName(name);
+  const normalizedBirthDate = normalizeLookupBirthDate(birthDate);
+  if (!normalizedName || !normalizedBirthDate) {
+    return null;
+  }
+
+  const consultationSheet = getOrCreateSheet(SHEET_NAME, HEADER_ROW, getConsultationColumnWidths());
+  const consultationLastRow = consultationSheet.getLastRow();
+  if (consultationLastRow <= 1) {
+    return null;
+  }
+
+  const consultationRows = consultationSheet
+    .getRange(2, 1, consultationLastRow - 1, HEADER_ROW.length)
+    .getDisplayValues();
+
+  const profileSheet = getOrCreateSheet(
+    BRACELET_PROFILE_SHEET_NAME,
+    BRACELET_PROFILE_HEADER_ROW,
+    getBraceletProfileColumnWidths()
+  );
+  const profileLastRow = profileSheet.getLastRow();
+  if (profileLastRow <= 1) {
+    return null;
+  }
+
+  const profileRows = profileSheet
+    .getRange(2, 1, profileLastRow - 1, BRACELET_PROFILE_HEADER_ROW.length)
+    .getDisplayValues();
+
+  for (let i = consultationRows.length - 1; i >= 0; i--) {
+    const row = consultationRows[i];
+    const rowName = normalizeCustomerLookupName(row[COLUMNS.NAME - 1]);
+    const rowBirthDate = normalizeLookupBirthDate(row[COLUMNS.BIRTH_DATE - 1]);
+
+    if (rowName !== normalizedName || rowBirthDate !== normalizedBirthDate) {
+      continue;
+    }
+
+    const consultationRowNumber = i + 2;
+    const credential = findPublishedBraceletCredentialByConsultationRow(profileRows, consultationRowNumber);
+    if (credential) {
+      return credential;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * 從公開圖卡列中，依諮詢紀錄列號找出查詢碼。
+ * @param {Array[]} profileRows - 手鏈檔案工作表資料列
+ * @param {number} consultationRowNumber - 諮詢紀錄列號
+ * @returns {Object|null} 查詢憑證
+ */
+function findPublishedBraceletCredentialByConsultationRow(profileRows, consultationRowNumber) {
+  const rowNumberText = String(consultationRowNumber);
+
+  for (let i = profileRows.length - 1; i >= 0; i--) {
+    const row = profileRows[i];
+    if (!isBraceletProfilePublished(row)) {
+      continue;
+    }
+
+    const internalNotes = getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.INTERNAL_NOTES);
+    if (!doesInternalNoteReferenceConsultationRow(internalNotes, rowNumberText)) {
+      continue;
+    }
+
+    const accessCode = getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.ACCESS_CODE);
+    if (!accessCode) {
+      continue;
+    }
+
+    return {
+      accessCode: accessCode,
+      profileUrl: getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.PRODUCT_URL)
+    };
+  }
+
+  return null;
+}
+
+/**
+ * 判斷手鏈檔案內部備註是否指向指定諮詢紀錄列號。
+ * @param {*} internalNotes - 內部備註
+ * @param {string} rowNumberText - 列號文字
+ * @returns {boolean} 是否匹配
+ */
+function doesInternalNoteReferenceConsultationRow(internalNotes, rowNumberText) {
+  const text = normalizeHalfWidthText(internalNotes);
+  const pattern = new RegExp('諮詢紀錄列號\\s*' + rowNumberText + '(?![0-9])');
+  return pattern.test(text);
 }
 
 /**
@@ -997,6 +1155,39 @@ function normalizeBraceletAccessCode(value) {
  */
 function normalizeBraceletAccessToken(value) {
   return normalizeHalfWidthText(value).trim().replace(/\s+/g, '');
+}
+
+/**
+ * 正規化找回密碼用姓名；忽略空白與大小寫。
+ * @param {*} value - 原始姓名
+ * @returns {string} 正規化姓名
+ */
+function normalizeCustomerLookupName(value) {
+  return normalizeHalfWidthText(value).trim().replace(/\s+/g, '').toLowerCase();
+}
+
+/**
+ * 正規化找回密碼用生日；只保留年月日 8 碼。
+ * @param {*} value - 原始生日
+ * @returns {string} yyyyMMdd
+ */
+function normalizeLookupBirthDate(value) {
+  if (Object.prototype.toString.call(value) === '[object Date]' && !isNaN(value.getTime())) {
+    return Utilities.formatDate(value, Session.getScriptTimeZone(), 'yyyyMMdd');
+  }
+
+  const text = normalizeHalfWidthText(value).trim();
+  const digits = text.replace(/[^0-9]/g, '');
+  if (digits.length === 8) {
+    return digits;
+  }
+
+  const parsedDate = new Date(text);
+  if (!isNaN(parsedDate.getTime())) {
+    return Utilities.formatDate(parsedDate, Session.getScriptTimeZone(), 'yyyyMMdd');
+  }
+
+  return '';
 }
 
 /**

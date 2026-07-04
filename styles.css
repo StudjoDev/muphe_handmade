@@ -1714,6 +1714,126 @@ details p {
   margin: 0;
 }
 
+.forgot-code {
+  border-top: 1px solid rgba(36, 26, 43, 0.1);
+  display: grid;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.forgot-code-toggle {
+  background: transparent;
+  border: 0;
+  color: rgba(75, 45, 95, 0.78);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 900;
+  justify-self: start;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.forgot-code-toggle:hover {
+  color: var(--plum);
+}
+
+.forgot-code-panel[hidden],
+.forgot-code-result[hidden] {
+  display: none;
+}
+
+.forgot-code-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.forgot-code-form {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+}
+
+.forgot-code-field {
+  display: grid;
+  gap: 6px;
+}
+
+.forgot-code-field label {
+  color: var(--plum);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.forgot-code-field input {
+  background: #fffdf8;
+  border: 1px solid rgba(36, 26, 43, 0.16);
+  border-radius: var(--radius);
+  color: var(--ink);
+  min-height: 44px;
+  padding: 0 12px;
+  width: 100%;
+}
+
+.forgot-code-form input:focus {
+  border-color: var(--teal);
+  outline: 3px solid rgba(31, 111, 103, 0.14);
+}
+
+.forgot-code-form .secondary-link {
+  align-self: end;
+  min-height: 44px;
+  white-space: nowrap;
+}
+
+.forgot-code-message,
+.forgot-code-found {
+  background: rgba(31, 111, 103, 0.08);
+  border: 1px solid rgba(31, 111, 103, 0.18);
+  border-radius: var(--radius);
+  color: var(--muted);
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+}
+
+.forgot-code-result[data-state="error"] .forgot-code-message {
+  background: rgba(199, 122, 116, 0.12);
+  border-color: rgba(199, 122, 116, 0.34);
+}
+
+.forgot-code-message strong,
+.forgot-code-found strong {
+  color: var(--ink);
+  display: block;
+}
+
+.forgot-code-message p,
+.forgot-code-found p {
+  margin: 3px 0 0;
+}
+
+.forgot-code-copy {
+  align-items: center;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.forgot-code-copy code {
+  background: #fffdf8;
+  border: 1px solid rgba(36, 26, 43, 0.14);
+  border-radius: var(--radius);
+  color: var(--plum);
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  overflow-wrap: anywhere;
+  padding: 10px 12px;
+}
+
 .bracelet-status {
   border-top: 1px solid rgba(36, 26, 43, 0.12);
   padding-top: 18px;
@@ -2172,6 +2292,12 @@ details p {
     grid-template-columns: 1fr;
   }
 
+  .forgot-code-form,
+  .forgot-code-copy {
+    grid-template-columns: 1fr;
+  }
+
+  .forgot-code-form .secondary-link,
   .bracelet-code-row .primary-link {
     width: 100%;
   }

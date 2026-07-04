@@ -72,6 +72,34 @@
           <p id="bracelet-code-help">貼上表單送出後取得的密碼即可查詢；手動輸入時不用區分大小寫。</p>
         </form>
 
+        <div class="forgot-code" data-forgot-code>
+          <button
+            class="forgot-code-toggle"
+            type="button"
+            aria-expanded="false"
+            aria-controls="forgot-code-panel"
+            data-forgot-toggle
+          >
+            忘記密碼？
+          </button>
+          <div class="forgot-code-panel" id="forgot-code-panel" hidden data-forgot-panel>
+            <form class="forgot-code-form" data-forgot-form>
+              <div class="forgot-code-field">
+                <label for="forgot-name">姓名</label>
+                <input id="forgot-name" name="name" type="text" autocomplete="name" placeholder="請輸入表單姓名" data-forgot-name />
+              </div>
+
+              <div class="forgot-code-field">
+                <label for="forgot-birth-date">生日</label>
+                <input id="forgot-birth-date" name="birthDate" type="date" data-forgot-birth-date />
+              </div>
+
+              <button class="secondary-link" type="submit">找回密碼</button>
+            </form>
+            <div class="forgot-code-result" aria-live="polite" hidden data-forgot-status></div>
+          </div>
+        </div>
+
         <div class="bracelet-status" aria-live="polite" data-profile-status></div>
       </div>
     </section>
@@ -107,12 +135,19 @@
         window.MUPHE_WEB_APP_URL_PLACEHOLDER || "GOOGLE_APPS_SCRIPT_WEB_APP_URL";
       const WEB_APP_URL = window.MUPHE_WEB_APP_URL || "GOOGLE_APPS_SCRIPT_WEB_APP_URL";
       const PROFILE_ACTION = "braceletProfile";
+      const FORGOT_CODE_ACTION = "forgotBraceletCode";
 
       const form = document.querySelector("[data-code-form]");
       const codeInput = document.querySelector("[data-code-input]");
       const statusRegion = document.querySelector("[data-profile-status]");
       const profileSection = document.querySelector("[data-profile-section]");
       const profileContent = document.querySelector("[data-profile-content]");
+      const forgotToggle = document.querySelector("[data-forgot-toggle]");
+      const forgotPanel = document.querySelector("[data-forgot-panel]");
+      const forgotForm = document.querySelector("[data-forgot-form]");
+      const forgotNameInput = document.querySelector("[data-forgot-name]");
+      const forgotBirthDateInput = document.querySelector("[data-forgot-birth-date]");
+      const forgotStatus = document.querySelector("[data-forgot-status]");
       const mobileNav = document.querySelector("[data-mobile-nav]");
       const menuToggle = document.querySelector("[data-menu-toggle]");
 
@@ -171,13 +206,16 @@
           return "";
         }
 
+        const action = query.action || PROFILE_ACTION;
         const endpoint = new URL(WEB_APP_URL, window.location.href);
-        endpoint.searchParams.set("type", PROFILE_ACTION);
-        endpoint.searchParams.set("action", PROFILE_ACTION);
+        endpoint.searchParams.set("type", action);
+        endpoint.searchParams.set("action", action);
         endpoint.searchParams.set("source", "bracelet-page");
 
         if (query.code) endpoint.searchParams.set("code", query.code);
         if (query.token) endpoint.searchParams.set("token", query.token);
+        if (query.name) endpoint.searchParams.set("name", query.name);
+        if (query.birthDate) endpoint.searchParams.set("birthDate", query.birthDate);
 
         Object.entries(extraParams).forEach(([key, value]) => {
           endpoint.searchParams.set(key, value);
@@ -217,6 +255,44 @@
             </div>
           </div>
         `;
+      }
+
+      function showForgotStatus(kind, title, message, accessCode = "") {
+        if (!forgotStatus) return;
+
+        forgotStatus.hidden = false;
+        forgotStatus.dataset.state = kind;
+        forgotStatus.setAttribute("role", kind === "error" ? "alert" : "status");
+
+        if (accessCode) {
+          forgotStatus.innerHTML = `
+            <div class="forgot-code-found">
+              <div>
+                <strong>${escapeHtml(title)}</strong>
+                <p>${escapeHtml(message)}</p>
+              </div>
+              <div class="forgot-code-copy">
+                <code data-forgot-code-value>${escapeHtml(accessCode)}</code>
+                <button class="secondary-link" type="button" data-copy-forgot-code>複製</button>
+              </div>
+            </div>
+          `;
+          return;
+        }
+
+        forgotStatus.innerHTML = `
+          <div class="forgot-code-message">
+            <strong>${escapeHtml(title)}</strong>
+            <p>${escapeHtml(message)}</p>
+          </div>
+        `;
+      }
+
+      function hideForgotStatus() {
+        if (!forgotStatus) return;
+        forgotStatus.hidden = true;
+        forgotStatus.innerHTML = "";
+        delete forgotStatus.dataset.state;
       }
 
       function hideProfile() {
@@ -376,7 +452,7 @@
         return profile;
       }
 
-      async function requestProfile(query) {
+      async function requestApi(query) {
         const endpoint = getEndpointUrl(query);
 
         if (!endpoint) {
@@ -403,6 +479,18 @@
         } catch (error) {
           return requestProfileJsonp(query, error);
         }
+      }
+
+      function requestProfile(query) {
+        return requestApi({ ...query, action: PROFILE_ACTION });
+      }
+
+      function requestForgotCode(name, birthDate) {
+        return requestApi({
+          action: FORGOT_CODE_ACTION,
+          name,
+          birthDate,
+        });
       }
 
       function requestProfileJsonp(query, originalError) {
@@ -450,6 +538,39 @@
         }
 
         return message;
+      }
+
+      function normalizeAccessCodeForDisplay(payload) {
+        const code = normalizeString(
+          payload &&
+            (payload.accessCode ||
+              payload.code ||
+              (payload.data && (payload.data.accessCode || payload.data.code)) ||
+              (payload.result && (payload.result.accessCode || payload.result.code))),
+        );
+        return code.toUpperCase();
+      }
+
+      async function copyTextWithFallback(text, sourceElement) {
+        if (!text) return false;
+
+        try {
+          await navigator.clipboard.writeText(text);
+          return true;
+        } catch (error) {
+          if (!sourceElement) return false;
+          const selection = window.getSelection();
+          const range = document.createRange();
+          range.selectNodeContents(sourceElement);
+          selection.removeAllRanges();
+          selection.addRange(range);
+
+          try {
+            return document.execCommand("copy");
+          } catch (copyError) {
+            return false;
+          }
+        }
       }
 
       function renderList(items) {
@@ -716,6 +837,78 @@
         window.history.replaceState({}, "", nextUrl);
         lookupProfile({ code });
       });
+
+      if (forgotToggle && forgotPanel) {
+        forgotToggle.addEventListener("click", () => {
+          const willOpen = forgotPanel.hidden;
+          forgotPanel.hidden = !willOpen;
+          forgotToggle.setAttribute("aria-expanded", willOpen ? "true" : "false");
+          if (willOpen) {
+            window.setTimeout(() => forgotNameInput && forgotNameInput.focus(), 80);
+          } else {
+            hideForgotStatus();
+          }
+        });
+      }
+
+      if (forgotForm) {
+        forgotForm.addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const name = normalizeString(forgotNameInput && forgotNameInput.value);
+          const birthDate = normalizeString(forgotBirthDateInput && forgotBirthDateInput.value);
+
+          if (!name || !birthDate) {
+            showForgotStatus("error", "請填寫姓名與生日", "需要兩個欄位都正確，才能找回圖卡密碼。");
+            if (!name && forgotNameInput) forgotNameInput.focus();
+            else if (forgotBirthDateInput) forgotBirthDateInput.focus();
+            return;
+          }
+
+          showForgotStatus("loading", "正在確認資料", "請稍候，系統正在比對姓名與生日。");
+
+          try {
+            const payload = await requestForgotCode(name, birthDate);
+            if (!payload || payload.success === false || payload.ok === false || payload.status === "error") {
+              throw new Error(
+                normalizeString(payload && payload.error && payload.error.message) ||
+                  normalizeString(payload && payload.message) ||
+                  "找不到符合的圖卡密碼。",
+              );
+            }
+
+            const accessCode = normalizeAccessCodeForDisplay(payload);
+            if (!accessCode) {
+              throw new Error("找不到符合的圖卡密碼。");
+            }
+
+            codeInput.value = accessCode;
+            showForgotStatus("success", "已找到圖卡密碼", "已自動帶入上方查詢欄，也可以先複製保存。", accessCode);
+          } catch (error) {
+            showForgotStatus("error", "找回失敗", getCustomerErrorMessage(error));
+          }
+        });
+
+        forgotForm.addEventListener("input", () => {
+          if (forgotStatus && forgotStatus.dataset.state === "error") {
+            hideForgotStatus();
+          }
+        });
+      }
+
+      if (forgotStatus) {
+        forgotStatus.addEventListener("click", async (event) => {
+          const copyButton = event.target.closest("[data-copy-forgot-code]");
+          if (!copyButton) return;
+
+          const codeElement = forgotStatus.querySelector("[data-forgot-code-value]");
+          const accessCode = normalizeString(codeElement && codeElement.textContent);
+          const copied = await copyTextWithFallback(accessCode, codeElement);
+          copyButton.textContent = copied ? "已複製" : "已選取";
+          window.setTimeout(() => {
+            copyButton.textContent = "複製";
+          }, 1600);
+        });
+      }
 
       if (menuToggle && mobileNav) {
         menuToggle.addEventListener("click", () => {
