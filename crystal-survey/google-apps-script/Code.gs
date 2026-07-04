@@ -574,7 +574,7 @@ function buildConsultationCardPublicFields(data, recommendation, accessCode) {
 
 /**
  * 依客戶勾選的分析模組，建立公開可看的計算說明。
- * 不公開完整生日，只顯示總和、化約方式與對應晶種。
+ * 不公開完整生日，只顯示必要的推算結果、判定方式與對應晶種。
  * @param {Object} data - 諮詢表單資料
  * @returns {Array<string>} 公開計算說明
  */
@@ -582,21 +582,26 @@ function buildPublicCalculationNotes(data) {
   const notes = [];
 
   if (isCalculationMethodEnabled(data, '生命靈數')) {
-    const lifePath = calculatePublicLifePath(data && data.birthDate);
-    if (lifePath) {
-      const crystalInfo = getLifePathCrystalInfo(lifePath.number);
-      notes.push('生命靈數計算：以表單中的日期數字逐位相加，總和 ' + lifePath.firstSum + '；化約 ' + lifePath.reductionText + '，得到生命靈數 ' + lifePath.number + '。');
-      notes.push('生命靈數 ' + lifePath.number + ' 推薦水晶：' + crystalInfo.name + '。' + crystalInfo.desc + '。');
-    } else {
-      notes.push('生命靈數計算：尚未取得有效日期，會先以妳填寫的狀態需求與其他分析方式整理水晶方向。');
-    }
+    notes.push(buildPublicLifePathCalculationNote(data));
+  }
+
+  if (isCalculationMethodEnabled(data, '生辰五行')) {
+    notes.push(buildPublicFiveElementsCalculationNote(data));
+  }
+
+  if (isCalculationMethodEnabled(data, '脈輪能量')) {
+    notes.push(buildPublicChakraCalculationNote(data));
+  }
+
+  if (isCalculationMethodEnabled(data, '星座生肖')) {
+    notes.push(buildPublicZodiacCalculationNote(data));
   }
 
   if (!notes.length) {
     notes.push('建議先從最想被照顧的狀態出發，再由沐菲依色系、晶種能量與配戴習慣微調成真正適合妳的客製手鏈。');
   }
 
-  return notes;
+  return notes.filter(Boolean);
 }
 
 function isCalculationMethodEnabled(data, methodName) {
@@ -605,6 +610,62 @@ function isCalculationMethodEnabled(data, methodName) {
     return value.indexOf(methodName) !== -1;
   }
   return String(value || '').indexOf(methodName) !== -1;
+}
+
+function buildPublicLifePathCalculationNote(data) {
+  const lifePath = calculatePublicLifePath(data && data.birthDate);
+
+  if (!lifePath) {
+    return '生命靈數：尚未取得有效日期，先以妳填寫的狀態需求與其他分析方式整理水晶方向。';
+  }
+
+  const crystalInfo = getLifePathCrystalInfo(lifePath.number);
+  return '生命靈數：以表單日期數字逐位相加，總和 ' + lifePath.firstSum + '，化約 ' + lifePath.reductionText + '，得到生命靈數 ' + lifePath.number + '。推薦水晶：' + crystalInfo.name + '，' + crystalInfo.desc + '。';
+}
+
+function buildPublicFiveElementsCalculationNote(data) {
+  const birthDate = data && data.birthDate;
+  const fiveElements = getPublicFiveElements(birthDate);
+
+  if (!birthDate) {
+    return '生辰五行：尚未取得有效日期，先以整體能量平衡整理五行方向。推薦水晶：白水晶、茶晶，協助穩定與淨化。';
+  }
+
+  const crystalInfo = getFiveElementCrystalInfo(fiveElements.deficiency);
+  return '生辰五行：依表單日期判定出生季節，不公開完整生日，判定為' + fiveElements.season + '能量，建議補' + fiveElements.deficiency + '。推薦水晶：' + crystalInfo.name + '，' + crystalInfo.desc + '。';
+}
+
+function buildPublicChakraCalculationNote(data) {
+  const chakras = splitPublicListValue(normalizeListValue(data && data.targetChakra))
+    .map(sanitizePublicText)
+    .filter(Boolean);
+
+  if (!chakras.length) {
+    const crystalInfo = getChakraCrystalInfo('');
+    return '脈輪能量：未勾選特定脈輪，先以整體身心能量調和為主。推薦水晶：' + crystalInfo.name + '，' + crystalInfo.desc + '。';
+  }
+
+  const pairs = chakras.slice(0, 4).map(function(chakra) {
+    const crystalInfo = getChakraCrystalInfo(chakra);
+    return chakra + '對應' + crystalInfo.name;
+  });
+
+  return '脈輪能量：依妳勾選的脈輪需求整理後天調和方向，' + pairs.join('，') + '。';
+}
+
+function buildPublicZodiacCalculationNote(data) {
+  const birthDate = data && data.birthDate;
+
+  if (!birthDate) {
+    return '星座生肖：尚未取得有效日期，先以白水晶作為整體守護與能量放大。';
+  }
+
+  const zodiacSign = getPublicZodiacSign(birthDate);
+  const chineseZodiac = getPublicChineseZodiac(birthDate);
+  const zodiacCrystal = getZodiacCrystalInfo(zodiacSign);
+  const chineseCrystal = getChineseZodiacCrystalInfo(chineseZodiac);
+
+  return '星座生肖：依表單日期推算星座與生肖，不公開出生年月日，西方星座為' + zodiacSign + '，對應幸運石' + zodiacCrystal + '，東方生肖為' + chineseZodiac + '，對應守護晶' + chineseCrystal + '。';
 }
 
 function calculatePublicLifePath(birthDateStr) {
@@ -650,6 +711,101 @@ function getLifePathCrystalInfo(number) {
   };
 
   return map[number] || { name: '白水晶', desc: '協助淨化與放大整體能量' };
+}
+
+function getPublicFiveElements(birthDateStr) {
+  if (typeof calculateFiveElements === 'function') {
+    return calculateFiveElements(birthDateStr);
+  }
+
+  const month = parseInt(String(birthDateStr || '').split('-')[1], 10);
+  if (month >= 2 && month <= 4) {
+    return { season: '春季', deficiency: '金、土' };
+  }
+  if (month >= 5 && month <= 7) {
+    return { season: '夏季', deficiency: '水、金' };
+  }
+  if (month >= 8 && month <= 10) {
+    return { season: '秋季', deficiency: '木、火' };
+  }
+  return { season: '冬季', deficiency: '火、土' };
+}
+
+function getFiveElementCrystalInfo(deficiency) {
+  const map = {
+    '金、土': { name: '白水晶(金) + 黃水晶(土)', desc: '以土生金，補充先天缺失，穩固財庫與事業底氣' },
+    '水、金': { name: '海藍寶(水) + 白水晶(金)', desc: '金生水起，消除燥熱火氣，化解工作與溝通阻礙' },
+    '木、火': { name: '綠幽靈(木) + 金太陽石(火)', desc: '木生火旺，增強正財運勢與工作執行魄力' },
+    '火、土': { name: '紅紋石(火) + 茶晶(土)', desc: '火生土燥，帶來溫暖活力與踏實守財能量' }
+  };
+
+  return map[deficiency] || { name: '白水晶 + 茶晶', desc: '協助淨化、穩定與整體能量調和' };
+}
+
+function getChakraCrystalInfo(chakra) {
+  const map = {
+    '海底輪': { name: '黑曜石、茶晶', desc: '提供腳踏實地的穩定感與防護力' },
+    '臍輪': { name: '橙月光石、太陽石', desc: '平衡情緒流動、人際互動與日常喜悅感' },
+    '太陽神經叢': { name: '黃水晶、金髮晶', desc: '提升自信、意志力與行動能量' },
+    '心輪': { name: '粉水晶、葡萄石', desc: '打開心房，協助愛自己、修復關係與柔和人緣' },
+    '喉輪': { name: '海藍寶、天河石', desc: '支援溝通表達、說服力與思緒安定' },
+    '眉心輪': { name: '青金石、紫水晶', desc: '幫助冷靜判斷、直覺覺察與專注思考' },
+    '頂輪': { name: '白水晶、紫水晶', desc: '協助淨化磁場、放大智慧與高頻覺察' }
+  };
+
+  return map[chakra] || { name: '白水晶、茶晶', desc: '全維度身心能量調和' };
+}
+
+function getPublicZodiacSign(birthDateStr) {
+  if (typeof calculateZodiacSign === 'function') {
+    return calculateZodiacSign(birthDateStr);
+  }
+  return '雙魚座';
+}
+
+function getPublicChineseZodiac(birthDateStr) {
+  if (typeof calculateChineseZodiac === 'function') {
+    return calculateChineseZodiac(birthDateStr);
+  }
+  return '龍';
+}
+
+function getZodiacCrystalInfo(zodiacSign) {
+  const map = {
+    '牡羊座': '太陽石',
+    '金牛座': '葡萄石',
+    '雙子座': '天河石',
+    '巨蟹座': '月光石',
+    '獅子座': '鈦晶',
+    '處女座': '紫水晶',
+    '天秤座': '金髮晶',
+    '天蠍座': '拉長石',
+    '射手座': '青金石',
+    '摩羯座': '茶晶',
+    '水瓶座': '拉長石',
+    '雙魚座': '海藍寶'
+  };
+
+  return map[zodiacSign] || '白水晶';
+}
+
+function getChineseZodiacCrystalInfo(chineseZodiac) {
+  const map = {
+    '鼠': '白水晶',
+    '牛': '黃水晶',
+    '虎': '綠幽靈',
+    '兔': '藍砂石',
+    '龍': '紅紋石',
+    '蛇': '綠髮晶',
+    '馬': '金太陽石',
+    '羊': '紫水晶',
+    '猴': '白水晶',
+    '雞': '金髮晶',
+    '狗': '茶晶',
+    '豬': '藍碧璽'
+  };
+
+  return map[chineseZodiac] || '茶晶';
 }
 
 /**
