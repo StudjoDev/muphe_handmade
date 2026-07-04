@@ -1079,7 +1079,9 @@
 
     .profile-access-card.active {
       display: block;
-      animation: success-enter 0.55s ease-out;
+      opacity: 1;
+      transform: none;
+      animation: success-enter 0.55s ease-out both;
     }
 
     .profile-access-header {
@@ -1120,6 +1122,7 @@
     }
 
     .copy-code-btn,
+    .close-code-btn,
     .profile-open-link {
       align-items: center;
       border: none;
@@ -1132,9 +1135,23 @@
       white-space: nowrap;
     }
 
+    .profile-code-actions {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 12px;
+    }
+
     .copy-code-btn {
       background: var(--gradient-primary);
       color: #fff;
+      cursor: pointer;
+    }
+
+    .close-code-btn {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: var(--text-label);
       cursor: pointer;
     }
 
@@ -1178,6 +1195,8 @@
 
     .profile-code-dialog .profile-access-card {
       display: block;
+      opacity: 1;
+      transform: none;
       margin-top: 0;
     }
 
@@ -1344,7 +1363,12 @@
         flex-direction: column;
       }
 
-      .copy-code-btn {
+      .profile-code-actions {
+        grid-template-columns: 1fr;
+      }
+
+      .copy-code-btn,
+      .close-code-btn {
         width: 100%;
       }
 
@@ -1415,7 +1439,7 @@
   <!-- 紙花效果容器 -->
   <div class="confetti-container" id="confettiContainer"></div>
 
-  <!-- 圖卡密碼彈窗：複製後才進入 AI 推薦 -->
+  <!-- 圖卡密碼彈窗：關閉後才進入 AI 推薦 -->
   <div class="profile-code-modal" id="profileCodeModal" aria-hidden="true">
     <div class="profile-code-dialog" role="dialog" aria-modal="true" aria-labelledby="profileCodeModalTitle">
       <div id="profileAccessCard" class="glass-card profile-access-card" aria-live="polite">
@@ -1425,13 +1449,16 @@
         </div>
         <div class="profile-code-box">
           <code id="profileAccessCode">MUPHE-----</code>
+        </div>
+        <div class="profile-code-actions">
           <button class="copy-code-btn" type="button" id="copyProfileCodeBtn">複製查詢碼</button>
+          <button class="close-code-btn" type="button" id="closeProfileCodeBtn">關閉</button>
         </div>
         <a class="profile-open-link" id="openProfileLink" href="../../bracelet.html">前往您的手鏈檔案</a>
         <p class="profile-access-note">
-          公開圖卡只會顯示您的名字與推薦方向，不會顯示聯絡方式、生日、性別、手圍或預算。
+          個人圖卡只會顯示您的名字與推薦方向，不會顯示聯絡方式、生日、性別、手圍或預算。
         </p>
-        <p class="profile-code-required">按下「複製查詢碼」後，系統才會顯示 AI 初步推薦。</p>
+        <p class="profile-code-required">複製密碼後請按「關閉」，系統才會顯示 AI 初步推薦。</p>
       </div>
     </div>
   </div>
@@ -1965,6 +1992,7 @@
     const profileAccessCard = document.getElementById('profileAccessCard');
     const profileAccessCode = document.getElementById('profileAccessCode');
     const copyProfileCodeBtn = document.getElementById('copyProfileCodeBtn');
+    const closeProfileCodeBtn = document.getElementById('closeProfileCodeBtn');
     const openProfileLink = document.getElementById('openProfileLink');
     const profileCodeModal = document.getElementById('profileCodeModal');
     const chakraMethodInput = document.getElementById('method3');
@@ -1979,7 +2007,7 @@
     let submissionTimeoutId = null;
     let pendingRecommendation = '';
     let pendingProfileAccess = null;
-    let isWaitingForProfileCodeCopy = false;
+    let isWaitingForProfileCodeClose = false;
 
     /* ============================
        背景粒子星光產生器
@@ -2259,7 +2287,7 @@
        顯示成功頁面
        ============================ */
     function showSuccess(recommendation, profileAccess) {
-      if (isWaitingForProfileCodeCopy && pendingProfileAccess && pendingProfileAccess.accessCode) {
+      if (isWaitingForProfileCodeClose && pendingProfileAccess && pendingProfileAccess.accessCode) {
         return;
       }
 
@@ -2270,7 +2298,7 @@
       isSubmitting = false;
       pendingRecommendation = recommendation || '';
       pendingProfileAccess = profileAccess || null;
-      isWaitingForProfileCodeCopy = false;
+      isWaitingForProfileCodeClose = false;
 
       renderProfileAccess(pendingProfileAccess);
 
@@ -2283,16 +2311,17 @@
 
     function showProfileCodeModal() {
       if (!profileCodeModal) {
-        showRecommendationResult({ afterProfileCodeCopy: true });
+        showRecommendationResult({ afterProfileCodeClose: true });
         return;
       }
 
-      isWaitingForProfileCodeCopy = true;
+      isWaitingForProfileCodeClose = true;
       profileCodeModal.classList.add('active');
       profileCodeModal.removeAttribute('hidden');
       profileCodeModal.setAttribute('aria-hidden', 'false');
       copyProfileCodeBtn.textContent = '複製查詢碼';
       copyProfileCodeBtn.disabled = false;
+      closeProfileCodeBtn.disabled = false;
     }
 
     function hideProfileCodeModal() {
@@ -2304,11 +2333,11 @@
     }
 
     function showRecommendationResult(options = {}) {
-      if (isWaitingForProfileCodeCopy && !options.afterProfileCodeCopy) {
+      if (isWaitingForProfileCodeClose && !options.afterProfileCodeClose) {
         return;
       }
 
-      isWaitingForProfileCodeCopy = false;
+      isWaitingForProfileCodeClose = false;
       hideProfileCodeModal();
       successPage.classList.add('active');
 
@@ -2355,10 +2384,12 @@
       }
 
       copyProfileCodeBtn.textContent = copied ? '已複製' : '已選取查詢碼';
-      copyProfileCodeBtn.disabled = true;
-      window.setTimeout(() => {
-        showRecommendationResult({ afterProfileCodeCopy: true });
-      }, copied ? 450 : 1100);
+      copyProfileCodeBtn.disabled = false;
+    }
+
+    function closeProfileCodeAndShowRecommendation() {
+      closeProfileCodeBtn.disabled = true;
+      showRecommendationResult({ afterProfileCodeClose: true });
     }
 
     function copyTextWithFallback(text) {
@@ -2400,7 +2431,7 @@
     function showError(message) {
       clearSubmissionTimeout();
       hideLoading();
-      isWaitingForProfileCodeCopy = false;
+      isWaitingForProfileCodeClose = false;
       hideProfileCodeModal();
       errorMessage.classList.add('active');
       if (message) {
@@ -2507,6 +2538,7 @@
     form.addEventListener('submit', handleSubmit);
     window.addEventListener('message', handleSubmissionMessage);
     copyProfileCodeBtn.addEventListener('click', copyProfileCode);
+    closeProfileCodeBtn.addEventListener('click', closeProfileCodeAndShowRecommendation);
     if (chakraMethodInput) {
       chakraMethodInput.addEventListener('change', syncChakraGroupVisibility);
     }

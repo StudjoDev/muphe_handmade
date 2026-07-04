@@ -279,7 +279,7 @@ function findPublishedBraceletProfile(accessCode, accessToken) {
 }
 
 /**
- * 使用姓名與生日找回由諮詢表單建立的公開圖卡查詢碼。
+ * 使用姓名與生日找回由諮詢表單建立的個人圖卡查詢碼。
  * @param {*} name - 使用者輸入姓名
  * @param {*} birthDate - 使用者輸入生日
  * @returns {Object|null} 查詢憑證
@@ -335,7 +335,7 @@ function findBraceletAccessCodeByCustomerIdentity(name, birthDate) {
 }
 
 /**
- * 從公開圖卡列中，依諮詢紀錄列號找出查詢碼。
+ * 從個人圖卡列中，依諮詢紀錄列號找出查詢碼。
  * @param {Array[]} profileRows - 手鏈檔案工作表資料列
  * @param {number} consultationRowNumber - 諮詢紀錄列號
  * @returns {Object|null} 查詢憑證
@@ -465,7 +465,7 @@ function generateBraceletProfileAccessToken() {
 }
 
 /**
- * 由諮詢表單自動建立一份可公開查詢的水晶圖卡。
+ * 由諮詢表單自動建立一份可用密碼查詢的個人水晶圖卡。
  * 對外內容只保留名字與推薦方向，不寫入聯絡方式、生日、性別、手圍或預算。
  * @param {Object} data - 諮詢表單資料
  * @param {string} recommendation - AI/規則初步推薦
@@ -532,8 +532,8 @@ function appendConsultationCardProfile(data, recommendation, timestamp, consulta
 }
 
 /**
- * 將客戶公開圖卡保存到後台 Google Drive 資料夾。
- * 保存內容只包含公開圖卡資料，不含聯絡方式、生日、性別、手圍或預算。
+ * 將客戶個人圖卡保存到後台 Google Drive 資料夾。
+ * 保存內容只包含個人圖卡資料，不含聯絡方式、生日、性別、手圍或預算。
  * @param {Object} options - 圖卡歸檔資料
  * @returns {Object|null} 歸檔結果
  */
@@ -547,7 +547,7 @@ function archiveConsultationCardProfile(options) {
     const fileName = buildConsultationCardArchiveFileName(options);
     const html = buildConsultationCardArchiveHtml(options);
     const file = folder.createFile(fileName, html, MimeType.HTML);
-    file.setDescription('MUPHÉ 客戶水晶圖卡歸檔。此檔案只含公開圖卡資料，不含聯絡方式、生日、性別、手圍或預算。');
+    file.setDescription('MUPHÉ 客戶水晶圖卡歸檔。此檔案只含個人圖卡資料，不含聯絡方式、生日、性別、手圍或預算。');
 
     return {
       fileId: file.getId(),
@@ -967,7 +967,7 @@ function getChineseZodiacCrystalInfo(chineseZodiac) {
 }
 
 /**
- * 推出公開圖卡的狀態主題。
+ * 推出個人圖卡的狀態主題。
  * @param {Object} data - 諮詢表單資料
  * @param {string} recommendation - AI/規則初步推薦
  * @returns {Array<string>} 主題
@@ -1071,7 +1071,7 @@ function sanitizePublicDisplayName(value) {
 }
 
 /**
- * 移除公開圖卡不應出現的個資片段。
+ * 移除個人圖卡不應出現的個資片段。
  * @param {*} value - 原始文字
  * @returns {string} 清理後文字
  */
@@ -1482,7 +1482,7 @@ function processConsultation(data) {
       ''                                      // 17. Q 欄 — 備註紀錄（空白）
     ];
 
-    // 步驟 5：寫入試算表與公開圖卡；CSV mirror 預設停用以降低 Drive 操作量
+    // 步驟 5：寫入試算表與個人圖卡；CSV mirror 預設停用以降低 Drive 操作量
     const writeResult = withScriptLock(function() {
       sheet.appendRow(rowData);
       const consultationRow = sheet.getLastRow();
@@ -1506,7 +1506,7 @@ function processConsultation(data) {
       console.log('【CSV 同步】✅ 已更新：' + writeResult.csvUrl);
     }
     if (writeResult.profile && writeResult.profile.accessCode) {
-      console.log('【公開圖卡】✅ 已建立查詢密碼：' + writeResult.profile.accessCode);
+      console.log('【個人圖卡】✅ 已建立查詢密碼：' + writeResult.profile.accessCode);
     }
 
     // 步驟 6：發送 Email 通知（失敗不影響資料寫入）

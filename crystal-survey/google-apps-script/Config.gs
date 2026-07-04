@@ -25,7 +25,7 @@ const ORDER_SHEET_NAME = 'Orders';
 /** 手鏈公開檔案工作表名稱 */
 const BRACELET_PROFILE_SHEET_NAME = '手鍊檔案';
 
-/** 是否將每張客戶公開圖卡同步保存到 Google Drive 後台資料夾 */
+/** 是否將每張客戶個人圖卡同步保存到 Google Drive 後台資料夾 */
 const CONSULTATION_CARD_ARCHIVE_ENABLED = true;
 
 /**
