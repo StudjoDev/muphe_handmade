@@ -302,7 +302,7 @@ function generateRuleBasedRecommendation(data) {
   const caringMsg = getCaringMessage(data.energyGoal);
 
   const fullReport = [
-    '🔮 【多維度精密能量評估報告（本地規則 Fallback 生成）】',
+    '🔮 【多維度精密能量評估報告】',
     '親愛的 ' + (name || '貴賓') + '，根據我們精密分析您的國曆生日等神祕學數據，為您量身配置以下三款專屬水晶手鏈：',
     '【基本資料】：性別 ' + gender + '；專屬品項 手鏈/手環；淨手圍 ' + (wristSize ? wristSize + ' cm' : '未提供'),
     '',

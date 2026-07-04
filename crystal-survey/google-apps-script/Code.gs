@@ -87,7 +87,7 @@ function doPost(e) {
       title: '諮詢表單已送出',
       headline: '諮詢表單已送出',
       message: consultationResult.accessCode
-        ? '感謝您的信任，我們已收到資料並已產生您的個人圖卡密碼。'
+        ? '感謝您的信任，我們已收到資料並已產生您的分析表密碼。'
         : '感謝您的信任，我們已收到資料並會盡快與您聯繫。',
       reference: consultationResult.accessCode || consultationResult.name || '',
       postMessagePayload: {
@@ -184,7 +184,7 @@ function handleBraceletProfileLookup(e) {
 }
 
 /**
- * 忘記圖卡密碼查詢入口。
+ * 忘記分析表密碼查詢入口。
  * 使用姓名與生日比對諮詢紀錄，只回傳查詢碼，不回傳生日、聯絡方式或其他個資。
  * @param {Object} e - HTTP GET 事件物件
  * @returns {TextOutput} JSON 或 JSONP 文字回應
@@ -210,7 +210,7 @@ function handleForgotBraceletCodeLookup(e) {
         success: false,
         error: {
           code: 'not_found',
-          message: '找不到符合的圖卡密碼，請確認姓名與生日是否與表單相同。'
+          message: '找不到符合的分析表密碼，請確認姓名與生日是否與表單相同。'
         }
       });
     }
@@ -225,12 +225,12 @@ function handleForgotBraceletCodeLookup(e) {
     });
 
   } catch (error) {
-    console.error('【忘記圖卡密碼查詢錯誤】' + error.toString());
+    console.error('【忘記分析表密碼查詢錯誤】' + error.toString());
     return createJsonTextOutput(e, {
       success: false,
       error: {
         code: 'server_error',
-        message: '系統目前無法找回圖卡密碼'
+        message: '系統目前無法找回分析表密碼'
       }
     });
   }
@@ -801,7 +801,7 @@ function buildConsultationCardArchiveHtml(options) {
     '<p class="brand">MUPHÉ Handmade 沐菲手作水晶</p>',
     '<h1>' + escapeHtml(title) + '</h1>',
     publicFields.summary ? '<p>' + escapeHtml(publicFields.summary) + '</p>' : '',
-    '<p class="code">圖卡密碼：' + escapeHtml(options.accessCode || '') + '</p>',
+    '<p class="code">分析表密碼：' + escapeHtml(options.accessCode || '') + '</p>',
     options.profileUrl ? '<p style="margin-top:10px;">查詢連結：' + escapeHtml(options.profileUrl) + '</p>' : '',
     renderArchiveSection('目前最需要照顧的狀態', renderArchiveTags(energyFocus.concat(chakraFocus))),
     renderArchiveSection('沐菲初步推薦方向', renderArchiveList(crystals)),
@@ -875,7 +875,7 @@ function buildConsultationCardPublicFields(data, recommendation, accessCode) {
     wearingGuide: [
       '需要面對' + firstTheme + '相關場景時，先深呼吸三次，再把手鏈戴上，提醒自己把注意力收回身上。',
       '若今天特別疲憊，睡前可把手鏈放在掌心 30 秒，對自己說一句「我允許自己慢慢放鬆」。',
-      '後續討論客製時，可直接提供這組圖卡密碼：' + accessCode
+      '後續討論客製時，可直接提供這組分析表密碼：' + accessCode
     ],
     careInstructions: [
       '日常避免碰撞、泡水、香水與清潔劑。',

@@ -1454,26 +1454,26 @@
   <!-- 紙花效果容器 -->
   <div class="confetti-container" id="confettiContainer"></div>
 
-  <!-- 圖卡密碼彈窗：關閉後才進入 AI 推薦 -->
+  <!-- 分析表密碼彈窗：關閉後才進入 AI 推薦 -->
   <div class="profile-code-modal" id="profileCodeModal" aria-hidden="true">
     <div class="profile-code-dialog" role="dialog" aria-modal="true" aria-labelledby="profileCodeModalTitle">
       <div id="profileAccessCard" class="glass-card profile-access-card" aria-live="polite">
         <div class="profile-access-header">
-          <h3 id="profileCodeModalTitle">您的個人圖卡密碼已生成</h3>
-          <p>請先複製保存。之後到「您的手鏈檔案」貼上密碼，就可以查看個人圖卡。</p>
+          <h3 id="profileCodeModalTitle">您的分析表密碼已生成</h3>
+          <p>請先複製保存。之後到「您的手鏈檔案」貼上分析表密碼，就可以查看個人圖卡。</p>
         </div>
         <div class="profile-code-box">
           <code id="profileAccessCode">MUPHE-----</code>
         </div>
         <div class="profile-code-actions">
-          <button class="copy-code-btn" type="button" id="copyProfileCodeBtn">複製查詢碼</button>
+          <button class="copy-code-btn" type="button" id="copyProfileCodeBtn">複製分析表密碼</button>
           <button class="close-code-btn" type="button" id="closeProfileCodeBtn">關閉</button>
         </div>
         <a class="profile-open-link" id="openProfileLink" href="../../bracelet.html">前往您的手鏈檔案</a>
         <p class="profile-access-note">
           個人圖卡只會顯示您的名字與推薦方向，不會顯示聯絡方式、生日、性別、手圍或預算。
         </p>
-        <p class="profile-code-required">複製密碼後請按「關閉」，系統才會顯示 AI 初步推薦。</p>
+        <p class="profile-code-required">複製分析表密碼後請按「關閉」，系統才會顯示 AI 初步推薦。</p>
       </div>
     </div>
   </div>
@@ -2312,7 +2312,7 @@
       formContainer.style.display = 'none';
       submitBtn.disabled = false;
       isSubmitting = false;
-      pendingRecommendation = recommendation || '';
+      pendingRecommendation = cleanRecommendationText(recommendation);
       pendingProfileAccess = profileAccess || null;
       isWaitingForProfileCodeClose = false;
 
@@ -2325,6 +2325,12 @@
       }
     }
 
+    function cleanRecommendationText(text) {
+      return String(text || '')
+        .replace(/（本地規則\s*Fallback\s*生成）/g, '')
+        .replace(/\(本地規則\s*Fallback\s*生成\)/g, '');
+    }
+
     function showProfileCodeModal() {
       if (!profileCodeModal) {
         showRecommendationResult({ afterProfileCodeClose: true });
@@ -2335,7 +2341,7 @@
       profileCodeModal.classList.add('active');
       profileCodeModal.removeAttribute('hidden');
       profileCodeModal.setAttribute('aria-hidden', 'false');
-      copyProfileCodeBtn.textContent = '複製查詢碼';
+      copyProfileCodeBtn.textContent = '複製分析表密碼';
       copyProfileCodeBtn.disabled = false;
       closeProfileCodeBtn.disabled = false;
     }

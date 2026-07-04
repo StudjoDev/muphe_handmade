@@ -5,7 +5,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>手鍊檔案查詢｜沐菲 MUPHÉ Handmade</title>
-  <meta name="description" content="輸入圖卡密碼或手鍊代碼，查詢 MUPHÉ Handmade 客製水晶的個人推薦圖卡與配戴照顧檔案。" />
+  <meta name="description" content="輸入分析表密碼或手鍊代碼，查詢 MUPHÉ Handmade 客製水晶的個人推薦圖卡與配戴照顧檔案。" />
   <link rel="icon" type="image/png" href="pic/muphe_logo.png" />
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -48,13 +48,13 @@
         <p class="eyebrow">Bracelet Profile</p>
         <h1 id="bracelet-title">你的手鍊檔案</h1>
         <p>
-          貼上諮詢完成後取得的圖卡密碼，或輸入手鍊代碼，查看你的個人水晶圖卡、晶種方向與日常照顧提醒。
+          貼上諮詢完成後取得的分析表密碼，或輸入手鍊代碼，查看你的個人水晶圖卡、晶種方向與日常照顧提醒。
         </p>
       </div>
 
       <div class="bracelet-lookup reveal" data-lookup-card>
         <form class="bracelet-code-form" data-code-form>
-          <label for="bracelet-code">圖卡密碼 / 手鍊代碼</label>
+          <label for="bracelet-code">分析表密碼 / 手鍊代碼</label>
           <div class="bracelet-code-row">
             <input
               id="bracelet-code"
@@ -69,7 +69,7 @@
             />
             <button class="primary-link" type="submit">查詢</button>
           </div>
-          <p id="bracelet-code-help">貼上表單送出後取得的密碼即可查詢；手動輸入時不用區分大小寫。</p>
+          <p id="bracelet-code-help">貼上表單送出後取得的分析表密碼即可查詢；手動輸入時不用區分大小寫。</p>
         </form>
 
         <div class="forgot-code" data-forgot-code>
@@ -80,7 +80,7 @@
             aria-controls="forgot-code-panel"
             data-forgot-toggle
           >
-            忘記密碼？
+            忘記分析表密碼？
           </button>
           <div class="forgot-code-panel" id="forgot-code-panel" hidden data-forgot-panel>
             <form class="forgot-code-form" data-forgot-form>
@@ -94,7 +94,7 @@
                 <input id="forgot-birth-date" name="birthDate" type="date" data-forgot-birth-date />
               </div>
 
-              <button class="secondary-link" type="submit">找回密碼</button>
+              <button class="secondary-link" type="submit">找回分析表密碼</button>
             </form>
             <div class="forgot-code-result" aria-live="polite" hidden data-forgot-status></div>
           </div>
@@ -302,7 +302,7 @@
 
       function showIdle() {
         hideProfile();
-        showStatus("idle", "輸入密碼查詢", "個人圖卡只會顯示名字與推薦方向，不顯示聯絡方式、生日、性別、手圍或預算。");
+        showStatus("idle", "輸入分析表密碼查詢", "個人圖卡只會顯示名字與推薦方向，不顯示聯絡方式、生日、性別、手圍或預算。");
       }
 
       function parseTextList(value) {
@@ -825,7 +825,7 @@
         const code = normalizeString(codeInput.value).toUpperCase();
 
         if (!code) {
-          showStatus("error", "請輸入圖卡密碼", "密碼會在諮詢表單送出後顯示，也可能印在保養卡或 QR Code 貼紙旁。");
+          showStatus("error", "請輸入分析表密碼", "密碼會在諮詢表單送出後顯示，也可能印在保養卡或 QR Code 貼紙旁。");
           codeInput.focus();
           return;
         }
@@ -858,7 +858,7 @@
           const birthDate = normalizeString(forgotBirthDateInput && forgotBirthDateInput.value);
 
           if (!name || !birthDate) {
-            showForgotStatus("error", "請填寫姓名與生日", "需要兩個欄位都正確，才能找回圖卡密碼。");
+            showForgotStatus("error", "請填寫姓名與生日", "需要兩個欄位都正確，才能找回分析表密碼。");
             if (!name && forgotNameInput) forgotNameInput.focus();
             else if (forgotBirthDateInput) forgotBirthDateInput.focus();
             return;
@@ -872,17 +872,17 @@
               throw new Error(
                 normalizeString(payload && payload.error && payload.error.message) ||
                   normalizeString(payload && payload.message) ||
-                  "找不到符合的圖卡密碼。",
+                  "找不到符合的分析表密碼。",
               );
             }
 
             const accessCode = normalizeAccessCodeForDisplay(payload);
             if (!accessCode) {
-              throw new Error("找不到符合的圖卡密碼。");
+              throw new Error("找不到符合的分析表密碼。");
             }
 
             codeInput.value = accessCode;
-            showForgotStatus("success", "已找到圖卡密碼", "已自動帶入上方查詢欄，也可以先複製保存。", accessCode);
+            showForgotStatus("success", "已找到分析表密碼", "已自動帶入上方查詢欄，也可以先複製保存。", accessCode);
           } catch (error) {
             showForgotStatus("error", "找回失敗", getCustomerErrorMessage(error));
           }
