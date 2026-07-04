@@ -1344,6 +1344,7 @@ function renderSubmissionPage(options) {
     'var payload=' + postMessageJson + ';',
     'try{',
     'if(window.parent&&window.parent!==window){window.parent.postMessage(payload,"*");}',
+    'if(window.top&&window.top!==window){window.top.postMessage(payload,"*");}',
     'if(window.opener){window.opener.postMessage(payload,"*");}',
     '}catch(error){}',
     '})();',

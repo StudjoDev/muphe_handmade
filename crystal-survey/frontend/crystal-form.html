@@ -1914,9 +1914,11 @@
     const openProfileLink = document.getElementById('openProfileLink');
     const submissionFrame = document.querySelector('iframe[name="mupheSubmissionFrame"]');
     const SUBMISSION_FRAME_NAME = 'mupheSubmissionFrame';
+    const SUBMISSION_TIMEOUT_MS = 45000;
 
     /* 防止重複送出的旗標 */
     let isSubmitting = false;
+    let submissionTimeoutId = null;
 
     /* ============================
        背景粒子星光產生器
@@ -2157,13 +2159,23 @@
       loadingOverlay.classList.remove('active');
     }
 
+    function clearSubmissionTimeout() {
+      if (submissionTimeoutId) {
+        clearTimeout(submissionTimeoutId);
+        submissionTimeoutId = null;
+      }
+    }
+
     /* ============================
        顯示成功頁面
        ============================ */
     function showSuccess(recommendation, profileAccess) {
+      clearSubmissionTimeout();
       hideLoading();
       formContainer.style.display = 'none';
       successPage.classList.add('active');
+      submitBtn.disabled = false;
+      isSubmitting = false;
 
       const recCard = document.getElementById('aiRecommendationCard');
       const recText = document.getElementById('aiRecommendationText');
@@ -2222,6 +2234,7 @@
        顯示錯誤訊息
        ============================ */
     function showError(message) {
+      clearSubmissionTimeout();
       hideLoading();
       errorMessage.classList.add('active');
       if (message) {
@@ -2236,13 +2249,27 @@
       errorMessage.classList.remove('active');
     }
 
+    function isTrustedSubmissionOrigin(origin) {
+      if (!origin) return false;
+
+      try {
+        const url = new URL(origin);
+        return url.hostname === 'script.google.com' ||
+          url.hostname === 'script.googleusercontent.com' ||
+          url.hostname.endsWith('.googleusercontent.com');
+      } catch (error) {
+        return false;
+      }
+    }
+
     function handleSubmissionMessage(event) {
-      if (!submissionFrame || event.source !== submissionFrame.contentWindow) {
+      const payload = event.data || {};
+      if (!payload || payload.app !== 'muphe-submission') {
         return;
       }
 
-      const payload = event.data || {};
-      if (!payload || payload.app !== 'muphe-submission') {
+      const fromSubmissionFrame = submissionFrame && event.source === submissionFrame.contentWindow;
+      if (!fromSubmissionFrame && !isTrustedSubmissionOrigin(event.origin)) {
         return;
       }
 
@@ -2299,6 +2326,10 @@
         form.action = url;
         form.target = SUBMISSION_FRAME_NAME;
         HTMLFormElement.prototype.submit.call(form);
+        clearSubmissionTimeout();
+        submissionTimeoutId = setTimeout(() => {
+          showError('送出時間較久，請確認網路後再試一次；若已重複送出，請直接聯繫沐菲確認資料。');
+        }, SUBMISSION_TIMEOUT_MS);
 
       } catch (error) {
         console.error('表單提交錯誤：', error);
