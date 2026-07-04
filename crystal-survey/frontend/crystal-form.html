@@ -2312,17 +2312,7 @@
         await navigator.clipboard.writeText(code);
         copied = true;
       } catch (error) {
-        const selection = window.getSelection();
-        const range = document.createRange();
-        range.selectNodeContents(profileAccessCode);
-        selection.removeAllRanges();
-        selection.addRange(range);
-
-        try {
-          copied = document.execCommand('copy');
-        } catch (copyError) {
-          copied = false;
-        }
+        copied = copyTextWithFallback(code);
       }
 
       copyProfileCodeBtn.textContent = copied ? '已複製' : '已選取查詢碼';
@@ -2330,6 +2320,39 @@
       window.setTimeout(() => {
         showRecommendationResult({ afterProfileCodeCopy: true });
       }, copied ? 450 : 1100);
+    }
+
+    function copyTextWithFallback(text) {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.setAttribute('readonly', '');
+      textarea.style.position = 'fixed';
+      textarea.style.top = '-1000px';
+      textarea.style.left = '-1000px';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.focus({ preventScroll: true });
+      textarea.select();
+      textarea.setSelectionRange(0, textarea.value.length);
+
+      let copied = false;
+      try {
+        copied = document.execCommand('copy');
+      } catch (copyError) {
+        copied = false;
+      }
+
+      document.body.removeChild(textarea);
+
+      if (!copied) {
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(profileAccessCode);
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+
+      return copied;
     }
 
     /* ============================
