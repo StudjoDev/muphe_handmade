@@ -46,9 +46,9 @@
     <section class="bracelet-hero" aria-labelledby="bracelet-title">
       <div class="bracelet-hero-copy reveal">
         <p class="eyebrow">Bracelet Profile</p>
-        <h1 id="bracelet-title">妳的手鍊檔案</h1>
+        <h1 id="bracelet-title">你的手鍊檔案</h1>
         <p>
-          貼上諮詢完成後取得的圖卡密碼，或輸入手鍊代碼，查看妳的公開水晶圖卡、晶種方向與日常照顧提醒。
+          貼上諮詢完成後取得的圖卡密碼，或輸入手鍊代碼，查看你的公開水晶圖卡、晶種方向與日常照顧提醒。
         </p>
       </div>
 
@@ -716,7 +716,7 @@
             </div>
             <div class="consultation-card-head">
               ${profile.scene ? `<p class="eyebrow">${escapeHtml(profile.scene)}</p>` : ""}
-              <h2 id="profile-heading" tabindex="-1">${escapeHtml(profile.name || "妳的水晶狀態圖卡")}</h2>
+              <h2 id="profile-heading" tabindex="-1">${escapeHtml(profile.name || "你的水晶狀態圖卡")}</h2>
               ${profile.displayName ? `<p class="profile-for">為 ${escapeHtml(profile.displayName)} 整理的個人圖卡</p>` : ""}
               ${profile.intention ? `<p>${escapeHtml(profile.intention)}</p>` : ""}
             </div>
@@ -775,7 +775,7 @@
               profile.makerNote.length
                 ? `
                   <footer class="consultation-card-note">
-                    <h3>給妳的一句話</h3>
+                    <h3>給你的一句話</h3>
                     ${renderList(profile.makerNote)}
                   </footer>
                 `

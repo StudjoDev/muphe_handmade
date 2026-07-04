@@ -646,7 +646,7 @@ function buildConsultationCardArchiveHtml(options) {
     renderArchiveSection('配戴與日常提醒', renderArchiveList(wearingGuide)),
     renderArchiveSection('保養與淨化', renderArchiveList(careInstructions)),
     renderArchiveSection('小儀式', renderArchiveList(ritual)),
-    renderArchiveSection('給妳的一句話', renderArchiveList(makerNote)),
+    renderArchiveSection('給你的一句話', renderArchiveList(makerNote)),
     '</main>',
     '</body>',
     '</html>'
@@ -699,10 +699,10 @@ function buildConsultationCardPublicFields(data, recommendation, accessCode) {
 
   return {
     displayName: displayName,
-    braceletName: (displayName ? displayName : '妳') + '的水晶狀態圖卡',
+    braceletName: (displayName ? displayName : '你') + '的水晶狀態圖卡',
     scene: '水晶諮詢圖卡',
     summary: clipPublicText(
-      '依妳填寫的狀態，沐菲先整理出「' + themeText + '」的水晶方向。這是一份初步圖卡，方便妳回到手鏈檔案查看與後續討論客製設計。',
+      '依你填寫的狀態，沐菲先整理出「' + themeText + '」的水晶方向。這是一份初步圖卡，方便你回到手鏈檔案查看與後續討論客製設計。',
       180
     ),
     crystals: crystalItems,
@@ -724,7 +724,7 @@ function buildConsultationCardPublicFields(data, recommendation, accessCode) {
       '遇到人際或情緒拉扯時，摸一下珠子，先問自己：「我現在真正需要的是什麼？」'
     ],
     makerNote: clipPublicText(
-      '給' + (displayName || '妳') + '：妳不需要用消耗自己來換取平衡。先照顧好自己的狀態，柔軟才會更有力量。',
+      '給' + (displayName || '你') + '：你不需要用消耗自己來換取平衡。先照顧好自己的狀態，柔軟才會更有力量。',
       160
     )
   };
@@ -756,7 +756,7 @@ function buildPublicCalculationNotes(data) {
   }
 
   if (!notes.length) {
-    notes.push('建議先從最想被照顧的狀態出發，再由沐菲依色系、晶種能量與配戴習慣微調成真正適合妳的客製手鏈。');
+    notes.push('建議先從最想被照顧的狀態出發，再由沐菲依色系、晶種能量與配戴習慣微調成真正適合你的客製手鏈。');
   }
 
   return notes.filter(Boolean);
@@ -774,7 +774,7 @@ function buildPublicLifePathCalculationNote(data) {
   const lifePath = calculatePublicLifePath(data && data.birthDate);
 
   if (!lifePath) {
-    return '生命靈數：尚未取得有效日期，先以妳填寫的狀態需求與其他分析方式整理水晶方向。';
+    return '生命靈數：尚未取得有效日期，先以你填寫的狀態需求與其他分析方式整理水晶方向。';
   }
 
   const crystalInfo = getLifePathCrystalInfo(lifePath.number);
@@ -808,7 +808,7 @@ function buildPublicChakraCalculationNote(data) {
     return chakra + '對應' + crystalInfo.name;
   });
 
-  return '脈輪能量：依妳勾選的脈輪需求整理後天調和方向，' + pairs.join('，') + '。';
+  return '脈輪能量：依你勾選的脈輪需求整理後天調和方向，' + pairs.join('，') + '。';
 }
 
 function buildPublicZodiacCalculationNote(data) {
@@ -1035,7 +1035,7 @@ function extractPublicCrystalItems(recommendation) {
   }
 
   if (!items.length) {
-    items.push('客製晶種搭配：由沐菲依妳目前狀態整理最適合的水晶組合');
+    items.push('客製晶種搭配：由沐菲依你目前狀態整理最適合的水晶組合');
   }
 
   return items;
