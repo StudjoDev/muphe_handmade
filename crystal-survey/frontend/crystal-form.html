@@ -347,6 +347,10 @@
       margin-bottom: 24px;
     }
 
+    .field-group[hidden] {
+      display: none !important;
+    }
+
     .field-group:last-child {
       margin-bottom: 0;
     }
@@ -1657,34 +1661,34 @@
           <div class="checkbox-group"
             style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); display: grid;">
             <div class="checkbox-option">
-              <input type="checkbox" id="method1" name="calculationMethod" value="生命靈數" checked>
+              <input type="checkbox" id="method1" name="calculationMethod" value="生命靈數">
               <label for="method1" style="padding: 10px 12px; justify-content: center; text-align: center;">
                 <span class="goal-text" style="font-size: 0.88rem;">生命靈數</span>
               </label>
             </div>
             <div class="checkbox-option">
-              <input type="checkbox" id="method2" name="calculationMethod" value="生辰五行" checked>
+              <input type="checkbox" id="method2" name="calculationMethod" value="生辰五行">
               <label for="method2" style="padding: 10px 12px; justify-content: center; text-align: center;">
                 <span class="goal-text" style="font-size: 0.88rem;">生辰五行</span>
               </label>
             </div>
             <div class="checkbox-option">
-              <input type="checkbox" id="method3" name="calculationMethod" value="脈輪能量" checked>
-              <label for="method3" style="padding: 10px 12px; justify-content: center; text-align: center;">
-                <span class="goal-text" style="font-size: 0.88rem;">脈輪能量</span>
+              <input type="checkbox" id="method4" name="calculationMethod" value="星座生肖">
+              <label for="method4" style="padding: 10px 12px; justify-content: center; text-align: center;">
+                <span class="goal-text" style="font-size: 0.88rem;">星座生肖</span>
               </label>
             </div>
             <div class="checkbox-option">
-              <input type="checkbox" id="method4" name="calculationMethod" value="星座生肖" checked>
-              <label for="method4" style="padding: 10px 12px; justify-content: center; text-align: center;">
-                <span class="goal-text" style="font-size: 0.88rem;">星座生肖</span>
+              <input type="checkbox" id="method3" name="calculationMethod" value="脈輪能量">
+              <label for="method3" style="padding: 10px 12px; justify-content: center; text-align: center;">
+                <span class="goal-text" style="font-size: 0.88rem;">脈輪能量</span>
               </label>
             </div>
           </div>
         </div>
 
         <!-- 6. 目標脈輪調和 (多選) -->
-        <div class="field-group" id="chakrasGroup">
+        <div class="field-group" id="chakrasGroup" hidden aria-hidden="true">
           <label class="field-label">請選擇您目前最需要平衡的脈輪（可複選）</label>
           <div class="checkbox-group">
             <div class="checkbox-option">
@@ -1959,6 +1963,9 @@
     const copyProfileCodeBtn = document.getElementById('copyProfileCodeBtn');
     const openProfileLink = document.getElementById('openProfileLink');
     const profileCodeModal = document.getElementById('profileCodeModal');
+    const chakraMethodInput = document.getElementById('method3');
+    const chakrasGroup = document.getElementById('chakrasGroup');
+    const chakraInputs = Array.from(document.querySelectorAll('input[name="targetChakra"]'));
     const submissionFrame = document.querySelector('iframe[name="mupheSubmissionFrame"]');
     const SUBMISSION_FRAME_NAME = 'mupheSubmissionFrame';
     const SUBMISSION_TIMEOUT_MS = 45000;
@@ -2036,6 +2043,22 @@
     wristSlider.addEventListener('input', function () {
       wristValueDisplay.textContent = parseFloat(this.value).toFixed(1);
     });
+
+    function syncChakraGroupVisibility() {
+      if (!chakraMethodInput || !chakrasGroup) return;
+
+      const shouldShow = chakraMethodInput.checked;
+      chakrasGroup.hidden = !shouldShow;
+      chakrasGroup.setAttribute('aria-hidden', shouldShow ? 'false' : 'true');
+      chakrasGroup.classList.remove('has-error');
+
+      chakraInputs.forEach((input) => {
+        input.disabled = !shouldShow;
+        if (!shouldShow) {
+          input.checked = false;
+        }
+      });
+    }
 
     /* ============================
        表單驗證邏輯
@@ -2468,6 +2491,9 @@
     form.addEventListener('submit', handleSubmit);
     window.addEventListener('message', handleSubmissionMessage);
     copyProfileCodeBtn.addEventListener('click', copyProfileCode);
+    if (chakraMethodInput) {
+      chakraMethodInput.addEventListener('change', syncChakraGroupVisibility);
+    }
 
     /* 重試按鈕事件 */
     retryBtn.addEventListener('click', function () {
@@ -2487,6 +2513,9 @@
 
       /* 設定滑桿初始值顯示 */
       wristValueDisplay.textContent = parseFloat(wristSlider.value).toFixed(1);
+
+      /* 依照「脈輪能量」勾選狀態顯示或隱藏脈輪選擇 */
+      syncChakraGroupVisibility();
     });
   </script>
 </body>
