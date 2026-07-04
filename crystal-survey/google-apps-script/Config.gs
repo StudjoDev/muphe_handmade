@@ -25,6 +25,9 @@ const ORDER_SHEET_NAME = 'Orders';
 /** 手鏈公開檔案工作表名稱 */
 const BRACELET_PROFILE_SHEET_NAME = '手鍊檔案';
 
+/** 分析評估全文工作表名稱 */
+const ANALYSIS_EVALUATION_SHEET_NAME = '分析評估表';
+
 /** 是否將每張客戶個人圖卡同步保存到 Google Drive 後台資料夾 */
 const CONSULTATION_CARD_ARCHIVE_ENABLED = true;
 
@@ -209,5 +212,55 @@ const BRACELET_PROFILE_HEADER_ROW = [
   '圖片網址',
   '商品或公開頁網址',
   '公開時間',
+  '內部備註'
+];
+
+/** 分析評估表欄位在試算表中的位置（1-indexed） */
+const ANALYSIS_EVALUATION_COLUMNS = {
+  CREATED_AT: 1,          // A 欄 — 建立時間
+  UPDATED_AT: 2,          // B 欄 — 更新時間
+  EVALUATION_ID: 3,       // C 欄 — 評估 ID
+  ACCESS_CODE: 4,         // D 欄 — 手鏈檔案查詢碼
+  PROFILE_ID: 5,          // E 欄 — 個人圖卡 ID
+  CUSTOMER_NAME: 6,       // F 欄 — 客人姓名
+  CONTACT: 7,             // G 欄 — 聯絡方式
+  GENDER: 8,              // H 欄 — 性別
+  BIRTH_DATE: 9,          // I 欄 — 出生日期
+  BIRTH_TIME: 10,         // J 欄 — 出生時間
+  CALCULATION_METHOD: 11, // K 欄 — 能量分析模組
+  ENERGY_GOAL: 12,        // L 欄 — 期望目標
+  TARGET_CHAKRA: 13,      // M 欄 — 目標脈輪
+  COLOR_PREFERENCE: 14,   // N 欄 — 偏好色系
+  WRIST_SIZE: 15,         // O 欄 — 淨手圍
+  BUDGET: 16,             // P 欄 — 預算範圍
+  DESCRIPTION: 17,        // Q 欄 — 狀態描述
+  RECOMMENDATION_TEXT: 18,// R 欄 — 水晶能量初步評估全文
+  PROFILE_URL: 19,        // S 欄 — 個人圖卡連結
+  CONSULTATION_ROW: 20,   // T 欄 — 諮詢紀錄列號
+  INTERNAL_NOTES: 21      // U 欄 — 內部備註
+};
+
+/** 分析評估表標題列 */
+const ANALYSIS_EVALUATION_HEADER_ROW = [
+  '建立時間',
+  '更新時間',
+  '評估ID',
+  '查詢碼',
+  '個人圖卡ID',
+  '客人姓名',
+  '聯絡方式',
+  '性別',
+  '出生日期',
+  '出生時間',
+  '能量分析模組',
+  '期望目標',
+  '目標脈輪',
+  '偏好色系',
+  '淨手圍',
+  '預算範圍',
+  '狀態描述',
+  '水晶能量初步評估全文',
+  '個人圖卡連結',
+  '諮詢紀錄列號',
   '內部備註'
 ];

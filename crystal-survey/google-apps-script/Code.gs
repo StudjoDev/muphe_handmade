@@ -361,6 +361,7 @@ function findPublishedBraceletCredentialByConsultationRow(profileRows, consultat
 
     return {
       accessCode: accessCode,
+      profileId: getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.PROFILE_ID),
       profileUrl: getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.PRODUCT_URL)
     };
   }
@@ -465,6 +466,16 @@ function generateBraceletProfileAccessToken() {
 }
 
 /**
+ * 產生分析評估紀錄 ID。
+ * @returns {string} 評估 ID
+ */
+function generateAnalysisEvaluationId() {
+  const timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyyMMddHHmmss');
+  const randomPart = Utilities.getUuid().replace(/-/g, '').slice(0, 8).toUpperCase();
+  return 'EVAL-' + timestamp + '-' + randomPart;
+}
+
+/**
  * 由諮詢表單自動建立一份可用密碼查詢的個人水晶圖卡。
  * 對外內容只保留名字與推薦方向，不寫入聯絡方式、生日、性別、手圍或預算。
  * @param {Object} data - 諮詢表單資料
@@ -529,6 +540,158 @@ function appendConsultationCardProfile(data, recommendation, timestamp, consulta
     profileUrl: profileUrl,
     archiveFileUrl: archiveResult ? archiveResult.fileUrl : ''
   };
+}
+
+/**
+ * 保存最初「您的專屬水晶能量初步評估」全文，供後台用查詢碼追查。
+ * @param {Object} data - 諮詢表單資料
+ * @param {string} recommendation - AI/規則初步推薦全文
+ * @param {string} timestamp - 建立時間
+ * @param {number} consultationRow - 諮詢紀錄列號
+ * @param {Object} profileResult - 個人圖卡建立結果
+ * @returns {Object} 分析評估紀錄資訊
+ */
+function appendAnalysisEvaluationRecord(data, recommendation, timestamp, consultationRow, profileResult) {
+  const evaluationSheet = getOrCreateSheet(
+    ANALYSIS_EVALUATION_SHEET_NAME,
+    ANALYSIS_EVALUATION_HEADER_ROW,
+    getAnalysisEvaluationColumnWidths()
+  );
+  const evaluationId = generateAnalysisEvaluationId();
+  const accessCode = profileResult && profileResult.accessCode ? profileResult.accessCode : '';
+  const profileId = profileResult && profileResult.profileId ? profileResult.profileId : '';
+  const profileUrl = profileResult && profileResult.profileUrl ? profileResult.profileUrl : '';
+
+  const rowData = [
+    timestamp,
+    timestamp,
+    evaluationId,
+    accessCode,
+    profileId,
+    data.name || '',
+    data.contact || '',
+    data.gender || '',
+    data.birthDate || '',
+    data.birthTime || '',
+    normalizeListValue(data.calculationMethod),
+    normalizeListValue(data.energyGoal),
+    normalizeListValue(data.targetChakra),
+    normalizeListValue(data.colorPreference),
+    data.wristSize || '',
+    data.budget || '',
+    data.description || '',
+    recommendation || '',
+    profileUrl,
+    consultationRow || '',
+    '由諮詢表單自動保存；與手鍊檔案共用查詢碼。'
+  ];
+
+  evaluationSheet.appendRow(rowData);
+
+  return {
+    evaluationId: evaluationId,
+    accessCode: accessCode,
+    rowNumber: evaluationSheet.getLastRow()
+  };
+}
+
+/**
+ * 手動回補既有諮詢紀錄到分析評估表。
+ * 會依手鏈檔案內部備註中的諮詢紀錄列號，找出同一筆資料的查詢碼。
+ * @returns {Object} 回補結果
+ */
+function backfillAnalysisEvaluationSheet() {
+  return withScriptLock(function() {
+    const consultationSheet = getOrCreateSheet(SHEET_NAME, HEADER_ROW, getConsultationColumnWidths());
+    const profileSheet = getOrCreateSheet(
+      BRACELET_PROFILE_SHEET_NAME,
+      BRACELET_PROFILE_HEADER_ROW,
+      getBraceletProfileColumnWidths()
+    );
+    const evaluationSheet = getOrCreateSheet(
+      ANALYSIS_EVALUATION_SHEET_NAME,
+      ANALYSIS_EVALUATION_HEADER_ROW,
+      getAnalysisEvaluationColumnWidths()
+    );
+    const existingAccessCodes = {};
+    const evaluationLastRow = evaluationSheet.getLastRow();
+
+    if (evaluationLastRow > 1) {
+      const existingRows = evaluationSheet
+        .getRange(2, ANALYSIS_EVALUATION_COLUMNS.ACCESS_CODE, evaluationLastRow - 1, 1)
+        .getDisplayValues();
+      existingRows.forEach(function(row) {
+        const accessCode = normalizeBraceletAccessCode(row[0]);
+        if (accessCode) {
+          existingAccessCodes[accessCode] = true;
+        }
+      });
+    }
+
+    const consultationLastRow = consultationSheet.getLastRow();
+    if (consultationLastRow <= 1) {
+      return {
+        createdCount: 0,
+        skippedCount: 0,
+        message: '沒有可回補的諮詢紀錄'
+      };
+    }
+
+    const consultationRows = consultationSheet
+      .getRange(2, 1, consultationLastRow - 1, HEADER_ROW.length)
+      .getDisplayValues();
+    const profileLastRow = profileSheet.getLastRow();
+    const profileRows = profileLastRow > 1
+      ? profileSheet.getRange(2, 1, profileLastRow - 1, BRACELET_PROFILE_HEADER_ROW.length).getDisplayValues()
+      : [];
+    let createdCount = 0;
+    let skippedCount = 0;
+
+    consultationRows.forEach(function(row, index) {
+      const consultationRowNumber = index + 2;
+      const recommendation = row[COLUMNS.AI_RECOMMENDATION - 1] || '';
+      const timestamp = row[COLUMNS.TIMESTAMP - 1] || '';
+      const credential = findPublishedBraceletCredentialByConsultationRow(profileRows, consultationRowNumber);
+      const accessCode = credential ? normalizeBraceletAccessCode(credential.accessCode) : '';
+
+      if (!recommendation || !accessCode || existingAccessCodes[accessCode]) {
+        skippedCount++;
+        return;
+      }
+
+      appendAnalysisEvaluationRecord(
+        {
+          name: row[COLUMNS.NAME - 1] || '',
+          contact: row[COLUMNS.CONTACT - 1] || '',
+          gender: row[COLUMNS.GENDER - 1] || '',
+          birthDate: row[COLUMNS.BIRTH_DATE - 1] || '',
+          birthTime: row[COLUMNS.BIRTH_TIME - 1] || '',
+          wristSize: row[COLUMNS.WRIST_SIZE - 1] || '',
+          colorPreference: row[COLUMNS.COLOR_PREFERENCE - 1] || '',
+          energyGoal: row[COLUMNS.ENERGY_GOAL - 1] || '',
+          calculationMethod: row[COLUMNS.CALCULATION_METHOD - 1] || '',
+          targetChakra: row[COLUMNS.TARGET_CHAKRA - 1] || '',
+          description: row[COLUMNS.DESCRIPTION - 1] || '',
+          budget: row[COLUMNS.BUDGET - 1] || ''
+        },
+        recommendation,
+        timestamp || Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy/MM/dd HH:mm:ss'),
+        consultationRowNumber,
+        credential
+      );
+      existingAccessCodes[accessCode] = true;
+      createdCount++;
+    });
+
+    SpreadsheetApp.flush();
+    console.log('【分析評估表回補】✅ 新增 ' + createdCount + ' 筆，略過 ' + skippedCount + ' 筆');
+
+    return {
+      createdCount: createdCount,
+      skippedCount: skippedCount,
+      sheetName: evaluationSheet.getName()
+    };
+  });
 }
 
 /**
@@ -1487,17 +1650,20 @@ function processConsultation(data) {
       sheet.appendRow(rowData);
       const consultationRow = sheet.getLastRow();
       const profileResult = appendConsultationCardProfile(data, recommendation, timestamp, consultationRow);
+      const evaluationResult = appendAnalysisEvaluationRecord(data, recommendation, timestamp, consultationRow, profileResult);
       try {
         SpreadsheetApp.flush();
         return {
           csvUrl: syncCsvMirrorFromSheet(sheet),
-          profile: profileResult
+          profile: profileResult,
+          evaluation: evaluationResult
         };
       } catch (csvError) {
         console.error('【CSV 同步失敗】' + csvError.toString());
         return {
           csvUrl: '',
-          profile: profileResult
+          profile: profileResult,
+          evaluation: evaluationResult
         };
       }
     });
@@ -1507,6 +1673,9 @@ function processConsultation(data) {
     }
     if (writeResult.profile && writeResult.profile.accessCode) {
       console.log('【個人圖卡】✅ 已建立查詢密碼：' + writeResult.profile.accessCode);
+    }
+    if (writeResult.evaluation && writeResult.evaluation.accessCode) {
+      console.log('【分析評估表】✅ 已保存初步評估全文：' + writeResult.evaluation.accessCode);
     }
 
     // 步驟 6：發送 Email 通知（失敗不影響資料寫入）
@@ -1979,6 +2148,35 @@ function getBraceletProfileColumnWidths() {
   return widths;
 }
 
+/**
+ * 分析評估表工作表欄寬。
+ */
+function getAnalysisEvaluationColumnWidths() {
+  const widths = {};
+  widths[ANALYSIS_EVALUATION_COLUMNS.CREATED_AT] = 150;
+  widths[ANALYSIS_EVALUATION_COLUMNS.UPDATED_AT] = 150;
+  widths[ANALYSIS_EVALUATION_COLUMNS.EVALUATION_ID] = 210;
+  widths[ANALYSIS_EVALUATION_COLUMNS.ACCESS_CODE] = 150;
+  widths[ANALYSIS_EVALUATION_COLUMNS.PROFILE_ID] = 150;
+  widths[ANALYSIS_EVALUATION_COLUMNS.CUSTOMER_NAME] = 120;
+  widths[ANALYSIS_EVALUATION_COLUMNS.CONTACT] = 180;
+  widths[ANALYSIS_EVALUATION_COLUMNS.GENDER] = 90;
+  widths[ANALYSIS_EVALUATION_COLUMNS.BIRTH_DATE] = 120;
+  widths[ANALYSIS_EVALUATION_COLUMNS.BIRTH_TIME] = 120;
+  widths[ANALYSIS_EVALUATION_COLUMNS.CALCULATION_METHOD] = 220;
+  widths[ANALYSIS_EVALUATION_COLUMNS.ENERGY_GOAL] = 240;
+  widths[ANALYSIS_EVALUATION_COLUMNS.TARGET_CHAKRA] = 180;
+  widths[ANALYSIS_EVALUATION_COLUMNS.COLOR_PREFERENCE] = 180;
+  widths[ANALYSIS_EVALUATION_COLUMNS.WRIST_SIZE] = 110;
+  widths[ANALYSIS_EVALUATION_COLUMNS.BUDGET] = 120;
+  widths[ANALYSIS_EVALUATION_COLUMNS.DESCRIPTION] = 320;
+  widths[ANALYSIS_EVALUATION_COLUMNS.RECOMMENDATION_TEXT] = 520;
+  widths[ANALYSIS_EVALUATION_COLUMNS.PROFILE_URL] = 260;
+  widths[ANALYSIS_EVALUATION_COLUMNS.CONSULTATION_ROW] = 120;
+  widths[ANALYSIS_EVALUATION_COLUMNS.INTERNAL_NOTES] = 260;
+  return widths;
+}
+
 // ============================
 // 🛠️ 輔助函數
 // ============================
@@ -2172,14 +2370,21 @@ function initializeSheet() {
       BRACELET_PROFILE_HEADER_ROW,
       getBraceletProfileColumnWidths()
     );
+    const analysisEvaluationSheet = getOrCreateSheet(
+      ANALYSIS_EVALUATION_SHEET_NAME,
+      ANALYSIS_EVALUATION_HEADER_ROW,
+      getAnalysisEvaluationColumnWidths()
+    );
     const csvUrl = syncCsvMirrorWithLock(sheet);
     console.log('✅ 試算表初始化完成！');
     console.log('  諮詢工作表名稱：' + sheet.getName());
     console.log('  訂單工作表名稱：' + orderSheet.getName());
     console.log('  手鏈公開檔案工作表名稱：' + braceletProfileSheet.getName());
+    console.log('  分析評估表工作表名稱：' + analysisEvaluationSheet.getName());
     console.log('  諮詢欄位數量：' + HEADER_ROW.length);
     console.log('  訂單欄位數量：' + ORDER_HEADER_ROW.length);
     console.log('  手鏈公開檔案欄位數量：' + BRACELET_PROFILE_HEADER_ROW.length);
+    console.log('  分析評估表欄位數量：' + ANALYSIS_EVALUATION_HEADER_ROW.length);
     
     // 顯示試算表 URL
     const spreadsheet = sheet.getParent();
