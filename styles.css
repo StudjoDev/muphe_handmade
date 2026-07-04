@@ -248,7 +248,7 @@ button {
       rgba(255, 250, 240, 0.28) 72%,
       rgba(255, 250, 240, 0.18) 100%
     ),
-    url("pic/LOGO_背景.png") center / cover;
+    url("pic/LOGO_背景.webp") center / cover;
   display: flex;
   min-height: 88svh;
   padding: calc(var(--header-height) + 42px) max(24px, 7vw) 54px;
@@ -1387,7 +1387,7 @@ details p {
         rgba(255, 250, 240, 0.91) 56%,
         rgba(255, 250, 240, 0.3) 100%
       ),
-      url("pic/LOGO_背景.png") center bottom / cover;
+      url("pic/LOGO_背景.webp") center bottom / cover;
     min-height: 88svh;
   }
 
@@ -2080,7 +2080,7 @@ details p {
 }
 
 .consultation-card-shell::before {
-  background: url("pic/muphe_logo.png") center / contain no-repeat;
+  background: url("pic/muphe_logo.webp") center / contain no-repeat;
   content: "";
   height: 300px;
   opacity: 0.04;
