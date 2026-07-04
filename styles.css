@@ -1941,6 +1941,122 @@ details p {
   padding-left: 1.2em;
 }
 
+.consultation-card-shell {
+  background:
+    linear-gradient(180deg, rgba(255, 250, 240, 0.96), rgba(255, 250, 240, 0.9)),
+    radial-gradient(circle at 6% 0%, rgba(199, 122, 116, 0.2), transparent 34%),
+    radial-gradient(circle at 96% 18%, rgba(31, 111, 103, 0.16), transparent 30%),
+    #fffdf8;
+  border: 1px solid rgba(183, 139, 62, 0.28);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 18px;
+  margin: 0 auto;
+  max-width: 760px;
+  overflow: hidden;
+  padding: clamp(22px, 5vw, 42px);
+  position: relative;
+}
+
+.consultation-card-shell::before {
+  background: url("pic/muphe_logo.png") center / contain no-repeat;
+  content: "";
+  height: 300px;
+  opacity: 0.04;
+  position: absolute;
+  right: -70px;
+  top: -76px;
+  width: 300px;
+}
+
+.consultation-card-shell > * {
+  position: relative;
+  z-index: 1;
+}
+
+.consultation-card-brand {
+  align-items: center;
+  color: var(--teal);
+  display: inline-flex;
+  font-size: 0.9rem;
+  font-weight: 900;
+  gap: 10px;
+}
+
+.consultation-card-brand img {
+  border-radius: var(--radius);
+  height: 34px;
+  object-fit: contain;
+  width: 34px;
+}
+
+.consultation-card-head {
+  border-bottom: 1px solid rgba(36, 26, 43, 0.12);
+  padding-bottom: 18px;
+}
+
+.consultation-card-head h2 {
+  font-size: clamp(2rem, 8vw, 3.5rem);
+  letter-spacing: 0;
+  line-height: 1.08;
+  margin: 10px 0 0;
+}
+
+.consultation-card-head h2:focus {
+  outline: none;
+}
+
+.consultation-card-head > p:not(.eyebrow),
+.consultation-card-note p {
+  color: var(--muted);
+  font-size: 1.02rem;
+  margin: 14px 0 0;
+}
+
+.consultation-card-head .profile-for {
+  color: var(--plum);
+  font-weight: 900;
+}
+
+.consultation-card-panel {
+  background: rgba(255, 253, 248, 0.72);
+  border: 1px solid rgba(36, 26, 43, 0.11);
+  border-radius: var(--radius);
+  padding: 18px;
+}
+
+.consultation-card-panel h3,
+.consultation-card-note h3 {
+  font-size: 1.18rem;
+  line-height: 1.35;
+  margin: 0 0 14px;
+}
+
+.consultation-card-panel .profile-crystal-list {
+  grid-template-columns: 1fr;
+}
+
+.consultation-tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.consultation-tag-row span {
+  border: 1px solid rgba(75, 45, 95, 0.18);
+  border-radius: 999px;
+  color: var(--plum);
+  font-size: 0.88rem;
+  font-weight: 900;
+  padding: 7px 11px;
+}
+
+.consultation-card-note {
+  border-top: 1px solid rgba(36, 26, 43, 0.12);
+  padding-top: 18px;
+}
+
 .bracelet-support-strip {
   align-items: center;
   background: var(--ink);

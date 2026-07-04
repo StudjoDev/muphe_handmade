@@ -25,6 +25,19 @@ const ORDER_SHEET_NAME = 'Orders';
 /** 手鏈公開檔案工作表名稱 */
 const BRACELET_PROFILE_SHEET_NAME = '手鍊檔案';
 
+/** 是否將每張客戶公開圖卡同步保存到 Google Drive 後台資料夾 */
+const CONSULTATION_CARD_ARCHIVE_ENABLED = true;
+
+/**
+ * 客戶圖卡 Google Drive 資料夾 ID
+ * - 留空：自動建立或使用同名資料夾
+ * - 填入資料夾 ID：保存到指定後台資料夾
+ */
+const CONSULTATION_CARD_FOLDER_ID = '';
+
+/** 自動建立資料夾時使用的名稱 */
+const CONSULTATION_CARD_FOLDER_NAME = 'MUPHÉ 客戶水晶圖卡';
+
 /** 店主通知 Email；留空時嘗試使用 Apps Script 執行帳號 Email */
 const OWNER_EMAIL = 'muphe.handmade@gmail.com';
 

@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="zh-Hant">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>吳慧萍｜沐菲水晶推薦圖卡</title>
+  <link rel="icon" type="image/png" href="../pic/muphe_logo.png" />
+  <style>
+    :root {
+      --ink: #241a2b;
+      --muted: #6f6572;
+      --paper: #fffaf2;
+      --cream: #f7f0e4;
+      --plum: #4b2d5f;
+      --teal: #1f6f67;
+      --gold: #b78b3e;
+      --rose: #c77a74;
+      --line: rgba(75, 45, 95, 0.16);
+      --shadow: 0 24px 80px rgba(36, 26, 43, 0.16);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        linear-gradient(135deg, rgba(255, 250, 242, 0.92), rgba(247, 240, 228, 0.78)),
+        url("../pic/LOGO_背景.png") center / cover fixed;
+      color: var(--ink);
+      font-family:
+        "Noto Sans TC",
+        "PingFang TC",
+        "Microsoft JhengHei",
+        system-ui,
+        sans-serif;
+      line-height: 1.68;
+    }
+
+    img {
+      display: block;
+      max-width: 100%;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .page-shell {
+      margin: 0 auto;
+      max-width: 1180px;
+      padding: 28px 20px 48px;
+    }
+
+    .topbar {
+      align-items: center;
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 0 auto 26px;
+      max-width: 760px;
+    }
+
+    .brand {
+      align-items: center;
+      display: inline-flex;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand img {
+      background: #fff;
+      border-radius: 8px;
+      height: 46px;
+      object-fit: contain;
+      width: 46px;
+    }
+
+    .brand strong {
+      display: block;
+      font-size: 0.98rem;
+      line-height: 1.15;
+    }
+
+    .brand span {
+      color: var(--teal);
+      display: block;
+      font-size: 0.78rem;
+      margin-top: 2px;
+    }
+
+    .home-link {
+      border: 1px solid rgba(36, 26, 43, 0.2);
+      border-radius: 999px;
+      color: var(--ink);
+      flex: 0 0 auto;
+      font-size: 0.9rem;
+      font-weight: 700;
+      padding: 9px 16px;
+    }
+
+    .card-wrap {
+      margin: 0 auto;
+      max-width: 760px;
+    }
+
+    .energy-card {
+      background:
+        linear-gradient(180deg, rgba(255, 250, 242, 0.94), rgba(255, 250, 242, 0.86)),
+        radial-gradient(circle at top left, rgba(199, 122, 116, 0.24), transparent 38%),
+        radial-gradient(circle at 82% 24%, rgba(31, 111, 103, 0.18), transparent 32%),
+        #fffaf2;
+      border: 1px solid rgba(183, 139, 62, 0.34);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .energy-card::before {
+      background: url("../pic/muphe_logo.png") center / contain no-repeat;
+      content: "";
+      height: 360px;
+      opacity: 0.045;
+      position: absolute;
+      right: -80px;
+      top: -88px;
+      width: 360px;
+    }
+
+    .card-inner {
+      display: grid;
+      gap: 22px;
+      padding: 42px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-kicker {
+      color: var(--teal);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0;
+      margin: 0 0 10px;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      font-family:
+        "Cormorant Garamond",
+        "Noto Serif TC",
+        serif;
+      font-size: 2.45rem;
+      line-height: 1.08;
+      margin: 0;
+    }
+
+    .headline {
+      color: var(--plum);
+      font-size: 1.2rem;
+      font-weight: 800;
+      margin: 12px 0 0;
+    }
+
+    .intro {
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 22px;
+    }
+
+    .intro p:last-child {
+      margin-bottom: 0;
+    }
+
+    .need-box {
+      background: rgba(31, 111, 103, 0.08);
+      border-left: 4px solid var(--teal);
+      border-radius: 8px;
+      padding: 16px 18px;
+    }
+
+    .calc-box {
+      background: rgba(183, 139, 62, 0.1);
+      border-left: 4px solid var(--gold);
+      border-radius: 8px;
+      padding: 16px 18px;
+    }
+
+    .need-box h2,
+    .calc-box h2,
+    .section h2 {
+      font-size: 1rem;
+      line-height: 1.35;
+      margin: 0 0 8px;
+    }
+
+    .need-box p,
+    .calc-box p {
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .calc-box p + p {
+      margin-top: 8px;
+    }
+
+    .recommendations {
+      display: grid;
+      gap: 12px;
+    }
+
+    .rec-item {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      display: grid;
+      gap: 8px;
+      padding: 16px 18px;
+    }
+
+    .rec-title {
+      align-items: baseline;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .rec-title b {
+      color: var(--plum);
+      font-size: 1rem;
+    }
+
+    .rec-title span {
+      color: var(--gold);
+      font-size: 0.82rem;
+      font-weight: 800;
+    }
+
+    .crystals {
+      color: var(--ink);
+      font-weight: 800;
+      margin: 0;
+    }
+
+    .rec-item p:last-child,
+    .wearing p,
+    .note p {
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .wearing {
+      background: rgba(183, 139, 62, 0.1);
+      border-radius: 8px;
+      padding: 18px;
+    }
+
+    .wearing strong {
+      color: var(--plum);
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .tag-row span {
+      border: 1px solid rgba(75, 45, 95, 0.22);
+      border-radius: 999px;
+      color: var(--plum);
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 6px 10px;
+    }
+
+    .note {
+      border-top: 1px solid var(--line);
+      padding-top: 22px;
+    }
+
+    .signature {
+      align-items: center;
+      color: var(--teal);
+      display: flex;
+      font-family:
+        "Cormorant Garamond",
+        "Noto Serif TC",
+        serif;
+      font-size: 1.22rem;
+      font-weight: 700;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .signature::before {
+      background: var(--gold);
+      content: "";
+      height: 1px;
+      width: 44px;
+    }
+
+    @media (max-width: 680px) {
+      .page-shell {
+        padding: 18px 14px 34px;
+      }
+
+      .topbar {
+        align-items: flex-start;
+      }
+
+      .brand img {
+        height: 42px;
+        width: 42px;
+      }
+
+      .home-link {
+        font-size: 0.82rem;
+        padding: 8px 12px;
+      }
+
+      .card-inner {
+        gap: 18px;
+        padding: 28px 20px;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      .headline {
+        font-size: 1.06rem;
+      }
+
+      .rec-item,
+      .need-box,
+      .wearing {
+        padding: 14px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page-shell">
+    <nav class="topbar" aria-label="圖卡導覽">
+      <a class="brand" href="../index.html">
+        <img src="../pic/muphe_logo.png" alt="MUPHÉ Handmade 沐菲品牌標誌" />
+        <span>
+          <strong>MUPHÉ Handmade</strong>
+          <span>沐菲手作水晶</span>
+        </span>
+      </a>
+      <a class="home-link" href="../index.html">回到官網</a>
+    </nav>
+
+    <div class="card-wrap">
+      <article class="energy-card" aria-label="吳慧萍水晶推薦圖卡">
+        <div class="card-inner">
+          <header class="intro">
+            <p class="card-kicker">Crystal Energy Card</p>
+            <h1>慧萍的水晶狀態圖卡</h1>
+            <p class="headline">界線守護、情緒安定、人際柔和</p>
+          </header>
+
+          <section class="need-box" aria-label="目前想照顧的狀態">
+            <h2>妳現在想照顧的狀態</h2>
+            <p>
+              想降低閒話與人際消耗，建立更清楚的界線；也希望焦慮感與睡前停不下來的思緒能慢慢安定下來。
+            </p>
+          </section>
+
+          <section class="calc-box" aria-label="生命靈數計算方式">
+            <h2>生命靈數計算方式</h2>
+            <p>以表單中的日期數字逐位相加，總和 29；化約 2+9=11 -> 1+1=2，得到生命靈數 2。</p>
+            <p>生命靈數 2 推薦水晶：橙月光石、太陽石。疏通臍輪，增添情緒包容力與協調溫和氣場。</p>
+          </section>
+
+          <section class="section" aria-label="推薦水晶方向">
+            <h2>沐菲初步推薦方向</h2>
+            <div class="recommendations">
+              <div class="rec-item">
+                <div class="rec-title">
+                  <b>主命宮能量手鏈</b>
+                  <span>溫暖行動力</span>
+                </div>
+                <p class="crystals">橙月光石、太陽石、紅紋石、茶晶</p>
+                <p>補足溫暖與踏實感，讓心裡比較有力氣，也比較不容易被外界情緒帶著走。</p>
+              </div>
+
+              <div class="rec-item">
+                <div class="rec-title">
+                  <b>心輪平衡療癒手鏈</b>
+                  <span>柔和人際</span>
+                </div>
+                <p class="crystals">粉水晶、葡萄石</p>
+                <p>適合照顧敏感、委屈與討好感，讓關係變得柔軟，但不需要犧牲自己的感受。</p>
+              </div>
+
+              <div class="rec-item">
+                <div class="rec-title">
+                  <b>流年幸運守護手鏈</b>
+                  <span>防護定心</span>
+                </div>
+                <p class="crystals">茶晶、金髮晶</p>
+                <p>幫助穩定氣場，面對職場或人際雜訊時，把注意力留在真正重要的事情上。</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="wearing" aria-label="客製建議">
+            <h2>如果先做一條，建議這樣客製</h2>
+            <p>
+              以 <strong>茶晶與金髮晶</strong> 做底，守住界線和安全感；再加入 <strong>粉水晶或葡萄石</strong>
+              讓人際互動更柔和。手圍可依妳填寫的 15 cm 製作。
+            </p>
+            <div class="tag-row" aria-label="推薦狀態標籤">
+              <span>隱形防護罩模式</span>
+              <span>智慧沉澱模式</span>
+              <span>溫柔但有界線</span>
+            </div>
+          </section>
+
+          <footer class="note">
+            <h2>給慧萍的一句話</h2>
+            <p>
+              妳不需要吸收每一個人的情緒，也不需要用消耗自己來換取關係的和平。把界線放穩，柔軟會更有力量。
+            </p>
+            <div class="signature">MUPHÉ Handmade 沐菲手作水晶</div>
+          </footer>
+        </div>
+      </article>
+    </div>
+  </main>
+</body>
+
+</html>

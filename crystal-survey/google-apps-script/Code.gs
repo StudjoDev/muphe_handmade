@@ -83,8 +83,19 @@ function doPost(e) {
     return renderSubmissionPage({
       title: '諮詢表單已送出',
       headline: '諮詢表單已送出',
-      message: '感謝您的信任，我們已收到資料並會盡快與您聯繫。',
-      reference: consultationResult.name || ''
+      message: consultationResult.accessCode
+        ? '感謝您的信任，我們已收到資料並已產生您的個人圖卡密碼。'
+        : '感謝您的信任，我們已收到資料並會盡快與您聯繫。',
+      reference: consultationResult.accessCode || consultationResult.name || '',
+      postMessagePayload: {
+        app: 'muphe-submission',
+        type: 'consultation',
+        success: true,
+        recommendation: consultationResult.recommendation || '',
+        accessCode: consultationResult.accessCode || '',
+        profileUrl: consultationResult.profileUrl || '',
+        displayName: consultationResult.name || ''
+      }
     });
 
   } catch (error) {
@@ -94,7 +105,13 @@ function doPost(e) {
       title: '提交失敗',
       headline: '提交失敗',
       message: '系統目前無法完成送出，請稍後再試或直接聯繫店主。',
-      isError: true
+      isError: true,
+      postMessagePayload: {
+        app: 'muphe-submission',
+        type: 'submission',
+        success: false,
+        message: '系統目前無法完成送出，請稍後再試或直接聯繫店主。'
+      }
     });
   }
 }
@@ -212,11 +229,13 @@ function findPublishedBraceletProfile(accessCode, accessToken) {
  * @returns {Object} 對外公開資料
  */
 function buildPublicBraceletProfile(row) {
+  const scene = getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.SCENE);
   return {
     profileId: getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.PROFILE_ID),
+    profileType: scene === '水晶諮詢圖卡' ? 'consultationCard' : 'braceletProfile',
     displayName: getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.DISPLAY_NAME),
     braceletName: getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.BRACELET_NAME),
-    scene: getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.SCENE),
+    scene: scene,
     summary: getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.SUMMARY),
     crystals: splitPublicListValue(getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.CRYSTALS)),
     energyFocus: splitPublicListValue(getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.ENERGY_FOCUS)),
@@ -285,6 +304,480 @@ function generateBraceletProfileAccessCode(sheet) {
  */
 function generateBraceletProfileAccessToken() {
   return Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '');
+}
+
+/**
+ * 由諮詢表單自動建立一份可公開查詢的水晶圖卡。
+ * 對外內容只保留名字與推薦方向，不寫入聯絡方式、生日、性別、手圍或預算。
+ * @param {Object} data - 諮詢表單資料
+ * @param {string} recommendation - AI/規則初步推薦
+ * @param {string} timestamp - 建立時間
+ * @param {number} consultationRow - 諮詢紀錄列號
+ * @returns {Object} 查詢憑證與公開網址
+ */
+function appendConsultationCardProfile(data, recommendation, timestamp, consultationRow) {
+  const profileSheet = getOrCreateSheet(
+    BRACELET_PROFILE_SHEET_NAME,
+    BRACELET_PROFILE_HEADER_ROW,
+    getBraceletProfileColumnWidths()
+  );
+  const profileId = generateBraceletProfileId();
+  const accessCode = generateBraceletProfileAccessCode(profileSheet);
+  const accessToken = generateBraceletProfileAccessToken();
+  const publicFields = buildConsultationCardPublicFields(data, recommendation, accessCode);
+  const profileUrl = getBraceletProfileUrl(accessCode);
+  const archiveResult = archiveConsultationCardProfile({
+    profileId: profileId,
+    accessCode: accessCode,
+    profileUrl: profileUrl,
+    createdAt: timestamp,
+    publicFields: publicFields
+  });
+  const archiveNote = archiveResult && archiveResult.fileUrl
+    ? '；圖卡歸檔：' + archiveResult.fileUrl
+    : '';
+
+  const rowData = [
+    timestamp,
+    timestamp,
+    profileId,
+    accessCode,
+    accessToken,
+    '公開',
+    publicFields.displayName,
+    publicFields.braceletName,
+    publicFields.scene,
+    publicFields.summary,
+    publicFields.crystals.join('\n'),
+    publicFields.energyFocus.join('\n'),
+    publicFields.chakraFocus.join('\n'),
+    publicFields.designNotes,
+    publicFields.wearingGuide.join('\n'),
+    publicFields.careInstructions.join('\n'),
+    publicFields.ritual.join('\n'),
+    publicFields.makerNote,
+    '',
+    profileUrl,
+    timestamp,
+    '由諮詢表單自動生成；諮詢紀錄列號 ' + consultationRow + '；公開資料已排除聯絡方式、生日、性別、手圍與預算。' + archiveNote
+  ];
+
+  profileSheet.appendRow(rowData);
+
+  return {
+    profileId: profileId,
+    accessCode: accessCode,
+    accessToken: accessToken,
+    profileUrl: profileUrl,
+    archiveFileUrl: archiveResult ? archiveResult.fileUrl : ''
+  };
+}
+
+/**
+ * 將客戶公開圖卡保存到後台 Google Drive 資料夾。
+ * 保存內容只包含公開圖卡資料，不含聯絡方式、生日、性別、手圍或預算。
+ * @param {Object} options - 圖卡歸檔資料
+ * @returns {Object|null} 歸檔結果
+ */
+function archiveConsultationCardProfile(options) {
+  try {
+    if (typeof CONSULTATION_CARD_ARCHIVE_ENABLED !== 'undefined' && CONSULTATION_CARD_ARCHIVE_ENABLED === false) {
+      return null;
+    }
+
+    const folder = getConsultationCardArchiveFolder();
+    const fileName = buildConsultationCardArchiveFileName(options);
+    const html = buildConsultationCardArchiveHtml(options);
+    const file = folder.createFile(fileName, html, MimeType.HTML);
+    file.setDescription('MUPHÉ 客戶水晶圖卡歸檔。此檔案只含公開圖卡資料，不含聯絡方式、生日、性別、手圍或預算。');
+
+    return {
+      fileId: file.getId(),
+      fileUrl: file.getUrl()
+    };
+  } catch (error) {
+    console.error('【圖卡歸檔失敗】' + error.toString());
+    return null;
+  }
+}
+
+/**
+ * 取得或建立客戶圖卡歸檔資料夾。
+ * @returns {Folder} Google Drive 資料夾
+ */
+function getConsultationCardArchiveFolder() {
+  const folderId = typeof CONSULTATION_CARD_FOLDER_ID === 'undefined'
+    ? ''
+    : String(CONSULTATION_CARD_FOLDER_ID || '').trim();
+
+  if (folderId) {
+    return DriveApp.getFolderById(folderId);
+  }
+
+  const folderName = (
+    typeof CONSULTATION_CARD_FOLDER_NAME === 'undefined' ||
+    !String(CONSULTATION_CARD_FOLDER_NAME || '').trim()
+  )
+    ? 'MUPHÉ 客戶水晶圖卡'
+    : String(CONSULTATION_CARD_FOLDER_NAME).trim();
+  const folders = DriveApp.getFoldersByName(folderName);
+
+  if (folders.hasNext()) {
+    return folders.next();
+  }
+
+  return DriveApp.createFolder(folderName);
+}
+
+function buildConsultationCardArchiveFileName(options) {
+  const publicFields = options.publicFields || {};
+  const displayName = sanitizeDriveFileName(publicFields.displayName || '客戶');
+  const accessCode = sanitizeDriveFileName(options.accessCode || options.profileId || 'CARD');
+  return accessCode + '_' + displayName + '_水晶圖卡.html';
+}
+
+function sanitizeDriveFileName(value) {
+  const text = String(value || '').trim().replace(/[\\/:*?"<>|#%{}~&]/g, '-');
+  return text.substring(0, 80) || 'card';
+}
+
+function buildConsultationCardArchiveHtml(options) {
+  const publicFields = options.publicFields || {};
+  const title = publicFields.braceletName || '水晶狀態圖卡';
+  const crystals = publicFields.crystals || [];
+  const energyFocus = publicFields.energyFocus || [];
+  const chakraFocus = publicFields.chakraFocus || [];
+  const calculationNotes = splitPublicListValue(publicFields.designNotes || '');
+  const wearingGuide = publicFields.wearingGuide || [];
+  const careInstructions = publicFields.careInstructions || [];
+  const ritual = publicFields.ritual || [];
+  const makerNote = publicFields.makerNote ? [publicFields.makerNote] : [];
+
+  return [
+    '<!doctype html>',
+    '<html lang="zh-Hant">',
+    '<head>',
+    '<meta charset="utf-8">',
+    '<meta name="viewport" content="width=device-width, initial-scale=1">',
+    '<meta name="robots" content="noindex">',
+    '<title>' + escapeHtml(title) + '</title>',
+    '<style>',
+    'body{margin:0;background:#f7f0e4;color:#241a2b;font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.75;padding:24px;}',
+    '.card{background:#fffaf0;border:1px solid rgba(36,26,43,.12);border-radius:8px;box-shadow:0 22px 70px rgba(36,26,43,.14);margin:0 auto;max-width:760px;padding:34px;}',
+    '.brand{color:#1f6f67;font-weight:900;margin:0 0 18px;}',
+    'h1{font-size:clamp(2rem,7vw,3.2rem);line-height:1.08;margin:0 0 10px;}',
+    'h2{font-size:1.15rem;margin:0 0 10px;}',
+    'section{border-top:1px solid rgba(36,26,43,.12);padding-top:18px;margin-top:18px;}',
+    'p{color:#756c76;margin:0;}',
+    'ul{color:#756c76;margin:0;padding-left:1.2em;}',
+    '.tags{display:flex;flex-wrap:wrap;gap:8px;}',
+    '.tags span{border:1px solid rgba(75,45,95,.2);border-radius:999px;color:#4b2d5f;font-weight:800;padding:6px 10px;}',
+    '.code{background:#241a2b;border-radius:8px;color:#fffaf0;display:inline-block;font-weight:900;margin-top:12px;padding:8px 12px;}',
+    '</style>',
+    '</head>',
+    '<body>',
+    '<main class="card">',
+    '<p class="brand">MUPHÉ Handmade 沐菲手作水晶</p>',
+    '<h1>' + escapeHtml(title) + '</h1>',
+    publicFields.summary ? '<p>' + escapeHtml(publicFields.summary) + '</p>' : '',
+    '<p class="code">圖卡密碼：' + escapeHtml(options.accessCode || '') + '</p>',
+    options.profileUrl ? '<p style="margin-top:10px;">查詢連結：' + escapeHtml(options.profileUrl) + '</p>' : '',
+    renderArchiveSection('目前最需要照顧的狀態', renderArchiveTags(energyFocus.concat(chakraFocus))),
+    renderArchiveSection('沐菲初步推薦方向', renderArchiveList(crystals)),
+    renderArchiveSection('計算方式', renderArchiveList(calculationNotes)),
+    renderArchiveSection('配戴與日常提醒', renderArchiveList(wearingGuide)),
+    renderArchiveSection('保養與淨化', renderArchiveList(careInstructions)),
+    renderArchiveSection('小儀式', renderArchiveList(ritual)),
+    renderArchiveSection('給妳的一句話', renderArchiveList(makerNote)),
+    '</main>',
+    '</body>',
+    '</html>'
+  ].join('');
+}
+
+function renderArchiveSection(title, bodyHtml) {
+  if (!bodyHtml) {
+    return '';
+  }
+
+  return '<section><h2>' + escapeHtml(title) + '</h2>' + bodyHtml + '</section>';
+}
+
+function renderArchiveList(items) {
+  if (!items || !items.length) {
+    return '';
+  }
+
+  return '<ul>' + items.map(function(item) {
+    return '<li>' + escapeHtml(item) + '</li>';
+  }).join('') + '</ul>';
+}
+
+function renderArchiveTags(items) {
+  if (!items || !items.length) {
+    return '';
+  }
+
+  return '<div class="tags">' + items.map(function(item) {
+    return '<span>' + escapeHtml(item) + '</span>';
+  }).join('') + '</div>';
+}
+
+/**
+ * 整理諮詢圖卡的公開欄位。
+ * @param {Object} data - 諮詢表單資料
+ * @param {string} recommendation - AI/規則初步推薦
+ * @param {string} accessCode - 查詢密碼
+ * @returns {Object} 公開欄位
+ */
+function buildConsultationCardPublicFields(data, recommendation, accessCode) {
+  const displayName = sanitizePublicDisplayName(data && data.name);
+  const themes = deriveConsultationThemes(data, recommendation);
+  const crystalItems = extractPublicCrystalItems(recommendation);
+  const calculationNotes = buildPublicCalculationNotes(data);
+  const firstTheme = themes[0] || '能量平衡';
+  const secondTheme = themes[1] || '情緒安定';
+  const themeText = themes.slice(0, 3).join('、');
+
+  return {
+    displayName: displayName,
+    braceletName: (displayName ? displayName : '妳') + '的水晶狀態圖卡',
+    scene: '水晶諮詢圖卡',
+    summary: clipPublicText(
+      '依妳填寫的狀態，沐菲先整理出「' + themeText + '」的水晶方向。這是一份初步圖卡，方便妳回到手鏈檔案查看與後續討論客製設計。',
+      180
+    ),
+    crystals: crystalItems,
+    energyFocus: themes,
+    chakraFocus: buildPublicChakraFocus(data),
+    designNotes: calculationNotes.join('\n'),
+    wearingGuide: [
+      '需要面對' + firstTheme + '相關場景時，先深呼吸三次，再把手鏈戴上，提醒自己把注意力收回身上。',
+      '若今天特別疲憊，睡前可把手鏈放在掌心 30 秒，對自己說一句「我允許自己慢慢放鬆」。',
+      '後續討論客製時，可直接提供這組圖卡密碼：' + accessCode
+    ],
+    careInstructions: [
+      '日常避免碰撞、泡水、香水與清潔劑。',
+      '可用白水晶碎石、月光或靜置方式做溫和淨化。',
+      '若配戴後想調整色系或能量方向，歡迎再與沐菲討論。'
+    ],
+    ritual: [
+      '今天出門前，選一個想切換的狀態，讓手鏈成為提醒自己的小錨點。',
+      '遇到人際或情緒拉扯時，摸一下珠子，先問自己：「我現在真正需要的是什麼？」'
+    ],
+    makerNote: clipPublicText(
+      '給' + (displayName || '妳') + '：妳不需要用消耗自己來換取平衡。先照顧好自己的狀態，柔軟才會更有力量。',
+      160
+    )
+  };
+}
+
+/**
+ * 依客戶勾選的分析模組，建立公開可看的計算說明。
+ * 不公開完整生日，只顯示總和、化約方式與對應晶種。
+ * @param {Object} data - 諮詢表單資料
+ * @returns {Array<string>} 公開計算說明
+ */
+function buildPublicCalculationNotes(data) {
+  const notes = [];
+
+  if (isCalculationMethodEnabled(data, '生命靈數')) {
+    const lifePath = calculatePublicLifePath(data && data.birthDate);
+    if (lifePath) {
+      const crystalInfo = getLifePathCrystalInfo(lifePath.number);
+      notes.push('生命靈數計算：以表單中的日期數字逐位相加，總和 ' + lifePath.firstSum + '；化約 ' + lifePath.reductionText + '，得到生命靈數 ' + lifePath.number + '。');
+      notes.push('生命靈數 ' + lifePath.number + ' 推薦水晶：' + crystalInfo.name + '。' + crystalInfo.desc + '。');
+    } else {
+      notes.push('生命靈數計算：尚未取得有效日期，會先以妳填寫的狀態需求與其他分析方式整理水晶方向。');
+    }
+  }
+
+  if (!notes.length) {
+    notes.push('建議先從最想被照顧的狀態出發，再由沐菲依色系、晶種能量與配戴習慣微調成真正適合妳的客製手鏈。');
+  }
+
+  return notes;
+}
+
+function isCalculationMethodEnabled(data, methodName) {
+  const value = data && data.calculationMethod;
+  if (Array.isArray(value)) {
+    return value.indexOf(methodName) !== -1;
+  }
+  return String(value || '').indexOf(methodName) !== -1;
+}
+
+function calculatePublicLifePath(birthDateStr) {
+  const clean = String(birthDateStr || '').replace(/[^0-9]/g, '');
+  if (!clean) {
+    return null;
+  }
+
+  let sum = 0;
+  for (let i = 0; i < clean.length; i++) {
+    sum += parseInt(clean[i], 10);
+  }
+
+  const firstSum = sum;
+  const reductions = [];
+  while (sum > 9) {
+    const digits = String(sum).split('');
+    const nextSum = digits.reduce(function(total, digit) {
+      return total + parseInt(digit, 10);
+    }, 0);
+    reductions.push(digits.join('+') + '=' + nextSum);
+    sum = nextSum;
+  }
+
+  return {
+    number: sum,
+    firstSum: firstSum,
+    reductionText: reductions.length ? reductions.join(' -> ') : '已是個位數',
+  };
+}
+
+function getLifePathCrystalInfo(number) {
+  const map = {
+    1: { name: '黑曜石、黑髮晶', desc: '補充海底輪能量，增強踏實感與開創魄力' },
+    2: { name: '橙月光石、太陽石', desc: '疏通臍輪，增添情緒包容力與協調溫和氣場' },
+    3: { name: '黃水晶、金髮晶', desc: '補足太陽神經叢，提振思維邏輯與積極社交創造力' },
+    4: { name: '綠幽靈、葡萄石', desc: '滋養心輪，帶來務實安穩的能量與事業正財緣' },
+    5: { name: '海藍寶、天河石', desc: '強化喉輪，使言語表達流暢、緩解緊繃情緒' },
+    6: { name: '粉水晶、草莓晶', desc: '敞開心輪，招來良緣，學會善待與療癒自己' },
+    7: { name: '青金石、紫水晶', desc: '開啟眉心輪，明晰直覺，消除思慮過多的焦慮' },
+    8: { name: '鈦晶、金太陽石', desc: '振奮太陽神經叢與海底輪，帶來決策霸氣與財富格局' },
+    9: { name: '白水晶、舒俱徠石', desc: '激發頂輪高維能量，放大整體磁場與靈性感知' }
+  };
+
+  return map[number] || { name: '白水晶', desc: '協助淨化與放大整體能量' };
+}
+
+/**
+ * 推出公開圖卡的狀態主題。
+ * @param {Object} data - 諮詢表單資料
+ * @param {string} recommendation - AI/規則初步推薦
+ * @returns {Array<string>} 主題
+ */
+function deriveConsultationThemes(data, recommendation) {
+  const text = [
+    normalizeListValue(data && data.energyGoal),
+    data && data.description,
+    normalizeListValue(data && data.targetChakra),
+    recommendation
+  ].join(' ');
+  const themes = [];
+
+  addThemeIfMatch(themes, text, /防小人|小人|界線|拒絕|負能量|守護|防護/, '界線守護');
+  addThemeIfMatch(themes, text, /焦慮|失眠|睡|放鬆|沉澱|關機|安定|穩定/, '情緒安定');
+  addThemeIfMatch(themes, text, /人際|關係|桃花|溝通|柔和|包容|心輪/, '人際柔和');
+  addThemeIfMatch(themes, text, /職場|工作|事業|財|貴人|上台|自信/, '職場穩定');
+  addThemeIfMatch(themes, text, /專注|考試|簡報|腦袋|思緒|清醒/, '專注清理');
+
+  if (!themes.length) {
+    themes.push('能量平衡', '情緒安定');
+  }
+
+  return themes.slice(0, 4);
+}
+
+function addThemeIfMatch(themes, text, regex, label) {
+  if (regex.test(text) && themes.indexOf(label) === -1) {
+    themes.push(label);
+  }
+}
+
+/**
+ * 取出公開可看的晶種搭配，不輸出原始個資段落。
+ * @param {string} recommendation - AI/規則初步推薦
+ * @returns {Array<string>} 晶種搭配
+ */
+function extractPublicCrystalItems(recommendation) {
+  const text = String(recommendation || '');
+  const items = [];
+  const blockRegex = /【手鏈\s*([^】]+)】([\s\S]*?)(?=\s*📿\s*【手鏈|\s*🧘|\s*💬|$)/g;
+  let match;
+
+  while ((match = blockRegex.exec(text)) !== null && items.length < 3) {
+    const title = sanitizePublicText(match[1])
+      .replace(/^[A-ZＡ-Ｚ0-9一二三四五六七八九十]+\s*[—\-－]\s*/, '')
+      .trim();
+    const block = match[2] || '';
+    const crystalMatch = block.match(/【水晶搭配】[:：]\s*([^\n【]+)/);
+    const crystals = crystalMatch ? sanitizePublicText(crystalMatch[1]) : '';
+
+    if (title && crystals) {
+      items.push(clipPublicText(title + '：' + crystals, 120));
+    }
+  }
+
+  if (!items.length) {
+    const lineRegex = /【水晶搭配】[:：]\s*([^\n【]+)/g;
+    while ((match = lineRegex.exec(text)) !== null && items.length < 3) {
+      const crystals = sanitizePublicText(match[1]);
+      if (crystals) {
+        items.push(clipPublicText('推薦晶種：' + crystals, 120));
+      }
+    }
+  }
+
+  if (!items.length) {
+    items.push('客製晶種搭配：由沐菲依妳目前狀態整理最適合的水晶組合');
+  }
+
+  return items;
+}
+
+function buildPublicChakraFocus(data) {
+  const values = splitPublicListValue(normalizeListValue(data && data.targetChakra))
+    .map(sanitizePublicText)
+    .filter(Boolean);
+  return values.slice(0, 3);
+}
+
+/**
+ * 建立可分享的手鏈檔案網址。
+ * @param {string} accessCode - 查詢密碼
+ * @returns {string} 網址
+ */
+function getBraceletProfileUrl(accessCode) {
+  const storeUrl = String(typeof STORE_SITE_URL === 'undefined' ? '' : STORE_SITE_URL || '').trim();
+  if (!storeUrl) {
+    return '';
+  }
+
+  const cleanBase = storeUrl
+    .replace(/[?#].*$/, '')
+    .replace(/index\.html$/i, '')
+    .replace(/\/?$/, '/');
+  return cleanBase + 'bracelet.html?code=' + encodeURIComponent(accessCode);
+}
+
+function sanitizePublicDisplayName(value) {
+  return clipPublicText(sanitizePublicText(value).replace(/\s+/g, ''), 24);
+}
+
+/**
+ * 移除公開圖卡不應出現的個資片段。
+ * @param {*} value - 原始文字
+ * @returns {string} 清理後文字
+ */
+function sanitizePublicText(value) {
+  return String(value === null || typeof value === 'undefined' ? '' : value)
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '')
+    .replace(/(\+?886[-\s]?)?0?9\d{2}[-\s]?\d{3}[-\s]?\d{3}/g, '')
+    .replace(/\b\d{4}[\/.-]\d{1,2}[\/.-]\d{1,2}\b/g, '')
+    .replace(/\b\d{1,2}[\/.-]\d{1,2}[\/.-]\d{2,4}\b/g, '')
+    .replace(/(聯絡方式|生日|出生日期|出生時間|性別|淨手圍|手圍|預算範圍|預算)[:：][^；。\n]+/g, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
+function clipPublicText(value, maxLength) {
+  const text = String(value || '').trim();
+  if (!maxLength || text.length <= maxLength) {
+    return text;
+  }
+  return text.substring(0, maxLength - 1).trim() + '…';
 }
 
 /**
@@ -642,20 +1135,31 @@ function processConsultation(data) {
       ''                                      // 17. Q 欄 — 備註紀錄（空白）
     ];
 
-    // 步驟 5：寫入試算表；CSV mirror 預設停用以降低 Drive 操作量
-    const csvUrl = withScriptLock(function() {
+    // 步驟 5：寫入試算表與公開圖卡；CSV mirror 預設停用以降低 Drive 操作量
+    const writeResult = withScriptLock(function() {
       sheet.appendRow(rowData);
-      SpreadsheetApp.flush();
+      const consultationRow = sheet.getLastRow();
+      const profileResult = appendConsultationCardProfile(data, recommendation, timestamp, consultationRow);
       try {
-        return syncCsvMirrorFromSheet(sheet);
+        SpreadsheetApp.flush();
+        return {
+          csvUrl: syncCsvMirrorFromSheet(sheet),
+          profile: profileResult
+        };
       } catch (csvError) {
         console.error('【CSV 同步失敗】' + csvError.toString());
-        return '';
+        return {
+          csvUrl: '',
+          profile: profileResult
+        };
       }
     });
     console.log('【資料寫入】✅ 已寫入新資料：' + data.name);
-    if (csvUrl) {
-      console.log('【CSV 同步】✅ 已更新：' + csvUrl);
+    if (writeResult.csvUrl) {
+      console.log('【CSV 同步】✅ 已更新：' + writeResult.csvUrl);
+    }
+    if (writeResult.profile && writeResult.profile.accessCode) {
+      console.log('【公開圖卡】✅ 已建立查詢密碼：' + writeResult.profile.accessCode);
     }
 
     // 步驟 6：發送 Email 通知（失敗不影響資料寫入）
@@ -672,8 +1176,10 @@ function processConsultation(data) {
     return {
       success: true,
       recommendation: recommendation,
-      csvUrl: csvUrl || '',
-      name: data.name || ''
+      csvUrl: writeResult.csvUrl || '',
+      name: data.name || '',
+      accessCode: writeResult.profile ? writeResult.profile.accessCode : '',
+      profileUrl: writeResult.profile ? writeResult.profile.profileUrl : ''
     };
 
   } catch (error) {
@@ -824,6 +1330,25 @@ function renderSubmissionPage(options) {
   const returnLink = returnUrl
     ? '<a href="' + escapeHtml(returnUrl) + '">返回 MUPHÉ Handmade</a>'
     : '<p class="hint">您可以關閉此頁，回到原本的網站視窗。</p>';
+  const postMessagePayload = options.postMessagePayload || {
+    app: 'muphe-submission',
+    type: 'submission',
+    success: !options.isError,
+    message: options.message || '',
+    reference: options.reference || ''
+  };
+  const postMessageJson = JSON.stringify(postMessagePayload).replace(/</g, '\\u003c');
+  const postMessageScript = [
+    '<script>',
+    '(function(){',
+    'var payload=' + postMessageJson + ';',
+    'try{',
+    'if(window.parent&&window.parent!==window){window.parent.postMessage(payload,"*");}',
+    'if(window.opener){window.opener.postMessage(payload,"*");}',
+    '}catch(error){}',
+    '})();',
+    '<\/script>'
+  ].join('');
 
   const html = [
     '<!doctype html>',
@@ -850,6 +1375,7 @@ function renderSubmissionPage(options) {
     '<p>' + escapeHtml(options.message || '') + '</p>',
     returnLink,
     '</main>',
+    postMessageScript,
     '</body>',
     '</html>'
   ].join('');
@@ -857,6 +1383,7 @@ function renderSubmissionPage(options) {
   return HtmlService
     .createHtmlOutput(html)
     .setTitle(options.title || 'MUPHÉ Handmade')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
     .addMetaTag('viewport', 'width=device-width, initial-scale=1.0');
 }
 

@@ -5,7 +5,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>手鍊檔案查詢｜沐菲 MUPHÉ Handmade</title>
-  <meta name="description" content="使用 QR Code 或手鍊代碼查詢 MUPHÉ Handmade 客製手鍊的公開配戴、保養與晶種檔案。" />
+  <meta name="description" content="輸入圖卡密碼或手鍊代碼，查詢 MUPHÉ Handmade 客製水晶的公開推薦圖卡與配戴照顧檔案。" />
   <link rel="icon" type="image/png" href="pic/muphe_logo.png" />
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -48,13 +48,13 @@
         <p class="eyebrow">Bracelet Profile</p>
         <h1 id="bracelet-title">妳的手鍊檔案</h1>
         <p>
-          掃描包裝上的 QR Code，或輸入手鍊代碼，查看這條手鍊的場景、意圖、晶種與日常照顧提醒。
+          貼上諮詢完成後取得的圖卡密碼，或輸入手鍊代碼，查看妳的公開水晶圖卡、晶種方向與日常照顧提醒。
         </p>
       </div>
 
       <div class="bracelet-lookup reveal" data-lookup-card>
         <form class="bracelet-code-form" data-code-form>
-          <label for="bracelet-code">手鍊代碼</label>
+          <label for="bracelet-code">圖卡密碼 / 手鍊代碼</label>
           <div class="bracelet-code-row">
             <input
               id="bracelet-code"
@@ -63,13 +63,13 @@
               autocomplete="off"
               inputmode="latin"
               maxlength="64"
-              placeholder="例如 MUPHE-2026-001"
+              placeholder="例如 MUPHE-ABCD-2345"
               aria-describedby="bracelet-code-help"
               data-code-input
             />
             <button class="primary-link" type="submit">查詢</button>
           </div>
-          <p id="bracelet-code-help">QR Code 會自動帶入代碼；手動輸入時不用區分大小寫。</p>
+          <p id="bracelet-code-help">貼上表單送出後取得的密碼即可查詢；手動輸入時不用區分大小寫。</p>
         </form>
 
         <div class="bracelet-status" aria-live="polite" data-profile-status></div>
@@ -117,6 +117,7 @@
       const menuToggle = document.querySelector("[data-menu-toggle]");
 
       const fieldKeys = {
+        profileType: ["profileType", "profile_type", "type", "檔案類型"],
         name: ["braceletName", "bracelet_name", "name", "title", "手鍊名稱", "手链名称"],
         scene: ["scene", "lifeScene", "scenario", "場景", "使用場景"],
         displayName: ["displayName", "display_name", "customerAlias", "公開顯示名稱", "暱稱"],
@@ -124,10 +125,11 @@
         crystals: ["crystals", "crystalList", "crystal_list", "stones", "晶種", "水晶清單", "水晶列表"],
         energyFocus: ["energyFocus", "energy_focus", "能量主題", "能量焦點"],
         chakraFocus: ["chakraFocus", "chakra_focus", "脈輪主題", "脈輪焦點"],
+        designNotes: ["designNotes", "design_notes", "calculationNotes", "calculation_notes", "計算方式", "設計說明"],
         wearingGuide: ["wearingGuide", "wearing", "wearGuide", "wearing_guide", "配戴指南", "佩戴指南"],
         careGuide: ["careInstructions", "careGuide", "care", "care_guide", "保養說明", "保養指南", "照顧方式"],
         ritual: ["ritual", "dailyRitual", "ritualGuide", "儀式", "日常儀式"],
-        makerNote: ["makerNote", "maker_note", "designNotes", "design_notes", "artistNote", "設計說明", "製作者備註", "店主小語"],
+        makerNote: ["makerNote", "maker_note", "artistNote", "製作者備註", "店主小語"],
         photo: ["photo", "photoUrl", "photo_url", "image", "imageUrl", "image_url", "照片"],
         contactUrl: ["contactUrl", "contact_url", "lineUrl", "supportUrl", "聯繫連結"],
         orderUrl: ["productUrl", "product_url", "orderUrl", "order_url", "shopUrl", "reorderUrl", "商品或公開頁網址", "訂購連結"],
@@ -224,7 +226,7 @@
 
       function showIdle() {
         hideProfile();
-        showStatus("idle", "輸入代碼查詢", "公開檔案只會顯示手鍊資訊，不顯示購買人或私人聯絡資料。");
+        showStatus("idle", "輸入密碼查詢", "公開圖卡只會顯示名字與推薦方向，不顯示聯絡方式、生日、性別、手圍或預算。");
       }
 
       function parseTextList(value) {
@@ -335,6 +337,7 @@
         }
 
         const profile = {
+          profileType: normalizeString(pick(source, fieldKeys.profileType)),
           name: normalizeString(pick(source, fieldKeys.name)),
           scene: normalizeString(pick(source, fieldKeys.scene)),
           displayName: normalizeString(pick(source, fieldKeys.displayName)),
@@ -342,6 +345,7 @@
           crystals: normalizeCrystals(pick(source, fieldKeys.crystals)),
           energyFocus: parseTextList(pick(source, fieldKeys.energyFocus)),
           chakraFocus: parseTextList(pick(source, fieldKeys.chakraFocus)),
+          designNotes: parseTextList(pick(source, fieldKeys.designNotes)),
           wearingGuide: parseTextList(pick(source, fieldKeys.wearingGuide)),
           careGuide: parseTextList(pick(source, fieldKeys.careGuide)),
           ritual: parseTextList(pick(source, fieldKeys.ritual)),
@@ -359,6 +363,7 @@
           profile.crystals.length ||
           profile.energyFocus.length ||
           profile.chakraFocus.length ||
+          profile.designNotes.length ||
           profile.wearingGuide.length ||
           profile.careGuide.length ||
           profile.ritual.length ||
@@ -477,6 +482,11 @@
       }
 
       function renderProfile(profile) {
+        if (isConsultationCard(profile)) {
+          renderConsultationCard(profile);
+          return;
+        }
+
         const photoMarkup = profile.photo
           ? `<img src="${escapeHtml(profile.photo)}" alt="${escapeHtml(profile.name || "MUPHÉ 手鍊")} 照片" loading="lazy" data-profile-photo />`
           : `
@@ -565,6 +575,101 @@
         profileSection.scrollIntoView({ behavior: "smooth", block: "start" });
       }
 
+      function isConsultationCard(profile) {
+        const marker = [
+          profile.profileType,
+          profile.scene,
+          profile.name,
+        ].join(" ");
+        return /consultationCard|水晶諮詢圖卡|水晶狀態圖卡/.test(marker);
+      }
+
+      function renderConsultationCard(profile) {
+        const focusItems = [...profile.energyFocus, ...profile.chakraFocus];
+
+        profileContent.innerHTML = `
+          <article class="consultation-card-shell" aria-label="個人水晶圖卡">
+            <div class="consultation-card-brand">
+              <img src="pic/muphe_logo.png" alt="" />
+              <span>MUPHÉ Handmade 沐菲手作水晶</span>
+            </div>
+            <div class="consultation-card-head">
+              ${profile.scene ? `<p class="eyebrow">${escapeHtml(profile.scene)}</p>` : ""}
+              <h2 id="profile-heading" tabindex="-1">${escapeHtml(profile.name || "妳的水晶狀態圖卡")}</h2>
+              ${profile.displayName ? `<p class="profile-for">為 ${escapeHtml(profile.displayName)} 整理的個人圖卡</p>` : ""}
+              ${profile.intention ? `<p>${escapeHtml(profile.intention)}</p>` : ""}
+            </div>
+
+            ${
+              focusItems.length
+                ? `
+                  <section class="consultation-card-panel" aria-labelledby="consultation-focus-title">
+                    <h3 id="consultation-focus-title">目前最需要照顧的狀態</h3>
+                    <div class="consultation-tag-row">
+                      ${focusItems.map((item) => `<span>${escapeHtml(item)}</span>`).join("")}
+                    </div>
+                  </section>
+                `
+                : ""
+            }
+
+            <section class="consultation-card-panel" aria-labelledby="consultation-crystals-title">
+              <h3 id="consultation-crystals-title">沐菲初步推薦方向</h3>
+              ${renderCrystals(profile.crystals)}
+            </section>
+
+            ${
+              profile.designNotes.length
+                ? `
+                  <section class="consultation-card-panel" aria-labelledby="consultation-calculation-title">
+                    <h3 id="consultation-calculation-title">計算方式</h3>
+                    ${renderList(profile.designNotes)}
+                  </section>
+                `
+                : ""
+            }
+
+            <section class="consultation-card-panel" aria-labelledby="consultation-wearing-title">
+              <h3 id="consultation-wearing-title">配戴與日常提醒</h3>
+              ${renderList(profile.wearingGuide)}
+            </section>
+
+            <section class="consultation-card-panel" aria-labelledby="consultation-care-title">
+              <h3 id="consultation-care-title">保養與淨化</h3>
+              ${renderList(profile.careGuide)}
+            </section>
+
+            ${
+              profile.ritual.length
+                ? `
+                  <section class="consultation-card-panel" aria-labelledby="consultation-ritual-title">
+                    <h3 id="consultation-ritual-title">小儀式</h3>
+                    ${renderList(profile.ritual)}
+                  </section>
+                `
+                : ""
+            }
+
+            ${
+              profile.makerNote.length
+                ? `
+                  <footer class="consultation-card-note">
+                    <h3>給妳的一句話</h3>
+                    ${renderList(profile.makerNote)}
+                  </footer>
+                `
+                : ""
+            }
+          </article>
+        `;
+
+        profileSection.hidden = false;
+        statusRegion.hidden = true;
+        document.title = `${profile.name || "水晶圖卡"}｜沐菲 MUPHÉ Handmade`;
+        document.getElementById("profile-heading").focus({ preventScroll: true });
+        profileSection.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
       async function lookupProfile(query) {
         const normalizedQuery = {
           code: normalizeString(query.code).toUpperCase(),
@@ -599,7 +704,7 @@
         const code = normalizeString(codeInput.value).toUpperCase();
 
         if (!code) {
-          showStatus("error", "請輸入手鍊代碼", "代碼通常印在保養卡或 QR Code 貼紙旁。");
+          showStatus("error", "請輸入圖卡密碼", "密碼會在諮詢表單送出後顯示，也可能印在保養卡或 QR Code 貼紙旁。");
           codeInput.focus();
           return;
         }

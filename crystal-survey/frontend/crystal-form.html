@@ -1065,6 +1065,99 @@
       line-height: 1.7;
     }
 
+    .profile-access-card {
+      display: none;
+      margin-top: 28px;
+      max-width: 560px;
+      width: 100%;
+      text-align: left;
+    }
+
+    .profile-access-card.active {
+      display: block;
+      animation: success-enter 0.55s ease-out;
+    }
+
+    .profile-access-header {
+      border-bottom: 1px solid rgba(183, 148, 246, 0.22);
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+    }
+
+    .profile-access-header h3 {
+      color: var(--text-label);
+      font-size: 1.16rem;
+      line-height: 1.35;
+      margin: 0 0 8px;
+    }
+
+    .profile-access-header p {
+      margin: 0;
+      max-width: none;
+    }
+
+    .profile-code-box {
+      align-items: center;
+      background: rgba(18, 12, 38, 0.46);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 18px;
+      display: flex;
+      gap: 12px;
+      justify-content: space-between;
+      padding: 14px;
+    }
+
+    .profile-code-box code {
+      color: #fff;
+      font-size: clamp(1.05rem, 4vw, 1.45rem);
+      font-weight: 800;
+      letter-spacing: 1px;
+      overflow-wrap: anywhere;
+    }
+
+    .copy-code-btn,
+    .profile-open-link {
+      align-items: center;
+      border: none;
+      border-radius: 999px;
+      display: inline-flex;
+      font-weight: 700;
+      justify-content: center;
+      min-height: 44px;
+      padding: 0 18px;
+      white-space: nowrap;
+    }
+
+    .copy-code-btn {
+      background: var(--gradient-primary);
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .profile-open-link {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: var(--text-label);
+      margin-top: 14px;
+      text-decoration: none;
+      width: 100%;
+    }
+
+    .profile-access-note {
+      font-size: 0.86rem !important;
+      margin: 12px 0 0 !important;
+      max-width: none !important;
+    }
+
+    .submission-frame {
+      border: 0;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+      position: absolute;
+      width: 1px;
+    }
+
     /* 紙花效果容器 */
     .confetti-container {
       position: fixed;
@@ -1200,6 +1293,15 @@
       .submit-btn {
         width: 100%;
         padding: 16px 32px;
+      }
+
+      .profile-code-box {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .copy-code-btn {
+        width: 100%;
       }
 
       .form-header {
@@ -1747,6 +1849,21 @@
     <h2>✨ 諮詢表單已送出！✨</h2>
     <p>感謝您的信任，我們會盡快與您聯繫，<br>為您打造最適合的水晶能量方案。</p>
 
+    <div id="profileAccessCard" class="glass-card profile-access-card" aria-live="polite">
+      <div class="profile-access-header">
+        <h3>您的個人圖卡密碼已生成</h3>
+        <p>請先複製保存。之後到「您的手鏈檔案」貼上密碼，就可以查看個人圖卡。</p>
+      </div>
+      <div class="profile-code-box">
+        <code id="profileAccessCode">MUPHE-----</code>
+        <button class="copy-code-btn" type="button" id="copyProfileCodeBtn">複製</button>
+      </div>
+      <a class="profile-open-link" id="openProfileLink" href="../../bracelet.html">前往您的手鏈檔案</a>
+      <p class="profile-access-note">
+        公開圖卡只會顯示您的名字與推薦方向，不會顯示聯絡方式、生日、性別、手圍或預算。
+      </p>
+    </div>
+
     <!-- AI 推薦結果精美展示區塊 -->
     <div id="aiRecommendationCard" class="glass-card"
       style="display: none; margin-top: 32px; text-align: left; max-width: 560px; width: 100%; border: 1.5px solid rgba(183, 148, 246, 0.4); box-shadow: 0 8px 32px rgba(45, 27, 105, 0.4); opacity: 1; transform: none;">
@@ -1759,6 +1876,8 @@
       </div>
     </div>
   </div>
+
+  <iframe class="submission-frame" name="mupheSubmissionFrame" title="表單送出狀態" aria-hidden="true"></iframe>
 
   <script>
     /* ============================
@@ -1789,6 +1908,12 @@
     const wristSlider = document.getElementById('wristSize');
     const wristValueDisplay = document.getElementById('wristValue');
     const confettiContainer = document.getElementById('confettiContainer');
+    const profileAccessCard = document.getElementById('profileAccessCard');
+    const profileAccessCode = document.getElementById('profileAccessCode');
+    const copyProfileCodeBtn = document.getElementById('copyProfileCodeBtn');
+    const openProfileLink = document.getElementById('openProfileLink');
+    const submissionFrame = document.querySelector('iframe[name="mupheSubmissionFrame"]');
+    const SUBMISSION_FRAME_NAME = 'mupheSubmissionFrame';
 
     /* 防止重複送出的旗標 */
     let isSubmitting = false;
@@ -2035,7 +2160,7 @@
     /* ============================
        顯示成功頁面
        ============================ */
-    function showSuccess(recommendation) {
+    function showSuccess(recommendation, profileAccess) {
       hideLoading();
       formContainer.style.display = 'none';
       successPage.classList.add('active');
@@ -2050,10 +2175,47 @@
         recCard.style.display = 'none';
       }
 
+      renderProfileAccess(profileAccess);
+
       launchConfetti();
 
       /* 捲動到頁面頂部 */
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function renderProfileAccess(profileAccess) {
+      const accessCode = profileAccess && profileAccess.accessCode ? String(profileAccess.accessCode).trim() : '';
+
+      if (!accessCode || !profileAccessCard) {
+        if (profileAccessCard) profileAccessCard.classList.remove('active');
+        return;
+      }
+
+      const localProfileUrl = '../../bracelet.html?code=' + encodeURIComponent(accessCode);
+      profileAccessCode.textContent = accessCode;
+      openProfileLink.href = profileAccess.profileUrl || localProfileUrl;
+      profileAccessCard.classList.add('active');
+    }
+
+    async function copyProfileCode() {
+      const code = profileAccessCode.textContent.trim();
+      if (!code) return;
+
+      try {
+        await navigator.clipboard.writeText(code);
+        copyProfileCodeBtn.textContent = '已複製';
+      } catch (error) {
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(profileAccessCode);
+        selection.removeAllRanges();
+        selection.addRange(range);
+        copyProfileCodeBtn.textContent = '請手動複製';
+      }
+
+      setTimeout(() => {
+        copyProfileCodeBtn.textContent = '複製';
+      }, 2200);
     }
 
     /* ============================
@@ -2072,6 +2234,27 @@
 
     function hideError() {
       errorMessage.classList.remove('active');
+    }
+
+    function handleSubmissionMessage(event) {
+      if (!submissionFrame || event.source !== submissionFrame.contentWindow) {
+        return;
+      }
+
+      const payload = event.data || {};
+      if (!payload || payload.app !== 'muphe-submission') {
+        return;
+      }
+
+      if (payload.success === false) {
+        showError(payload.message || '😔 表單送出時發生錯誤，請稍後再試');
+        return;
+      }
+
+      showSuccess(payload.recommendation || '', {
+        accessCode: payload.accessCode || '',
+        profileUrl: payload.profileUrl || ''
+      });
     }
 
     /* ============================
@@ -2114,6 +2297,7 @@
 
         document.getElementById('payloadField').value = JSON.stringify(data);
         form.action = url;
+        form.target = SUBMISSION_FRAME_NAME;
         HTMLFormElement.prototype.submit.call(form);
 
       } catch (error) {
@@ -2124,6 +2308,8 @@
 
     /* 綁定表單送出事件 */
     form.addEventListener('submit', handleSubmit);
+    window.addEventListener('message', handleSubmissionMessage);
+    copyProfileCodeBtn.addEventListener('click', copyProfileCode);
 
     /* 重試按鈕事件 */
     retryBtn.addEventListener('click', function () {
