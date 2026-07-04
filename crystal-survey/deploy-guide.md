@@ -528,7 +528,7 @@ const SUBMIT_URL = 'https://script.google.com/macros/s/AKfycbxxxxxxxxxxxxxxxxxxx
 
 ### 快速摘要
 
-1. 在 Google Sheets 新增 **手鍊檔案** 分頁，欄位依程式的 `BRACELET_PROFILE_HEADER_ROW` 建立，包含 `建立時間`、`查詢碼`、`查詢Token`、`是否公開`、`手鏈名稱`、`場景`、`水晶配置`、`配戴指南`、`保養說明`、`日常儀式`、`店主小語` 等。
+1. 在 Google Sheets 新增 **手鍊檔案** 分頁，欄位依程式的 `BRACELET_PROFILE_HEADER_ROW` 建立，包含 `建立時間`、`查詢碼`、`查詢Token`、`是否公開`、`手鍊名稱`、`場景`、`水晶配置`、`配戴指南`、`保養說明`、`日常儀式`、`店主小語` 等。
 2. QR 公開頁 URL 應使用不含個資的 token，例如 `https://studjodev.github.io/muphe_handmade/bracelet.html?token={查詢Token}`。不可使用 row number、電話、Email、姓名、訂單編號作為公開識別碼。
 3. 只有 `是否公開 = 公開` 或 `已公開` 且顧客同意的資料列可以產生 QR 小卡。
 4. QR code 內容只放公開頁 URL，代碼則印在小卡上作為手動輸入備援。產生 QR 後先在手機相機與 LINE 掃描器測試。

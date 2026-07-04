@@ -22,7 +22,7 @@ const SHEET_NAME = '諮詢紀錄';
 /** 訂單工作表名稱 */
 const ORDER_SHEET_NAME = 'Orders';
 
-/** 手鏈公開檔案工作表名稱 */
+/** 手鍊公開檔案工作表名稱 */
 const BRACELET_PROFILE_SHEET_NAME = '手鍊檔案';
 
 /** 分析評估全文工作表名稱 */
@@ -163,7 +163,7 @@ const ORDER_HEADER_ROW = [
   '原始Payload'
 ];
 
-/** 手鏈公開檔案欄位在試算表中的位置（1-indexed） */
+/** 手鍊公開檔案欄位在試算表中的位置（1-indexed） */
 const BRACELET_PROFILE_COLUMNS = {
   CREATED_AT: 1,        // A 欄 — 建立時間
   UPDATED_AT: 2,        // B 欄 — 更新時間
@@ -172,7 +172,7 @@ const BRACELET_PROFILE_COLUMNS = {
   ACCESS_TOKEN: 5,      // E 欄 — QR token
   PUBLISHED: 6,         // F 欄 — 是否公開
   DISPLAY_NAME: 7,      // G 欄 — 公開顯示名稱
-  BRACELET_NAME: 8,     // H 欄 — 手鏈名稱
+  BRACELET_NAME: 8,     // H 欄 — 手鍊名稱
   SCENE: 9,             // I 欄 — 場景
   SUMMARY: 10,          // J 欄 — 公開摘要
   CRYSTALS: 11,         // K 欄 — 水晶配置
@@ -189,7 +189,7 @@ const BRACELET_PROFILE_COLUMNS = {
   INTERNAL_NOTES: 22    // V 欄 — 內部備註（不對外輸出）
 };
 
-/** 手鏈公開檔案工作表標題列 */
+/** 手鍊公開檔案工作表標題列 */
 const BRACELET_PROFILE_HEADER_ROW = [
   '建立時間',
   '更新時間',
@@ -198,7 +198,7 @@ const BRACELET_PROFILE_HEADER_ROW = [
   '查詢Token',
   '是否公開',
   '公開顯示名稱',
-  '手鏈名稱',
+  '手鍊名稱',
   '場景',
   '公開摘要',
   '水晶配置',
@@ -220,7 +220,7 @@ const ANALYSIS_EVALUATION_COLUMNS = {
   CREATED_AT: 1,          // A 欄 — 建立時間
   UPDATED_AT: 2,          // B 欄 — 更新時間
   EVALUATION_ID: 3,       // C 欄 — 評估 ID
-  ACCESS_CODE: 4,         // D 欄 — 手鏈檔案查詢碼
+  ACCESS_CODE: 4,         // D 欄 — 手鍊檔案查詢碼
   PROFILE_ID: 5,          // E 欄 — 個人圖卡 ID
   CUSTOMER_NAME: 6,       // F 欄 — 客人姓名
   CONTACT: 7,             // G 欄 — 聯絡方式

@@ -269,7 +269,7 @@ function onFormSubmit(e) {
     const name = responses['客人姓名'] ? responses['客人姓名'][0] : '';
     const contact = responses['聯絡方式'] ? responses['聯絡方式'][0] : '';
     const gender = responses['性別'] ? responses['性別'][0] : '';
-    const wearHabit = '手鏈/手環';
+    const wearHabit = '手鍊/手環';
     const wristSize = responses['淨手圍'] ? responses['淨手圍'][0] : '';
     const colorPref = responses['偏好色系'] ? responses['偏好色系'].join(', ') : '';
     const goals = responses['期望目標'] ? responses['期望目標'].join(', ') : '';
@@ -406,7 +406,7 @@ function onFormSubmit(e) {
 | 客人姓名         | 客人姓名           | B 欄    |
 | 聯絡方式         | 聯絡方式           | C 欄    |
 | 性別             | 性別               | D 欄    |
-| （系統預設：手鏈/手環） | 配戴習慣           | E 欄    |
+| （系統預設：手鍊/手環） | 配戴習慣           | E 欄    |
 | 淨手圍           | 淨手圍             | F 欄    |
 | 偏好色系         | 偏好色系           | G 欄    |
 | 期望目標         | 期望目標           | H 欄    |

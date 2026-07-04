@@ -120,11 +120,11 @@ function doPost(e) {
 }
 
 // ============================
-// 🔎 手鏈公開檔案 API
+// 🔎 手鍊公開檔案 API
 // ============================
 
 /**
- * 手鏈公開檔案查詢入口。
+ * 手鍊公開檔案查詢入口。
  * 支援 ?action=braceletProfile&code=... 或 ?action=braceletProfile&token=...
  * @param {Object} e - HTTP GET 事件物件
  * @returns {TextOutput} JSON 或 JSONP 文字回應
@@ -139,7 +139,7 @@ function handleBraceletProfileLookup(e) {
         success: false,
         error: {
           code: 'missing_lookup',
-          message: '請提供 code 或 token 查詢手鏈檔案'
+          message: '請提供 code 或 token 查詢手鍊檔案'
         }
       });
     }
@@ -160,7 +160,7 @@ function handleBraceletProfileLookup(e) {
         success: false,
         error: {
           code: 'not_found',
-          message: '找不到已公開的手鏈檔案'
+          message: '找不到已公開的手鍊檔案'
         }
       });
     }
@@ -172,12 +172,12 @@ function handleBraceletProfileLookup(e) {
     });
 
   } catch (error) {
-    console.error('【手鏈檔案查詢錯誤】' + error.toString());
+    console.error('【手鍊檔案查詢錯誤】' + error.toString());
     return createJsonTextOutput(e, {
       success: false,
       error: {
         code: 'server_error',
-        message: '系統目前無法查詢手鏈檔案'
+        message: '系統目前無法查詢手鍊檔案'
       }
     });
   }
@@ -237,7 +237,7 @@ function handleForgotBraceletCodeLookup(e) {
 }
 
 /**
- * 從手鏈檔案工作表查詢已公開的手鏈檔案。
+ * 從手鍊檔案工作表查詢已公開的手鍊檔案。
  * 未公開或不存在的資料都回傳 null，避免對外洩漏狀態。
  * @param {string} accessCode - 正規化後的查詢碼
  * @param {string} accessToken - 正規化後的 token
@@ -336,7 +336,7 @@ function findBraceletAccessCodeByCustomerIdentity(name, birthDate) {
 
 /**
  * 從個人圖卡列中，依諮詢紀錄列號找出查詢碼。
- * @param {Array[]} profileRows - 手鏈檔案工作表資料列
+ * @param {Array[]} profileRows - 手鍊檔案工作表資料列
  * @param {number} consultationRowNumber - 諮詢紀錄列號
  * @returns {Object|null} 查詢憑證
  */
@@ -370,7 +370,7 @@ function findPublishedBraceletCredentialByConsultationRow(profileRows, consultat
 }
 
 /**
- * 判斷手鏈檔案內部備註是否指向指定諮詢紀錄列號。
+ * 判斷手鍊檔案內部備註是否指向指定諮詢紀錄列號。
  * @param {*} internalNotes - 內部備註
  * @param {string} rowNumberText - 列號文字
  * @returns {boolean} 是否匹配
@@ -382,7 +382,7 @@ function doesInternalNoteReferenceConsultationRow(internalNotes, rowNumberText) 
 }
 
 /**
- * 將完整工作表列轉成對外安全的公開手鏈檔案。
+ * 將完整工作表列轉成對外安全的公開手鍊檔案。
  * 不輸出 token、聯絡方式、地址、生日、生時或內部備註。
  * @param {Array} row - 工作表列資料
  * @returns {Object} 對外公開資料
@@ -412,7 +412,7 @@ function buildPublicBraceletProfile(row) {
 }
 
 /**
- * 產生一組可填入手鏈檔案工作表的檔案 ID、查詢碼與 token。
+ * 產生一組可填入手鍊檔案工作表的檔案 ID、查詢碼與 token。
  * 在 Apps Script 編輯器中手動執行，或由後台操作流程呼叫。
  * @returns {Object} 新憑證
  */
@@ -433,7 +433,7 @@ function generateBraceletProfileCredentials() {
 }
 
 /**
- * 產生手鏈檔案 ID。
+ * 產生手鍊檔案 ID。
  * @returns {string} 檔案 ID
  */
 function generateBraceletProfileId() {
@@ -443,7 +443,7 @@ function generateBraceletProfileId() {
 
 /**
  * 產生不易混淆且不與現有資料重複的短查詢碼。
- * @param {Sheet} sheet - 手鏈檔案工作表
+ * @param {Sheet} sheet - 手鍊檔案工作表
  * @returns {string} 查詢碼
  */
 function generateBraceletProfileAccessCode(sheet) {
@@ -597,7 +597,7 @@ function appendAnalysisEvaluationRecord(data, recommendation, timestamp, consult
 
 /**
  * 手動回補既有諮詢紀錄到分析評估表。
- * 會依手鏈檔案內部備註中的諮詢紀錄列號，找出同一筆資料的查詢碼。
+ * 會依手鍊檔案內部備註中的諮詢紀錄列號，找出同一筆資料的查詢碼。
  * @returns {Object} 回補結果
  */
 function backfillAnalysisEvaluationSheet() {
@@ -865,7 +865,7 @@ function buildConsultationCardPublicFields(data, recommendation, accessCode) {
     braceletName: (displayName ? displayName : '你') + '的水晶狀態圖卡',
     scene: '水晶諮詢圖卡',
     summary: clipPublicText(
-      '依你填寫的狀態，沐菲先整理出「' + themeText + '」的水晶方向。這是一份初步圖卡，方便你回到手鏈檔案查看與後續討論客製設計。',
+      '依你填寫的狀態，沐菲先整理出「' + themeText + '」的水晶方向。這是一份初步圖卡，方便你回到手鍊檔案查看與後續討論客製設計。',
       180
     ),
     crystals: crystalItems,
@@ -873,8 +873,8 @@ function buildConsultationCardPublicFields(data, recommendation, accessCode) {
     chakraFocus: buildPublicChakraFocus(data),
     designNotes: calculationNotes.join('\n'),
     wearingGuide: [
-      '需要面對' + firstTheme + '相關場景時，先深呼吸三次，再把手鏈戴上，提醒自己把注意力收回身上。',
-      '若今天特別疲憊，睡前可把手鏈放在掌心 30 秒，對自己說一句「我允許自己慢慢放鬆」。',
+      '需要面對' + firstTheme + '相關場景時，先深呼吸三次，再把手鍊戴上，提醒自己把注意力收回身上。',
+      '若今天特別疲憊，睡前可把手鍊放在掌心 30 秒，對自己說一句「我允許自己慢慢放鬆」。',
       '後續討論客製時，可直接提供這組分析表密碼：' + accessCode
     ],
     careInstructions: [
@@ -883,7 +883,7 @@ function buildConsultationCardPublicFields(data, recommendation, accessCode) {
       '若配戴後想調整色系或能量方向，歡迎再與沐菲討論。'
     ],
     ritual: [
-      '今天出門前，選一個想切換的狀態，讓手鏈成為提醒自己的小錨點。',
+      '今天出門前，選一個想切換的狀態，讓手鍊成為提醒自己的小錨點。',
       '遇到人際或情緒拉扯時，摸一下珠子，先問自己：「我現在真正需要的是什麼？」'
     ],
     makerNote: clipPublicText(
@@ -919,7 +919,7 @@ function buildPublicCalculationNotes(data) {
   }
 
   if (!notes.length) {
-    notes.push('建議先從最想被照顧的狀態出發，再由沐菲依色系、晶種能量與配戴習慣微調成真正適合你的客製手鏈。');
+    notes.push('建議先從最想被照顧的狀態出發，再由沐菲依色系、晶種能量與配戴習慣微調成真正適合你的客製手鍊。');
   }
 
   return notes.filter(Boolean);
@@ -1171,7 +1171,7 @@ function addThemeIfMatch(themes, text, regex, label) {
 function extractPublicCrystalItems(recommendation) {
   const text = String(recommendation || '');
   const items = [];
-  const blockRegex = /【手鏈\s*([^】]+)】([\s\S]*?)(?=\s*📿\s*【手鏈|\s*🧘|\s*💬|$)/g;
+  const blockRegex = /【手[鍊鏈]\s*([^】]+)】([\s\S]*?)(?=\s*📿\s*【手[鍊鏈]|\s*🧘|\s*💬|$)/g;
   let match;
 
   while ((match = blockRegex.exec(text)) !== null && items.length < 3) {
@@ -1212,7 +1212,7 @@ function buildPublicChakraFocus(data) {
 }
 
 /**
- * 建立可分享的手鏈檔案網址。
+ * 建立可分享的手鍊檔案網址。
  * @param {string} accessCode - 查詢密碼
  * @returns {string} 網址
  */
@@ -1259,7 +1259,7 @@ function clipPublicText(value, maxLength) {
 
 /**
  * 檢查查詢碼是否已存在。
- * @param {Sheet} sheet - 手鏈檔案工作表
+ * @param {Sheet} sheet - 手鍊檔案工作表
  * @param {string} accessCode - 查詢碼
  * @returns {boolean} 是否存在
  */
@@ -1303,7 +1303,7 @@ function normalizeRequestAction(value) {
 }
 
 /**
- * 正規化手鏈查詢碼；忽略大小寫、空白與連字號等分隔符。
+ * 正規化手鍊查詢碼；忽略大小寫、空白與連字號等分隔符。
  * @param {*} value - 原始查詢碼
  * @returns {string} 正規化查詢碼
  */
@@ -1377,7 +1377,7 @@ function isBraceletLookupLengthAllowed(accessCode, accessToken) {
 }
 
 /**
- * 判斷手鏈檔案是否公開。
+ * 判斷手鍊檔案是否公開。
  * @param {Array} row - 工作表列資料
  * @returns {boolean} 是否公開
  */
@@ -1398,7 +1398,7 @@ function isBraceletProfilePublished(row) {
 }
 
 /**
- * 取得手鏈檔案欄位文字。
+ * 取得手鍊檔案欄位文字。
  * @param {Array} row - 工作表列資料
  * @param {number} columnIndex - 1-indexed 欄位位置
  * @returns {string} 欄位文字
@@ -1525,7 +1525,7 @@ function onFormSubmit(e) {
       gender: getFirstValue(responses['性別']),
       birthDate: getFirstValue(responses['出生日期']),
       birthTime: getFirstValue(responses['出生時間']),
-      preference: getFirstValue(responses['配戴習慣']) || '手鏈/手環',
+      preference: getFirstValue(responses['配戴習慣']) || '手鍊/手環',
       wristSize: getFirstValue(responses['淨手圍']),
       colorPreference: getArrayValue(responses['偏好色系']),
       energyGoal: getArrayValue(responses['期望目標']),
@@ -1632,7 +1632,7 @@ function processConsultation(data) {
       data.gender || '',                      // 4. D 欄 — 性別
       data.birthDate || '',                   // 5. E 欄 — 出生日期
       data.birthTime || '',                   // 6. F 欄 — 出生時間
-      data.preference || '手鏈/手環',          // 7. G 欄 — 配戴習慣
+      data.preference || '手鍊/手環',          // 7. G 欄 — 配戴習慣
       data.wristSize || '',                   // 8. H 欄 — 淨手圍
       colorPreferenceStr,                     // 9. I 欄 — 偏好色系
       energyGoalStr,                          // 10. J 欄 — 期望目標
@@ -2119,7 +2119,7 @@ function getOrderColumnWidths() {
 }
 
 /**
- * 手鏈公開檔案工作表欄寬。
+ * 手鍊公開檔案工作表欄寬。
  */
 function getBraceletProfileColumnWidths() {
   const widths = {};
@@ -2379,11 +2379,11 @@ function initializeSheet() {
     console.log('✅ 試算表初始化完成！');
     console.log('  諮詢工作表名稱：' + sheet.getName());
     console.log('  訂單工作表名稱：' + orderSheet.getName());
-    console.log('  手鏈公開檔案工作表名稱：' + braceletProfileSheet.getName());
+    console.log('  手鍊公開檔案工作表名稱：' + braceletProfileSheet.getName());
     console.log('  分析評估表工作表名稱：' + analysisEvaluationSheet.getName());
     console.log('  諮詢欄位數量：' + HEADER_ROW.length);
     console.log('  訂單欄位數量：' + ORDER_HEADER_ROW.length);
-    console.log('  手鏈公開檔案欄位數量：' + BRACELET_PROFILE_HEADER_ROW.length);
+    console.log('  手鍊公開檔案欄位數量：' + BRACELET_PROFILE_HEADER_ROW.length);
     console.log('  分析評估表欄位數量：' + ANALYSIS_EVALUATION_HEADER_ROW.length);
     
     // 顯示試算表 URL
@@ -2441,7 +2441,7 @@ function reprocessAllRecommendations() {
           gender: sheet.getRange(row, COLUMNS.GENDER).getValue(),
           birthDate: sheet.getRange(row, COLUMNS.BIRTH_DATE).getValue(),
           birthTime: sheet.getRange(row, COLUMNS.BIRTH_TIME).getValue(),
-          preference: sheet.getRange(row, COLUMNS.PREFERENCE).getValue() || '手鏈/手環',
+          preference: sheet.getRange(row, COLUMNS.PREFERENCE).getValue() || '手鍊/手環',
           wristSize: sheet.getRange(row, COLUMNS.WRIST_SIZE).getValue(),
           colorPreference: sheet.getRange(row, COLUMNS.COLOR_PREFERENCE).getValue(),
           energyGoal: sheet.getRange(row, COLUMNS.ENERGY_GOAL).getValue(),

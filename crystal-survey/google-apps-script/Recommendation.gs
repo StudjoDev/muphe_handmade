@@ -6,7 +6,7 @@
  *  說明：
  *  1. 實作了多維度神祕學計算公式：包含生命靈數、生辰五行季節、西方星座與東方生肖。
  *  2. 基於計算出的參數，優先調用 Gemini API 進行專業、溫暖的個人化水晶評估，
- *     並客製化設計三款水晶手鏈（主命宮能量手鏈、心靈平衡療癒手鏈、流年幸運守護手鏈）。
+ *     並客製化設計三款水晶手鍊（主命宮能量手鍊、心靈平衡療癒手鍊、流年幸運守護手鍊）。
  *  3. 在生成的報告中，會列出詳細的計算式與公式過程。
  *  4. 若 Gemini 呼叫失敗或金鑰未填，自動無縫降級至本地的公式 Fallback 引擎，確保服務不中斷。
  * ============================================================
@@ -48,7 +48,7 @@ function generateRecommendation(dataOrGoal) {
   if (dataOrGoal && typeof dataOrGoal === 'object') {
     name = dataOrGoal.name || '';
     gender = dataOrGoal.gender || '';
-    preference = dataOrGoal.preference || '手鏈/手環';
+    preference = dataOrGoal.preference || '手鍊/手環';
     wristSize = dataOrGoal.wristSize || '';
     colorPreference = Array.isArray(dataOrGoal.colorPreference) 
       ? dataOrGoal.colorPreference.join(', ') 
@@ -82,7 +82,7 @@ function generateRecommendation(dataOrGoal) {
         recommendation = recommendation.replace(/💬 【暖心陪伴語】[\s\S]*/g, '').trim();
         
         const caringMsg = getCaringMessage(energyGoal);
-        const ctaMsg = '\n\n✨ 以上為您量身推薦的水晶種類，歡迎聯絡我們進行專業100%專屬客製化手鏈設計！';
+        const ctaMsg = '\n\n✨ 以上為您量身推薦的水晶種類，歡迎聯絡我們進行專業100%專屬客製化手鍊設計！';
         
         return recommendation + '\n\n💬 【暖心陪伴語】\n' + caringMsg + ctaMsg;
       }
@@ -244,12 +244,12 @@ function generateRuleBasedRecommendation(data) {
   const lpInfo = lpCrystals[lifePath.number] || { name: '白水晶', desc: '淨化磁場' };
   const elemInfo = elemCrystals[fiveElements.deficiency] || { name: '茶晶', desc: '沉穩踏實' };
 
-  // 手鏈 A
+  // 手鍊 A
   const braceletA = [
-    '📿 【手鏈 A — 主命宮能量手鏈】',
+    '📿 【手鍊 A — 主命宮能量手鍊】',
     '【計算式】：生命靈數 ' + lifePath.formula + '；出生季節 ' + fiveElements.season + ' -> 補 ' + fiveElements.deficiency,
     '【水晶搭配】：' + lpInfo.name + ' 與 ' + elemInfo.name,
-    '【能量解說】：本款手鏈專為您的先天命格定制。融合了您生命靈數 ' + lifePath.number + ' 號人的專屬能量水晶（' + lpInfo.desc + '），搭配您生辰五行最缺乏的元素進行平衡調和（' + elemInfo.desc + '），全方位穩固並充實您先天的能量場。'
+    '【能量解說】：本款手鍊專為您的先天命格定制。融合了您生命靈數 ' + lifePath.number + ' 號人的專屬能量水晶（' + lpInfo.desc + '），搭配您生辰五行最缺乏的元素進行平衡調和（' + elemInfo.desc + '），全方位穩固並充實您先天的能量場。'
   ].join('\n');
 
   // 3. 脈輪對應
@@ -266,9 +266,9 @@ function generateRuleBasedRecommendation(data) {
   const primaryChakra = targetChakra ? targetChakra.split(', ')[0] : '心輪';
   const chakraInfo = chakraCrystals[primaryChakra] || { name: '白水晶、茶晶', desc: '全維度身心能量調和' };
 
-  // 手鏈 B
+  // 手鍊 B
   const braceletB = [
-    '📿 【手鏈 B — 心靈平衡療癒手鏈】',
+    '📿 【手鍊 B — 心靈平衡療癒手鍊】',
     '【設計公式】：基於您目前最需要調和的脈輪（' + primaryChakra + '）後天客製',
     '【水晶搭配】：' + chakraInfo.name,
     '【能量解說】：專門針對您的後天能量缺口進行修復。透過 ' + chakraInfo.name + ' 與特定脈輪進行頻率共振（' + chakraInfo.desc + '），協助您消除負面心結，重塑身心靈流動的和諧。'
@@ -290,12 +290,12 @@ function generateRuleBasedRecommendation(data) {
   const zodCrystal = zodiacCrystals[zodiacSign] || '白水晶';
   const czodCrystal = chineseZodiacCrystals[chineseZodiac] || '茶晶';
 
-  // 手鏈 C
+  // 手鍊 C
   const braceletC = [
-    '📿 【手鏈 C — 流年幸運守護手鏈】',
+    '📿 【手鍊 C — 流年幸運守護手鍊】',
     '【設計公式】：基於您的西方星座（' + zodiacSign + '）與東方生肖（' + chineseZodiac + '年）雙重幸運神護持',
     '【水晶搭配】：' + zodCrystal + ' 配搭 ' + czodCrystal,
-    '【能量解說】：本款手鏈為您的流年幸運守護手鏈。融合西方星座之幸運石（' + zodCrystal + '）與東方生肖之流年避邪防小人幸運石（' + czodCrystal + '），共同交織出極佳的氣場防護，為您招徠各方善緣與貴人運勢。'
+    '【能量解說】：本款手鍊為您的流年幸運守護手鍊。融合西方星座之幸運石（' + zodCrystal + '）與東方生肖之流年避邪防小人幸運石（' + czodCrystal + '），共同交織出極佳的氣場防護，為您招徠各方善緣與貴人運勢。'
   ].join('\n');
 
   // 總報告組合
@@ -303,8 +303,8 @@ function generateRuleBasedRecommendation(data) {
 
   const fullReport = [
     '🔮 【多維度精密能量評估報告】',
-    '親愛的 ' + (name || '貴賓') + '，根據我們精密分析您的國曆生日等神祕學數據，為您量身配置以下三款專屬水晶手鏈：',
-    '【基本資料】：性別 ' + gender + '；專屬品項 手鏈/手環；淨手圍 ' + (wristSize ? wristSize + ' cm' : '未提供'),
+    '親愛的 ' + (name || '貴賓') + '，根據我們精密分析您的國曆生日等神祕學數據，為您量身配置以下三款專屬水晶手鍊：',
+    '【基本資料】：性別 ' + gender + '；專屬品項 手鍊/手環；淨手圍 ' + (wristSize ? wristSize + ' cm' : '未提供'),
     '',
     braceletA,
     '',
@@ -313,15 +313,15 @@ function generateRuleBasedRecommendation(data) {
     braceletC,
     '',
     '🧘 【配戴與消磁儀式建議】',
-    '- 淨手圍為 ' + (wristSize ? wristSize + ' cm' : '15-16 cm') + '，手鏈將依此手圍為您精準定制穿線。',
-    '- 建議左手配戴「手鏈 A」與「手鏈 C」用以吸納先天本命與幸運守護能量。',
-    '- 若「手鏈 B」包含避邪排除類水晶（如茶晶、黑曜石），請配戴在右手以利排出濁氣與負能量。',
+    '- 淨手圍為 ' + (wristSize ? wristSize + ' cm' : '15-16 cm') + '，手鍊將依此手圍為您精準定制穿線。',
+    '- 建議左手配戴「手鍊 A」與「手鍊 C」用以吸納先天本命與幸運守護能量。',
+    '- 若「手鍊 B」包含避邪排除類水晶（如茶晶、黑曜石），請配戴在右手以利排出濁氣與負能量。',
     '- 收到水晶後，請置於白水晶碎石中進行 4 小時以上消磁，並虔誠設定您的祈願意圖。',
     '',
     '💬 【暖心陪伴語】',
     caringMsg,
     '',
-    '✨ 以上為您量身推薦的水晶種類，歡迎聯絡我們進行專業100%專屬客製化手鏈設計！'
+    '✨ 以上為您量身推薦的水晶種類，歡迎聯絡我們進行專業100%專屬客製化手鍊設計！'
   ].join('\n');
 
   return fullReport;
@@ -338,13 +338,13 @@ function buildGeminiPrompt(name, gender, preference, wristSize, colorPreference,
 
   return [
     '你是一位精通西方占星術、東方生辰八字五行、印度脈輪能量學與希伯來生命靈數學的專業溫暖水晶能量諮詢師。',
-    '請根據以下顧客的個人資料與神秘學計算參數，為他進行極具專業度與信服力的水晶能量評估，並量身客製化打造三款獨一無二的水晶手鏈。',
+    '請根據以下顧客的個人資料與神秘學計算參數，為他進行極具專業度與信服力的水晶能量評估，並量身客製化打造三款獨一無二的水晶手鍊。',
     '',
     '【顧客諮詢與計算參數】',
     '- 顧客姓名：' + (name || '未填寫'),
     '- 性別：' + (gender || '未提供'),
     '- 生日：' + (birthDate || '未提供') + ' ' + (birthTime || ''),
-    '- 專屬品項：' + (preference || '手鏈/手環'),
+    '- 專屬品項：' + (preference || '手鍊/手環'),
     '- 淨手圍：' + (wristSize ? wristSize + ' cm' : '未提供'),
     '- 偏好色系：' + (colorPreference || '不限'),
     '- 期望改善目標：' + (energyGoal || '未填寫'),
@@ -367,17 +367,17 @@ function buildGeminiPrompt(name, gender, preference, wristSize, colorPreference,
     '🔮 第一段：【多維度能量分析】',
     '綜合分析顧客的生命靈數性格特質、生辰五行衰旺、自評脈輪阻滯及星座生肖的流年運勢，寫明您的專業診斷，給予真誠的同理與能量引導。',
     '',
-    '📿 第二段：【手鏈 A — 主命宮能量手鏈】',
+    '📿 第二段：【手鍊 A — 主命宮能量手鍊】',
     '【設計公式】：基於「生命靈數 ' + lifePath.number + ' 號」與「生辰五行缺 ' + fiveElements.deficiency + '」的先天調和設計。',
-    '詳細說明此款手鏈選用的 2-3 種主水晶（必須考量偏好色系與預算），解釋其如何補充先天缺失並注入主命宮能量。請在此行寫出：『【計算式】：生命靈數 ' + lifePath.formula + '；出生季節 ' + fiveElements.season + ' -> 補 ' + fiveElements.deficiency + '』。',
+    '詳細說明此款手鍊選用的 2-3 種主水晶（必須考量偏好色系與預算），解釋其如何補充先天缺失並注入主命宮能量。請在此行寫出：『【計算式】：生命靈數 ' + lifePath.formula + '；出生季節 ' + fiveElements.season + ' -> 補 ' + fiveElements.deficiency + '』。',
     '',
-    '📿 第三段：【手鏈 B — 心靈平衡療癒手鏈】',
+    '📿 第三段：【手鍊 B — 心靈平衡療癒手鍊】',
     '【設計公式】：基於顧客勾選的脈輪能量缺口（' + (targetChakra || '心輪/海底輪') + '）後天調和設計。',
-    '詳細說明此款手鏈選用的 2-3 種療癒水晶，說明其如何針對當前的情緒壓力、失眠或焦慮進行脈輪疏通，平衡後天心靈流動。',
+    '詳細說明此款手鍊選用的 2-3 種療癒水晶，說明其如何針對當前的情緒壓力、失眠或焦慮進行脈輪疏通，平衡後天心靈流動。',
     '',
-    '📿 第四段：【手鏈 C — 流年幸運守護手鏈】',
+    '📿 第四段：【手鍊 C — 流年幸運守護手鍊】',
     '【設計公式】：基於「星座：' + zodiacSign + '」與「生肖：' + chineseZodiac + '」的雙重幸運物守護設計。',
-    '詳細說明此款手鏈選用的 2-3 種守護水晶，解釋其如何增強流年運氣、辟邪擋煞、防小人並招來貴人緣。',
+    '詳細說明此款手鍊選用的 2-3 種守護水晶，解釋其如何增強流年運氣、辟邪擋煞、防小人並招來貴人緣。',
     '',
     '🧘 第五段：【配戴與消磁儀式建議】',
     '根據手圍（' + (wristSize ? wristSize + ' cm' : '15-16 cm') + '）提供配戴建議，並給予專屬的淨化消磁日常心靈功課建議。'
@@ -480,7 +480,7 @@ function testRecommendation() {
     gender: '女性',
     birthDate: '2001-11-25',
     birthTime: '15:30',
-    preference: '手鏈/手環',
+    preference: '手鍊/手環',
     wristSize: '15.0',
     colorPreference: ['粉紅色系', '紫色系'],
     energyGoal: ['桃花與人緣', '健康與心靈療癒'],
