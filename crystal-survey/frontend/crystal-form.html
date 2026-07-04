@@ -1149,6 +1149,46 @@
       max-width: none !important;
     }
 
+    .profile-code-modal {
+      align-items: center;
+      background: rgba(26, 14, 62, 0.78);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      display: none;
+      inset: 0;
+      justify-content: center;
+      padding: 24px;
+      position: fixed;
+      z-index: 1100;
+    }
+
+    .profile-code-modal.active {
+      display: flex;
+      animation: overlay-in 0.28s ease-out;
+    }
+
+    .profile-code-dialog {
+      max-width: 560px;
+      width: min(100%, 560px);
+    }
+
+    .profile-code-dialog .profile-access-card {
+      display: block;
+      margin-top: 0;
+    }
+
+    .profile-code-dialog .profile-open-link {
+      display: none;
+    }
+
+    .profile-code-required {
+      color: var(--text-label) !important;
+      font-size: 0.88rem !important;
+      font-weight: 600;
+      margin: 12px 0 0 !important;
+      max-width: none !important;
+    }
+
     .submission-frame {
       border: 0;
       height: 1px;
@@ -1370,6 +1410,27 @@
 
   <!-- 紙花效果容器 -->
   <div class="confetti-container" id="confettiContainer"></div>
+
+  <!-- 圖卡密碼彈窗：複製後才進入 AI 推薦 -->
+  <div class="profile-code-modal" id="profileCodeModal" aria-hidden="true">
+    <div class="profile-code-dialog" role="dialog" aria-modal="true" aria-labelledby="profileCodeModalTitle">
+      <div id="profileAccessCard" class="glass-card profile-access-card" aria-live="polite">
+        <div class="profile-access-header">
+          <h3 id="profileCodeModalTitle">您的個人圖卡密碼已生成</h3>
+          <p>請先複製保存。之後到「您的手鏈檔案」貼上密碼，就可以查看個人圖卡。</p>
+        </div>
+        <div class="profile-code-box">
+          <code id="profileAccessCode">MUPHE-----</code>
+          <button class="copy-code-btn" type="button" id="copyProfileCodeBtn">複製查詢碼</button>
+        </div>
+        <a class="profile-open-link" id="openProfileLink" href="../../bracelet.html">前往您的手鏈檔案</a>
+        <p class="profile-access-note">
+          公開圖卡只會顯示您的名字與推薦方向，不會顯示聯絡方式、生日、性別、手圍或預算。
+        </p>
+        <p class="profile-code-required">按下「複製查詢碼」後，系統才會顯示 AI 初步推薦。</p>
+      </div>
+    </div>
+  </div>
 
   <!-- ========================
        主要表單區域
@@ -1849,21 +1910,6 @@
     <h2>✨ 諮詢表單已送出！✨</h2>
     <p>感謝您的信任，我們會盡快與您聯繫，<br>為您打造最適合的水晶能量方案。</p>
 
-    <div id="profileAccessCard" class="glass-card profile-access-card" aria-live="polite">
-      <div class="profile-access-header">
-        <h3>您的個人圖卡密碼已生成</h3>
-        <p>請先複製保存。之後到「您的手鏈檔案」貼上密碼，就可以查看個人圖卡。</p>
-      </div>
-      <div class="profile-code-box">
-        <code id="profileAccessCode">MUPHE-----</code>
-        <button class="copy-code-btn" type="button" id="copyProfileCodeBtn">複製</button>
-      </div>
-      <a class="profile-open-link" id="openProfileLink" href="../../bracelet.html">前往您的手鏈檔案</a>
-      <p class="profile-access-note">
-        公開圖卡只會顯示您的名字與推薦方向，不會顯示聯絡方式、生日、性別、手圍或預算。
-      </p>
-    </div>
-
     <!-- AI 推薦結果精美展示區塊 -->
     <div id="aiRecommendationCard" class="glass-card"
       style="display: none; margin-top: 32px; text-align: left; max-width: 560px; width: 100%; border: 1.5px solid rgba(183, 148, 246, 0.4); box-shadow: 0 8px 32px rgba(45, 27, 105, 0.4); opacity: 1; transform: none;">
@@ -1912,6 +1958,7 @@
     const profileAccessCode = document.getElementById('profileAccessCode');
     const copyProfileCodeBtn = document.getElementById('copyProfileCodeBtn');
     const openProfileLink = document.getElementById('openProfileLink');
+    const profileCodeModal = document.getElementById('profileCodeModal');
     const submissionFrame = document.querySelector('iframe[name="mupheSubmissionFrame"]');
     const SUBMISSION_FRAME_NAME = 'mupheSubmissionFrame';
     const SUBMISSION_TIMEOUT_MS = 45000;
@@ -1919,6 +1966,8 @@
     /* 防止重複送出的旗標 */
     let isSubmitting = false;
     let submissionTimeoutId = null;
+    let pendingRecommendation = '';
+    let pendingProfileAccess = null;
 
     /* ============================
        背景粒子星光產生器
@@ -2173,21 +2222,54 @@
       clearSubmissionTimeout();
       hideLoading();
       formContainer.style.display = 'none';
-      successPage.classList.add('active');
       submitBtn.disabled = false;
       isSubmitting = false;
+      pendingRecommendation = recommendation || '';
+      pendingProfileAccess = profileAccess || null;
+
+      renderProfileAccess(pendingProfileAccess);
+
+      if (pendingProfileAccess && pendingProfileAccess.accessCode) {
+        showProfileCodeModal();
+      } else {
+        showRecommendationResult();
+      }
+    }
+
+    function showProfileCodeModal() {
+      if (!profileCodeModal) {
+        showRecommendationResult();
+        return;
+      }
+
+      profileCodeModal.classList.add('active');
+      profileCodeModal.removeAttribute('hidden');
+      profileCodeModal.setAttribute('aria-hidden', 'false');
+      copyProfileCodeBtn.textContent = '複製查詢碼';
+      window.setTimeout(() => copyProfileCodeBtn.focus(), 80);
+    }
+
+    function hideProfileCodeModal() {
+      if (!profileCodeModal) return;
+
+      profileCodeModal.classList.remove('active');
+      profileCodeModal.setAttribute('hidden', '');
+      profileCodeModal.setAttribute('aria-hidden', 'true');
+    }
+
+    function showRecommendationResult() {
+      hideProfileCodeModal();
+      successPage.classList.add('active');
 
       const recCard = document.getElementById('aiRecommendationCard');
       const recText = document.getElementById('aiRecommendationText');
 
-      if (recommendation && recCard && recText) {
-        recText.textContent = recommendation;
+      if (pendingRecommendation && recCard && recText) {
+        recText.textContent = pendingRecommendation;
         recCard.style.display = 'block';
       } else if (recCard) {
         recCard.style.display = 'none';
       }
-
-      renderProfileAccess(profileAccess);
 
       launchConfetti();
 
@@ -2212,22 +2294,27 @@
     async function copyProfileCode() {
       const code = profileAccessCode.textContent.trim();
       if (!code) return;
+      let copied = false;
 
       try {
         await navigator.clipboard.writeText(code);
-        copyProfileCodeBtn.textContent = '已複製';
+        copied = true;
       } catch (error) {
         const selection = window.getSelection();
         const range = document.createRange();
         range.selectNodeContents(profileAccessCode);
         selection.removeAllRanges();
         selection.addRange(range);
-        copyProfileCodeBtn.textContent = '請手動複製';
+
+        try {
+          copied = document.execCommand('copy');
+        } catch (copyError) {
+          copied = false;
+        }
       }
 
-      setTimeout(() => {
-        copyProfileCodeBtn.textContent = '複製';
-      }, 2200);
+      copyProfileCodeBtn.textContent = copied ? '已複製' : '已選取查詢碼';
+      window.setTimeout(showRecommendationResult, copied ? 450 : 1100);
     }
 
     /* ============================
@@ -2236,6 +2323,7 @@
     function showError(message) {
       clearSubmissionTimeout();
       hideLoading();
+      hideProfileCodeModal();
       errorMessage.classList.add('active');
       if (message) {
         errorMessage.querySelector('p').textContent = message;
