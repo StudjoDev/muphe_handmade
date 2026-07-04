@@ -1968,6 +1968,7 @@
     let submissionTimeoutId = null;
     let pendingRecommendation = '';
     let pendingProfileAccess = null;
+    let isWaitingForProfileCodeCopy = false;
 
     /* ============================
        背景粒子星光產生器
@@ -2219,6 +2220,10 @@
        顯示成功頁面
        ============================ */
     function showSuccess(recommendation, profileAccess) {
+      if (isWaitingForProfileCodeCopy && pendingProfileAccess && pendingProfileAccess.accessCode) {
+        return;
+      }
+
       clearSubmissionTimeout();
       hideLoading();
       formContainer.style.display = 'none';
@@ -2226,6 +2231,7 @@
       isSubmitting = false;
       pendingRecommendation = recommendation || '';
       pendingProfileAccess = profileAccess || null;
+      isWaitingForProfileCodeCopy = false;
 
       renderProfileAccess(pendingProfileAccess);
 
@@ -2238,15 +2244,16 @@
 
     function showProfileCodeModal() {
       if (!profileCodeModal) {
-        showRecommendationResult();
+        showRecommendationResult({ afterProfileCodeCopy: true });
         return;
       }
 
+      isWaitingForProfileCodeCopy = true;
       profileCodeModal.classList.add('active');
       profileCodeModal.removeAttribute('hidden');
       profileCodeModal.setAttribute('aria-hidden', 'false');
       copyProfileCodeBtn.textContent = '複製查詢碼';
-      window.setTimeout(() => copyProfileCodeBtn.focus(), 80);
+      copyProfileCodeBtn.disabled = false;
     }
 
     function hideProfileCodeModal() {
@@ -2257,7 +2264,12 @@
       profileCodeModal.setAttribute('aria-hidden', 'true');
     }
 
-    function showRecommendationResult() {
+    function showRecommendationResult(options = {}) {
+      if (isWaitingForProfileCodeCopy && !options.afterProfileCodeCopy) {
+        return;
+      }
+
+      isWaitingForProfileCodeCopy = false;
       hideProfileCodeModal();
       successPage.classList.add('active');
 
@@ -2314,7 +2326,10 @@
       }
 
       copyProfileCodeBtn.textContent = copied ? '已複製' : '已選取查詢碼';
-      window.setTimeout(showRecommendationResult, copied ? 450 : 1100);
+      copyProfileCodeBtn.disabled = true;
+      window.setTimeout(() => {
+        showRecommendationResult({ afterProfileCodeCopy: true });
+      }, copied ? 450 : 1100);
     }
 
     /* ============================
@@ -2323,6 +2338,7 @@
     function showError(message) {
       clearSubmissionTimeout();
       hideLoading();
+      isWaitingForProfileCodeCopy = false;
       hideProfileCodeModal();
       errorMessage.classList.add('active');
       if (message) {
