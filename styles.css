@@ -1029,6 +1029,19 @@ details p {
   padding: 0 0 18px;
 }
 
+.wrist-measure-guide {
+  margin: 0 0 20px;
+}
+
+.wrist-measure-guide img {
+  background: #fff;
+  border: 1px solid rgba(36, 26, 43, 0.1);
+  border-radius: 8px;
+  display: block;
+  height: auto;
+  max-width: min(100%, 560px);
+}
+
 .site-footer {
   align-items: center;
   background: var(--ink);
