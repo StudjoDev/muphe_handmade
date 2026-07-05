@@ -886,10 +886,7 @@ function buildConsultationCardPublicFields(data, recommendation, accessCode) {
       '今天出門前，選一個想切換的狀態，讓手鍊成為提醒自己的小錨點。',
       '遇到人際或情緒拉扯時，摸一下珠子，先問自己：「我現在真正需要的是什麼？」'
     ],
-    makerNote: clipPublicText(
-      '給' + (displayName || '你') + '：你不需要用消耗自己來換取平衡。先照顧好自己的狀態，柔軟才會更有力量。',
-      160
-    )
+    makerNote: getCaringMessage(normalizeListValue(data && data.energyGoal))
   };
 }
 
