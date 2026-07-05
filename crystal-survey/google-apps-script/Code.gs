@@ -1309,13 +1309,14 @@ function buildPublicAnalysisReportText(recommendation) {
     return report;
   }
 
-  return '🔮 【多維度精密能量評估報告】\n沐菲已收到你的狀態資料，會依照你填寫的目標、色系與能量分析模組，整理適合後續客製討論的水晶方向。\n\n💬 【暖心陪伴語】\n每一次想更了解自己，都是一個很溫柔的開始。';
+  return '🔮 【多維度精密能量評估報告】\n沐菲已收到你的狀態資料，會依照你填寫的目標、色系與能量分析模組，整理適合後續客製討論的水晶方向。';
 }
 
 function sanitizePublicAnalysisText(value) {
   return String(value === null || typeof value === 'undefined' ? '' : value)
     .replace(/（本地規則\s*Fallback\s*生成）/g, '')
     .replace(/\(本地規則\s*Fallback\s*生成\)/g, '')
+    .replace(/\s*💬\s*【暖心陪伴語】[\s\S]*$/g, '')
     .replace(/【基本資料】[:：][^\n]*(?:\n|$)/g, '')
     .replace(/-\s*淨手圍為[^\n]*/g, '- 手鍊會依你提供的尺寸精準定制穿線。')
     .split(/\r?\n/)

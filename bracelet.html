@@ -834,7 +834,8 @@
       }
 
       function renderAnalysisReport(text) {
-        const sections = parseAnalysisReport(text);
+        const sections = parseAnalysisReport(text)
+          .filter((section) => !section.title.includes("暖心陪伴語"));
         if (!sections.length) return "";
 
         return `
