@@ -28,6 +28,9 @@ const BRACELET_PROFILE_SHEET_NAME = '手鍊檔案';
 /** 分析評估全文工作表名稱 */
 const ANALYSIS_EVALUATION_SHEET_NAME = '分析評估表';
 
+/** 水晶成本工作表名稱 */
+const CRYSTAL_COST_SHEET_NAME = '水晶成本';
+
 /** 是否將每張客戶個人圖卡同步保存到 Google Drive 後台資料夾 */
 const CONSULTATION_CARD_ARCHIVE_ENABLED = true;
 
@@ -267,4 +270,30 @@ const ANALYSIS_EVALUATION_HEADER_ROW = [
   '諮詢紀錄列號',
   '內部備註',
   '想設計手鍊'
+];
+
+/** 水晶成本工作表欄位在試算表中的位置（1-indexed） */
+const CRYSTAL_COST_COLUMNS = {
+  CRYSTAL_NAME: 1,       // A 欄 — 水晶名稱
+  SIZE_MM: 2,            // B 欄 — 尺寸 mm
+  UNIT_COST: 3,          // C 欄 — 單顆成本
+  CURRENCY: 4,           // D 欄 — 幣別
+  COLOR_FAMILY: 5,       // E 欄 — 色系
+  SOURCE_IMAGE: 6,       // F 欄 — 來源圖片
+  VERIFY_STATUS: 7,      // G 欄 — 辨識狀態
+  NOTES: 8,              // H 欄 — 備註
+  UPDATED_AT: 9          // I 欄 — 更新時間
+};
+
+/** 水晶成本工作表標題列 */
+const CRYSTAL_COST_HEADER_ROW = [
+  '水晶名稱',
+  '尺寸mm',
+  '單顆成本',
+  '幣別',
+  '色系',
+  '來源圖片',
+  '辨識狀態',
+  '備註',
+  '更新時間'
 ];

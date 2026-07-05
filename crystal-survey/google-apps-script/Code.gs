@@ -757,6 +757,157 @@ function normalizeDesignBraceletSelection(value) {
 }
 
 /**
+ * 依「水晶成本」資料夾中的價牌照片整理出的初始成本資料。
+ * 辨識狀態為「待核對」的列，代表照片字樣或品名較小，建議店主在後台再確認一次。
+ * @returns {Array[]} 水晶成本資料列
+ */
+function getDefaultCrystalCostRows() {
+  return [
+    ['天眼石', 9, 15, 'TWD', '黑色', 'LINE_NOTE_260705_1.jpg', '已辨識', ''],
+    ['黑曜石', 16, 50, 'TWD', '黑色', 'LINE_NOTE_260705_1.jpg', '已辨識', ''],
+    ['黑曜石', 12, 35, 'TWD', '黑色', 'LINE_NOTE_260705_2.jpg', '已辨識', ''],
+    ['黑曜石', 8, 15, 'TWD', '黑色', 'LINE_NOTE_260705_2.jpg', '已辨識', ''],
+    ['黑曜石', 6, 10, 'TWD', '黑色', 'LINE_NOTE_260705_2.jpg', '已辨識', ''],
+    ['瑪瑙', 12, 35, 'TWD', '黑色', 'LINE_NOTE_260705_1.jpg', '已辨識', ''],
+    ['一線天珠', 8, 15, 'TWD', '黑白', 'LINE_NOTE_260705_1.jpg', '已辨識', ''],
+    ['一線天珠', 6, 10, 'TWD', '黑白', 'LINE_NOTE_260705_1.jpg', '已辨識', ''],
+    ['天眼天珠', 8, 20, 'TWD', '紅白', 'LINE_NOTE_260705_1.jpg', '已辨識', ''],
+    ['天眼天珠', 6, 10, 'TWD', '紅白', 'LINE_NOTE_260705_1.jpg', '已辨識', ''],
+    ['紅虎眼', 10, 20, 'TWD', '紅色', 'LINE_NOTE_260705_1.jpg', '已辨識', ''],
+    ['紅虎眼', 8, 15, 'TWD', '紅色', 'LINE_NOTE_260705_1.jpg', '已辨識', ''],
+    ['孔雀藍虎眼', 10, 20, 'TWD', '藍色', 'LINE_NOTE_260705_1.jpg', '已辨識', ''],
+    ['孔雀藍虎眼', 8, 15, 'TWD', '藍色', 'LINE_NOTE_260705_1.jpg', '已辨識', ''],
+    ['孔雀藍虎眼', 6, 10, 'TWD', '藍色', 'LINE_NOTE_260705_1.jpg', '已辨識', ''],
+    ['黃虎眼', 10, 20, 'TWD', '黃金色', 'LINE_NOTE_260705_1.jpg', '已辨識', ''],
+    ['黃虎眼', 8, 15, 'TWD', '黃金色', 'LINE_NOTE_260705_1.jpg', '已辨識', ''],
+    ['黃虎眼', 6, 10, 'TWD', '黃金色', 'LINE_NOTE_260705_1.jpg', '已辨識', ''],
+    ['紅兔髮', 8, 15, 'TWD', '紅色', 'LINE_NOTE_260705_1.jpg', '已辨識', ''],
+    ['紅兔髮', 6, 10, 'TWD', '紅色', 'LINE_NOTE_260705_1.jpg', '已辨識', ''],
+
+    ['白水晶', 10, 20, 'TWD', '白色透明', 'LINE_NOTE_260705_2.jpg', '已辨識', ''],
+    ['白水晶', 6, 15, 'TWD', '白色透明', 'LINE_NOTE_260705_2.jpg', '已辨識', ''],
+    ['白松石', 12, 30, 'TWD', '白色', 'LINE_NOTE_260705_2.jpg', '已辨識', ''],
+    ['白松石', 10, 20, 'TWD', '白色', 'LINE_NOTE_260705_2.jpg', '已辨識', ''],
+    ['白松石', 8, 10, 'TWD', '白色', 'LINE_NOTE_260705_2.jpg', '已辨識', ''],
+    ['白佛眼', 6, 10, 'TWD', '白色', 'LINE_NOTE_260705_2.jpg', '已辨識', ''],
+    ['蛋白石', 12, 35, 'TWD', '白色透明', 'LINE_NOTE_260705_2.jpg', '已辨識', ''],
+    ['蛋白石', 8, 15, 'TWD', '白色透明', 'LINE_NOTE_260705_2.jpg', '已辨識', ''],
+    ['蛋白石', 6, 10, 'TWD', '白色透明', 'LINE_NOTE_260705_2.jpg', '已辨識', ''],
+    ['純淨白水晶', 10, 25, 'TWD', '白色透明', 'LINE_NOTE_260705_2.jpg', '已辨識', ''],
+    ['純淨白水晶', 8, 20, 'TWD', '白色透明', 'LINE_NOTE_260705_2.jpg', '已辨識', ''],
+    ['純淨白水晶', 6, 10, 'TWD', '白色透明', 'LINE_NOTE_260705_2.jpg', '已辨識', ''],
+
+    ['水紋藍瑪瑙', 10, 20, 'TWD', '藍色', 'LINE_NOTE_260705_3.jpg', '已辨識', ''],
+    ['水紋藍瑪瑙', 8, 15, 'TWD', '藍色', 'LINE_NOTE_260705_3.jpg', '已辨識', ''],
+    ['土耳其石', 10, 15, 'TWD', '藍色', 'LINE_NOTE_260705_3.jpg', '已辨識', ''],
+    ['土耳其石', 8, 10, 'TWD', '藍色', 'LINE_NOTE_260705_3.jpg', '已辨識', ''],
+    ['土耳其石', 6, 5, 'TWD', '藍色', 'LINE_NOTE_260705_3.jpg', '已辨識', ''],
+    ['青金石', 10, 25, 'TWD', '藍色', 'LINE_NOTE_260705_3.jpg', '已辨識', ''],
+    ['青金石', 8, 20, 'TWD', '藍色', 'LINE_NOTE_260705_3.jpg', '已辨識', ''],
+    ['青金石', 6, 15, 'TWD', '藍色', 'LINE_NOTE_260705_3.jpg', '已辨識', ''],
+    ['夢幻紫水晶', 10, 20, 'TWD', '紫色', 'LINE_NOTE_260705_3.jpg', '已辨識', ''],
+    ['夢幻紫水晶', 8, 15, 'TWD', '紫色', 'LINE_NOTE_260705_3.jpg', '已辨識', ''],
+    ['夢幻紫水晶', 6, 10, 'TWD', '紫色', 'LINE_NOTE_260705_3.jpg', '已辨識', ''],
+    ['純淨紫水晶', 10, 25, 'TWD', '紫色', 'LINE_NOTE_260705_3.jpg', '已辨識', ''],
+    ['純淨紫水晶', 8, 25, 'TWD', '紫色', 'LINE_NOTE_260705_3.jpg', '待核對', '價牌看起來為 25 元，建議核對。'],
+    ['純淨紫水晶', 6, 15, 'TWD', '紫色', 'LINE_NOTE_260705_3.jpg', '已辨識', ''],
+
+    ['草莓晶', 10, 20, 'TWD', '粉色', 'LINE_NOTE_260705_4.jpg', '已辨識', ''],
+    ['草莓晶', 8, 15, 'TWD', '粉色', 'LINE_NOTE_260705_4.jpg', '已辨識', ''],
+    ['草莓晶', 6, 10, 'TWD', '粉色', 'LINE_NOTE_260705_4.jpg', '已辨識', ''],
+    ['紅白玉髓', 10, 20, 'TWD', '粉色', 'LINE_NOTE_260705_4.jpg', '已辨識', ''],
+    ['紅白玉髓', 8, 15, 'TWD', '粉色', 'LINE_NOTE_260705_4.jpg', '已辨識', ''],
+    ['紅白玉髓', 6, 10, 'TWD', '粉色', 'LINE_NOTE_260705_4.jpg', '已辨識', ''],
+    ['粉水晶', 10, 20, 'TWD', '粉色', 'LINE_NOTE_260705_4.jpg', '待核對', '照片字樣較淡，建議核對。'],
+    ['粉水晶', 8, 15, 'TWD', '粉色', 'LINE_NOTE_260705_4.jpg', '待核對', '照片字樣較淡，建議核對。'],
+    ['粉水晶', 6, 10, 'TWD', '粉色', 'LINE_NOTE_260705_4.jpg', '已辨識', ''],
+    ['西瓜晶', 10, 15, 'TWD', '橙色', 'LINE_NOTE_260705_4.jpg', '已辨識', ''],
+    ['西瓜晶', 8, 10, 'TWD', '橙色', 'LINE_NOTE_260705_4.jpg', '已辨識', ''],
+    ['西瓜晶', 6, 5, 'TWD', '橙色', 'LINE_NOTE_260705_4.jpg', '已辨識', ''],
+    ['紅瑪瑙', 10, 20, 'TWD', '紅色', 'LINE_NOTE_260705_4.jpg', '已辨識', ''],
+    ['紅瑪瑙', 8, 15, 'TWD', '紅色', 'LINE_NOTE_260705_4.jpg', '已辨識', ''],
+    ['紅瑪瑙', 6, 10, 'TWD', '紅色', 'LINE_NOTE_260705_4.jpg', '已辨識', ''],
+    ['紅瑪瑙', 5, 8, 'TWD', '紅色', 'LINE_NOTE_260705_4.jpg', '已辨識', ''],
+    ['紅瑪瑙', 4, 5, 'TWD', '紅色', 'LINE_NOTE_260705_4.jpg', '已辨識', ''],
+    ['紅紋石', 10, 20, 'TWD', '紅色', 'LINE_NOTE_260705_4.jpg', '待核對', '右上紅色系價牌字樣較小。'],
+    ['紅紋石', 8, 15, 'TWD', '紅色', 'LINE_NOTE_260705_4.jpg', '待核對', '右上紅色系價牌字樣較小。'],
+
+    ['太陽石', 9, 20, 'TWD', '橙色', 'LINE_NOTE_260705_5.jpg', '已辨識', ''],
+    ['太陽石', 6, 15, 'TWD', '橙色', 'LINE_NOTE_260705_5.jpg', '已辨識', ''],
+    ['黃玉', 10, 20, 'TWD', '黃金色', 'LINE_NOTE_260705_5.jpg', '已辨識', ''],
+    ['黃玉', 8, 15, 'TWD', '黃金色', 'LINE_NOTE_260705_5.jpg', '已辨識', ''],
+    ['黃玉', 6, 10, 'TWD', '黃金色', 'LINE_NOTE_260705_5.jpg', '已辨識', ''],
+    ['黃瑪瑙', 12, 30, 'TWD', '黃金色', 'LINE_NOTE_260705_5.jpg', '已辨識', ''],
+    ['黃瑪瑙', 8, 15, 'TWD', '黃金色', 'LINE_NOTE_260705_5.jpg', '已辨識', ''],
+    ['黃瑪瑙', 6, 10, 'TWD', '黃金色', 'LINE_NOTE_260705_5.jpg', '已辨識', ''],
+    ['黃瑪瑙', 4, 5, 'TWD', '黃金色', 'LINE_NOTE_260705_5.jpg', '已辨識', ''],
+    ['檸檬鈦水晶', 10, 30, 'TWD', '黃金色', 'LINE_NOTE_260705_5.jpg', '待核對', '品名字樣較小，先依照片辨識建檔。'],
+    ['檸檬鈦水晶', 8, 25, 'TWD', '黃金色', 'LINE_NOTE_260705_5.jpg', '待核對', '品名字樣較小，先依照片辨識建檔。'],
+    ['檸檬鈦水晶', 6, 20, 'TWD', '黃金色', 'LINE_NOTE_260705_5.jpg', '待核對', '品名字樣較小，先依照片辨識建檔。'],
+    ['刻面黃水晶', 10, 25, 'TWD', '黃金色', 'LINE_NOTE_260705_5.jpg', '已辨識', ''],
+    ['刻面黃水晶', 8, 20, 'TWD', '黃金色', 'LINE_NOTE_260705_5.jpg', '已辨識', ''],
+    ['刻面黃水晶', 6, 15, 'TWD', '黃金色', 'LINE_NOTE_260705_5.jpg', '已辨識', ''],
+    ['透明黃水晶', 10, 25, 'TWD', '黃金色', 'LINE_NOTE_260705_5.jpg', '待核對', '照片中品名疑似透明黃水晶。'],
+    ['透明黃水晶', 8, 20, 'TWD', '黃金色', 'LINE_NOTE_260705_5.jpg', '待核對', '照片中品名疑似透明黃水晶。'],
+    ['透明黃水晶', 6, 15, 'TWD', '黃金色', 'LINE_NOTE_260705_5.jpg', '待核對', '照片中品名疑似透明黃水晶。'],
+
+    ['翡翠玉', 10, 20, 'TWD', '綠色', 'LINE_NOTE_260705_6.jpg', '已辨識', ''],
+    ['翡翠玉', 8, 15, 'TWD', '綠色', 'LINE_NOTE_260705_6.jpg', '已辨識', ''],
+    ['翡翠玉', 6, 10, 'TWD', '綠色', 'LINE_NOTE_260705_6.jpg', '已辨識', ''],
+    ['綠瑪瑙', 10, 20, 'TWD', '綠色', 'LINE_NOTE_260705_6.jpg', '已辨識', ''],
+    ['綠瑪瑙', 8, 15, 'TWD', '綠色', 'LINE_NOTE_260705_6.jpg', '已辨識', ''],
+    ['綠瑪瑙', 6, 10, 'TWD', '綠色', 'LINE_NOTE_260705_6.jpg', '已辨識', ''],
+    ['綠髮晶', 10, 25, 'TWD', '綠色', 'LINE_NOTE_260705_6.jpg', '已辨識', ''],
+    ['綠髮晶', 8, 20, 'TWD', '綠色', 'LINE_NOTE_260705_6.jpg', '已辨識', ''],
+    ['綠髮晶', 6, 15, 'TWD', '綠色', 'LINE_NOTE_260705_6.jpg', '已辨識', ''],
+    ['綠螢石', 10, 25, 'TWD', '綠色', 'LINE_NOTE_260705_6.jpg', '已辨識', ''],
+    ['綠螢石', 8, 20, 'TWD', '綠色', 'LINE_NOTE_260705_6.jpg', '已辨識', ''],
+    ['綠螢石', 6, 15, 'TWD', '綠色', 'LINE_NOTE_260705_6.jpg', '已辨識', ''],
+    ['綠玉', 10, 20, 'TWD', '綠色', 'LINE_NOTE_260705_6.jpg', '已辨識', ''],
+    ['綠玉', 8, 15, 'TWD', '綠色', 'LINE_NOTE_260705_6.jpg', '已辨識', ''],
+    ['綠玉', 6, 10, 'TWD', '綠色', 'LINE_NOTE_260705_6.jpg', '已辨識', '']
+  ];
+}
+
+/**
+ * 建立或更新後台「水晶成本」分頁。
+ * @returns {Object} 匯入結果
+ */
+function initializeCrystalCostSheet() {
+  const sheet = getOrCreateSheet(CRYSTAL_COST_SHEET_NAME, CRYSTAL_COST_HEADER_ROW, getCrystalCostColumnWidths());
+  const rows = getDefaultCrystalCostRows();
+  const updatedAt = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy/MM/dd HH:mm:ss');
+  const values = rows.map(function(row) {
+    return row.concat([updatedAt]);
+  });
+
+  withScriptLock(function() {
+    const lastRow = sheet.getLastRow();
+    if (lastRow > 1) {
+      sheet.getRange(2, 1, lastRow - 1, CRYSTAL_COST_HEADER_ROW.length).clearContent();
+    }
+    if (values.length) {
+      sheet.getRange(2, 1, values.length, CRYSTAL_COST_HEADER_ROW.length).setValues(values);
+      sheet.getRange(2, CRYSTAL_COST_COLUMNS.UNIT_COST, values.length, 1).setNumberFormat('$#,##0');
+    }
+    sheet.getRange(1, 1, 1, CRYSTAL_COST_HEADER_ROW.length).setFontWeight('bold');
+    sheet.setFrozenRows(1);
+    if (sheet.getFilter()) {
+      sheet.getFilter().remove();
+    }
+    sheet.getRange(1, 1, Math.max(values.length + 1, 2), CRYSTAL_COST_HEADER_ROW.length).createFilter();
+    SpreadsheetApp.flush();
+  });
+
+  console.log('✅ 水晶成本分頁已更新，共 ' + rows.length + ' 筆。');
+  return {
+    sheetName: CRYSTAL_COST_SHEET_NAME,
+    rowCount: rows.length,
+    url: sheet.getParent().getUrl()
+  };
+}
+
+/**
  * 手動回補既有諮詢紀錄到分析評估表。
  * 會依手鍊檔案內部備註中的諮詢紀錄列號，找出同一筆資料的查詢碼。
  * @returns {Object} 回補結果
@@ -2340,6 +2491,23 @@ function getAnalysisEvaluationColumnWidths() {
   return widths;
 }
 
+/**
+ * 水晶成本工作表欄寬。
+ */
+function getCrystalCostColumnWidths() {
+  const widths = {};
+  widths[CRYSTAL_COST_COLUMNS.CRYSTAL_NAME] = 150;
+  widths[CRYSTAL_COST_COLUMNS.SIZE_MM] = 90;
+  widths[CRYSTAL_COST_COLUMNS.UNIT_COST] = 110;
+  widths[CRYSTAL_COST_COLUMNS.CURRENCY] = 70;
+  widths[CRYSTAL_COST_COLUMNS.COLOR_FAMILY] = 100;
+  widths[CRYSTAL_COST_COLUMNS.SOURCE_IMAGE] = 190;
+  widths[CRYSTAL_COST_COLUMNS.VERIFY_STATUS] = 110;
+  widths[CRYSTAL_COST_COLUMNS.NOTES] = 300;
+  widths[CRYSTAL_COST_COLUMNS.UPDATED_AT] = 150;
+  return widths;
+}
+
 // ============================
 // 🛠️ 輔助函數
 // ============================
@@ -2554,16 +2722,19 @@ function initializeSheet() {
       ANALYSIS_EVALUATION_HEADER_ROW,
       getAnalysisEvaluationColumnWidths()
     );
+    const crystalCostResult = initializeCrystalCostSheet();
     const csvUrl = syncCsvMirrorWithLock(sheet);
     console.log('✅ 試算表初始化完成！');
     console.log('  諮詢工作表名稱：' + sheet.getName());
     console.log('  訂單工作表名稱：' + orderSheet.getName());
     console.log('  手鍊公開檔案工作表名稱：' + braceletProfileSheet.getName());
     console.log('  分析評估表工作表名稱：' + analysisEvaluationSheet.getName());
+    console.log('  水晶成本工作表名稱：' + crystalCostResult.sheetName + '，資料筆數：' + crystalCostResult.rowCount);
     console.log('  諮詢欄位數量：' + HEADER_ROW.length);
     console.log('  訂單欄位數量：' + ORDER_HEADER_ROW.length);
     console.log('  手鍊公開檔案欄位數量：' + BRACELET_PROFILE_HEADER_ROW.length);
     console.log('  分析評估表欄位數量：' + ANALYSIS_EVALUATION_HEADER_ROW.length);
+    console.log('  水晶成本欄位數量：' + CRYSTAL_COST_HEADER_ROW.length);
     
     // 顯示試算表 URL
     const spreadsheet = sheet.getParent();
