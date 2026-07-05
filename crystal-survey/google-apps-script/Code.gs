@@ -314,7 +314,7 @@ function findPublishedBraceletProfile(accessCode, accessToken) {
 }
 
 /**
- * 使用姓名與生日找回由諮詢表單建立的個人圖卡查詢碼。
+ * 使用姓名與生日找回由諮詢表單建立的個人分析表查詢碼。
  * @param {*} name - 使用者輸入姓名
  * @param {*} birthDate - 使用者輸入生日
  * @returns {Object|null} 查詢憑證
@@ -370,7 +370,7 @@ function findBraceletAccessCodeByCustomerIdentity(name, birthDate) {
 }
 
 /**
- * 從個人圖卡列中，依諮詢紀錄列號找出查詢碼。
+ * 從個人分析表列中，依諮詢紀錄列號找出查詢碼。
  * @param {Array[]} profileRows - 手鍊檔案工作表資料列
  * @param {number} consultationRowNumber - 諮詢紀錄列號
  * @returns {Object|null} 查詢憑證
@@ -426,7 +426,7 @@ function buildPublicBraceletProfile(row) {
   const scene = getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.SCENE);
   return {
     profileId: getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.PROFILE_ID),
-    profileType: scene === '水晶諮詢圖卡' ? 'consultationCard' : 'braceletProfile',
+    profileType: /水晶諮詢(?:圖卡|分析表)/.test(scene) ? 'consultationCard' : 'braceletProfile',
     displayName: getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.DISPLAY_NAME),
     braceletName: getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.BRACELET_NAME),
     scene: scene,
@@ -511,7 +511,7 @@ function generateAnalysisEvaluationId() {
 }
 
 /**
- * 由諮詢表單自動建立一份可用密碼查詢的個人水晶圖卡。
+ * 由諮詢表單自動建立一份可用密碼查詢的個人水晶分析表。
  * 對外內容只保留名字與推薦方向，不寫入聯絡方式、生日、性別、手圍或預算。
  * @param {Object} data - 諮詢表單資料
  * @param {string} recommendation - AI/規則初步推薦
@@ -538,7 +538,7 @@ function appendConsultationCardProfile(data, recommendation, timestamp, consulta
     publicFields: publicFields
   });
   const archiveNote = archiveResult && archiveResult.fileUrl
-    ? '；圖卡歸檔：' + archiveResult.fileUrl
+    ? '；分析表歸檔：' + archiveResult.fileUrl
     : '';
 
   const rowData = [
@@ -563,7 +563,7 @@ function appendConsultationCardProfile(data, recommendation, timestamp, consulta
     '',
     profileUrl,
     timestamp,
-    '由諮詢表單自動生成；諮詢紀錄列號 ' + consultationRow + '；公開資料已排除聯絡方式、生日、性別、手圍與預算。' + archiveNote
+    '由諮詢表單自動生成；諮詢紀錄列號 ' + consultationRow + '；公開分析表已排除聯絡方式、生日、性別、手圍與預算。' + archiveNote
   ];
 
   profileSheet.appendRow(rowData);
@@ -583,7 +583,7 @@ function appendConsultationCardProfile(data, recommendation, timestamp, consulta
  * @param {string} recommendation - AI/規則初步推薦全文
  * @param {string} timestamp - 建立時間
  * @param {number} consultationRow - 諮詢紀錄列號
- * @param {Object} profileResult - 個人圖卡建立結果
+ * @param {Object} profileResult - 個人分析表建立結果
  * @returns {Object} 分析評估紀錄資訊
  */
 function appendAnalysisEvaluationRecord(data, recommendation, timestamp, consultationRow, profileResult) {
@@ -629,6 +629,86 @@ function appendAnalysisEvaluationRecord(data, recommendation, timestamp, consult
     accessCode: accessCode,
     rowNumber: evaluationSheet.getLastRow()
   };
+}
+
+/**
+ * 將既有「分析評估表」全文回填到「手鍊檔案」公開摘要欄。
+ * 讓舊的分析表密碼也能顯示完整「您的專屬水晶能量初步評估」內容。
+ * @returns {Object} 回填結果
+ */
+function backfillConsultationAnalysisSheets() {
+  return withScriptLock(function() {
+    const profileSheet = getOrCreateSheet(
+      BRACELET_PROFILE_SHEET_NAME,
+      BRACELET_PROFILE_HEADER_ROW,
+      getBraceletProfileColumnWidths()
+    );
+    const evaluationSheet = getOrCreateSheet(
+      ANALYSIS_EVALUATION_SHEET_NAME,
+      ANALYSIS_EVALUATION_HEADER_ROW,
+      getAnalysisEvaluationColumnWidths()
+    );
+    const evaluationLastRow = evaluationSheet.getLastRow();
+    const profileLastRow = profileSheet.getLastRow();
+    const updatedAt = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy/MM/dd HH:mm:ss');
+    const recommendationByCode = {};
+    let scannedEvaluations = 0;
+    let updatedProfiles = 0;
+
+    if (evaluationLastRow > 1) {
+      const evaluationValues = evaluationSheet.getRange(2, 1, evaluationLastRow - 1, ANALYSIS_EVALUATION_HEADER_ROW.length).getValues();
+      evaluationValues.forEach(function(row) {
+        const accessCode = normalizeBraceletAccessCode(row[ANALYSIS_EVALUATION_COLUMNS.ACCESS_CODE - 1] || '');
+        const recommendation = row[ANALYSIS_EVALUATION_COLUMNS.RECOMMENDATION_TEXT - 1] || '';
+        if (accessCode && recommendation) {
+          recommendationByCode[accessCode] = recommendation;
+          scannedEvaluations += 1;
+        }
+      });
+    }
+
+    if (profileLastRow > 1) {
+      const profileValues = profileSheet.getRange(2, 1, profileLastRow - 1, BRACELET_PROFILE_HEADER_ROW.length).getValues();
+      profileValues.forEach(function(row, index) {
+        const rowNumber = index + 2;
+        const accessCode = normalizeBraceletAccessCode(row[BRACELET_PROFILE_COLUMNS.ACCESS_CODE - 1] || '');
+        const recommendation = recommendationByCode[accessCode];
+
+        if (!accessCode || !recommendation) {
+          return;
+        }
+
+        const fullAnalysis = buildPublicAnalysisReportText(recommendation);
+        if (!fullAnalysis) {
+          return;
+        }
+
+        const currentSummary = String(row[BRACELET_PROFILE_COLUMNS.SUMMARY - 1] || '').trim();
+        const currentScene = String(row[BRACELET_PROFILE_COLUMNS.SCENE - 1] || '').trim();
+        const currentName = String(row[BRACELET_PROFILE_COLUMNS.BRACELET_NAME - 1] || '').trim();
+
+        profileSheet.getRange(rowNumber, BRACELET_PROFILE_COLUMNS.SUMMARY).setValue(fullAnalysis);
+        if (/水晶諮詢圖卡/.test(currentScene)) {
+          profileSheet.getRange(rowNumber, BRACELET_PROFILE_COLUMNS.SCENE).setValue('水晶諮詢分析表');
+        }
+        if (/水晶狀態圖卡/.test(currentName)) {
+          profileSheet.getRange(rowNumber, BRACELET_PROFILE_COLUMNS.BRACELET_NAME).setValue(currentName.replace(/水晶狀態圖卡/g, '水晶狀態分析表'));
+        }
+        profileSheet.getRange(rowNumber, BRACELET_PROFILE_COLUMNS.UPDATED_AT).setValue(updatedAt);
+
+        if (currentSummary !== fullAnalysis) {
+          updatedProfiles += 1;
+        }
+      });
+    }
+
+    SpreadsheetApp.flush();
+
+    return {
+      scannedEvaluations: scannedEvaluations,
+      updatedProfiles: updatedProfiles
+    };
+  });
 }
 
 /**
@@ -1007,9 +1087,9 @@ function backfillAnalysisEvaluationSheet() {
 }
 
 /**
- * 將客戶個人圖卡保存到後台 Google Drive 資料夾。
- * 保存內容只包含個人圖卡資料，不含聯絡方式、生日、性別、手圍或預算。
- * @param {Object} options - 圖卡歸檔資料
+ * 將客戶個人分析表保存到後台 Google Drive 資料夾。
+ * 保存內容只包含個人分析表資料，不含聯絡方式、生日、性別、手圍或預算。
+ * @param {Object} options - 分析表歸檔資料
  * @returns {Object|null} 歸檔結果
  */
 function archiveConsultationCardProfile(options) {
@@ -1022,20 +1102,20 @@ function archiveConsultationCardProfile(options) {
     const fileName = buildConsultationCardArchiveFileName(options);
     const html = buildConsultationCardArchiveHtml(options);
     const file = folder.createFile(fileName, html, MimeType.HTML);
-    file.setDescription('MUPHÉ 客戶水晶圖卡歸檔。此檔案只含個人圖卡資料，不含聯絡方式、生日、性別、手圍或預算。');
+    file.setDescription('MUPHÉ 客戶水晶分析表歸檔。此檔案只含個人分析表資料，不含聯絡方式、生日、性別、手圍或預算。');
 
     return {
       fileId: file.getId(),
       fileUrl: file.getUrl()
     };
   } catch (error) {
-    console.error('【圖卡歸檔失敗】' + error.toString());
+    console.error('【分析表歸檔失敗】' + error.toString());
     return null;
   }
 }
 
 /**
- * 取得或建立客戶圖卡歸檔資料夾。
+ * 取得或建立客戶分析表歸檔資料夾。
  * @returns {Folder} Google Drive 資料夾
  */
 function getConsultationCardArchiveFolder() {
@@ -1051,7 +1131,7 @@ function getConsultationCardArchiveFolder() {
     typeof CONSULTATION_CARD_FOLDER_NAME === 'undefined' ||
     !String(CONSULTATION_CARD_FOLDER_NAME || '').trim()
   )
-    ? 'MUPHÉ 客戶水晶圖卡'
+    ? 'MUPHÉ 客戶水晶分析表'
     : String(CONSULTATION_CARD_FOLDER_NAME).trim();
   const folders = DriveApp.getFoldersByName(folderName);
 
@@ -1065,8 +1145,8 @@ function getConsultationCardArchiveFolder() {
 function buildConsultationCardArchiveFileName(options) {
   const publicFields = options.publicFields || {};
   const displayName = sanitizeDriveFileName(publicFields.displayName || '客戶');
-  const accessCode = sanitizeDriveFileName(options.accessCode || options.profileId || 'CARD');
-  return accessCode + '_' + displayName + '_水晶圖卡.html';
+  const accessCode = sanitizeDriveFileName(options.accessCode || options.profileId || 'ANALYSIS');
+  return accessCode + '_' + displayName + '_水晶分析表.html';
 }
 
 function sanitizeDriveFileName(value) {
@@ -1076,7 +1156,7 @@ function sanitizeDriveFileName(value) {
 
 function buildConsultationCardArchiveHtml(options) {
   const publicFields = options.publicFields || {};
-  const title = publicFields.braceletName || '水晶狀態圖卡';
+  const title = publicFields.braceletName || '水晶狀態分析表';
   const crystals = publicFields.crystals || [];
   const energyFocus = publicFields.energyFocus || [];
   const chakraFocus = publicFields.chakraFocus || [];
@@ -1102,6 +1182,9 @@ function buildConsultationCardArchiveHtml(options) {
     'h2{font-size:1.15rem;margin:0 0 10px;}',
     'section{border-top:1px solid rgba(36,26,43,.12);padding-top:18px;margin-top:18px;}',
     'p{color:#756c76;margin:0;}',
+    '.report{display:grid;gap:12px;}',
+    '.report h3{color:#4b2d5f;font-size:1.05rem;margin:0;}',
+    '.report p{white-space:pre-wrap;}',
     'ul{color:#756c76;margin:0;padding-left:1.2em;}',
     '.tags{display:flex;flex-wrap:wrap;gap:8px;}',
     '.tags span{border:1px solid rgba(75,45,95,.2);border-radius:999px;color:#4b2d5f;font-weight:800;padding:6px 10px;}',
@@ -1112,12 +1195,12 @@ function buildConsultationCardArchiveHtml(options) {
     '<main class="card">',
     '<p class="brand">MUPHÉ Handmade 沐菲手作水晶</p>',
     '<h1>' + escapeHtml(title) + '</h1>',
-    publicFields.summary ? '<p>' + escapeHtml(publicFields.summary) + '</p>' : '',
     '<p class="code">分析表密碼：' + escapeHtml(options.accessCode || '') + '</p>',
     options.profileUrl ? '<p style="margin-top:10px;">查詢連結：' + escapeHtml(options.profileUrl) + '</p>' : '',
-    renderArchiveSection('目前最需要照顧的狀態', renderArchiveTags(energyFocus.concat(chakraFocus))),
-    renderArchiveSection('沐菲初步推薦方向', renderArchiveList(crystals)),
-    renderArchiveSection('計算方式', renderArchiveList(calculationNotes)),
+    renderArchiveSection('您的專屬水晶能量初步評估', renderArchiveReport(publicFields.summary)),
+    publicFields.summary ? '' : renderArchiveSection('目前最需要照顧的狀態', renderArchiveTags(energyFocus.concat(chakraFocus))),
+    publicFields.summary ? '' : renderArchiveSection('沐菲初步推薦方向', renderArchiveList(crystals)),
+    publicFields.summary ? '' : renderArchiveSection('計算方式', renderArchiveList(calculationNotes)),
     renderArchiveSection('配戴與日常提醒', renderArchiveList(wearingGuide)),
     renderArchiveSection('保養與淨化', renderArchiveList(careInstructions)),
     renderArchiveSection('小儀式', renderArchiveList(ritual)),
@@ -1126,6 +1209,28 @@ function buildConsultationCardArchiveHtml(options) {
     '</body>',
     '</html>'
   ].join('');
+}
+
+function renderArchiveReport(text) {
+  const report = String(text || '').trim();
+  if (!report) {
+    return '';
+  }
+
+  return '<div class="report">' + report
+    .split(/\n{2,}/)
+    .map(function(block) {
+      const cleanBlock = block.trim();
+      if (!cleanBlock) {
+        return '';
+      }
+      if (/^(?:🔮|📿|🧘|💬)\s*【[^】]+】/.test(cleanBlock)) {
+        const lines = cleanBlock.split(/\n/);
+        return '<div><h3>' + escapeHtml(lines.shift()) + '</h3>' + (lines.length ? '<p>' + escapeHtml(lines.join('\n')) + '</p>' : '') + '</div>';
+      }
+      return '<p>' + escapeHtml(cleanBlock) + '</p>';
+    })
+    .join('') + '</div>';
 }
 
 function renderArchiveSection(title, bodyHtml) {
@@ -1157,7 +1262,7 @@ function renderArchiveTags(items) {
 }
 
 /**
- * 整理諮詢圖卡的公開欄位。
+ * 整理諮詢分析表的公開欄位。
  * @param {Object} data - 諮詢表單資料
  * @param {string} recommendation - AI/規則初步推薦
  * @param {string} accessCode - 查詢密碼
@@ -1170,16 +1275,12 @@ function buildConsultationCardPublicFields(data, recommendation, accessCode) {
   const calculationNotes = buildPublicCalculationNotes(data);
   const firstTheme = themes[0] || '能量平衡';
   const secondTheme = themes[1] || '情緒安定';
-  const themeText = themes.slice(0, 3).join('、');
 
   return {
     displayName: displayName,
-    braceletName: (displayName ? displayName : '你') + '的水晶狀態圖卡',
-    scene: '水晶諮詢圖卡',
-    summary: clipPublicText(
-      '依你填寫的狀態，沐菲先整理出「' + themeText + '」的水晶方向。這是一份初步圖卡，方便你回到手鍊檔案查看與後續討論客製設計。',
-      180
-    ),
+    braceletName: (displayName ? displayName : '你') + '的水晶狀態分析表',
+    scene: '水晶諮詢分析表',
+    summary: buildPublicAnalysisReportText(recommendation),
     crystals: crystalItems,
     energyFocus: themes,
     chakraFocus: buildPublicChakraFocus(data),
@@ -1200,6 +1301,33 @@ function buildConsultationCardPublicFields(data, recommendation, accessCode) {
     ],
     makerNote: getCaringMessage(normalizeListValue(data && data.energyGoal))
   };
+}
+
+function buildPublicAnalysisReportText(recommendation) {
+  const report = sanitizePublicAnalysisText(recommendation);
+  if (report) {
+    return report;
+  }
+
+  return '🔮 【多維度精密能量評估報告】\n沐菲已收到你的狀態資料，會依照你填寫的目標、色系與能量分析模組，整理適合後續客製討論的水晶方向。\n\n💬 【暖心陪伴語】\n每一次想更了解自己，都是一個很溫柔的開始。';
+}
+
+function sanitizePublicAnalysisText(value) {
+  return String(value === null || typeof value === 'undefined' ? '' : value)
+    .replace(/（本地規則\s*Fallback\s*生成）/g, '')
+    .replace(/\(本地規則\s*Fallback\s*生成\)/g, '')
+    .replace(/【基本資料】[:：][^\n]*(?:\n|$)/g, '')
+    .replace(/-\s*淨手圍為[^\n]*/g, '- 手鍊會依你提供的尺寸精準定制穿線。')
+    .split(/\r?\n/)
+    .map(function(line) {
+      return sanitizePublicText(line).trim();
+    })
+    .filter(function(line) {
+      return line !== '';
+    })
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
 }
 
 /**
@@ -1439,7 +1567,7 @@ function getChineseZodiacCrystalInfo(chineseZodiac) {
 }
 
 /**
- * 推出個人圖卡的狀態主題。
+ * 推出個人分析表的狀態主題。
  * @param {Object} data - 諮詢表單資料
  * @param {string} recommendation - AI/規則初步推薦
  * @returns {Array<string>} 主題
@@ -1543,7 +1671,7 @@ function sanitizePublicDisplayName(value) {
 }
 
 /**
- * 移除個人圖卡不應出現的個資片段。
+ * 移除個人分析表不應出現的個資片段。
  * @param {*} value - 原始文字
  * @returns {string} 清理後文字
  */
@@ -1957,7 +2085,7 @@ function processConsultation(data) {
       designBraceletSelectionStr              // 18. R 欄 — 想設計手鍊
     ];
 
-    // 步驟 5：寫入試算表與個人圖卡；CSV mirror 預設停用以降低 Drive 操作量
+    // 步驟 5：寫入試算表與個人分析表；CSV mirror 預設停用以降低 Drive 操作量
     const writeResult = withScriptLock(function() {
       sheet.appendRow(rowData);
       const consultationRow = sheet.getLastRow();
@@ -1984,7 +2112,7 @@ function processConsultation(data) {
       console.log('【CSV 同步】✅ 已更新：' + writeResult.csvUrl);
     }
     if (writeResult.profile && writeResult.profile.accessCode) {
-      console.log('【個人圖卡】✅ 已建立查詢密碼：' + writeResult.profile.accessCode);
+      console.log('【個人分析表】✅ 已建立查詢密碼：' + writeResult.profile.accessCode);
     }
     if (writeResult.evaluation && writeResult.evaluation.accessCode) {
       console.log('【分析評估表】✅ 已保存初步評估全文：' + writeResult.evaluation.accessCode);

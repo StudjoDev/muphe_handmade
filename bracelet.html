@@ -5,7 +5,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>手鍊檔案查詢｜沐菲 MUPHÉ Handmade</title>
-  <meta name="description" content="輸入分析表密碼或手鍊代碼，查詢 MUPHÉ Handmade 客製水晶的個人推薦圖卡與配戴照顧檔案。" />
+  <meta name="description" content="輸入分析表密碼或手鍊代碼，查詢 MUPHÉ Handmade 客製水晶的個人分析表與配戴照顧檔案。" />
   <link rel="icon" type="image/png" href="pic/muphe_logo.png" />
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -48,7 +48,7 @@
         <p class="eyebrow">Bracelet Profile</p>
         <h1 id="bracelet-title">你的手鍊檔案</h1>
         <p>
-          貼上諮詢完成後取得的分析表密碼，或輸入手鍊代碼，查看你的個人水晶圖卡、晶種方向與日常照顧提醒。
+          貼上諮詢完成後取得的分析表密碼，或輸入手鍊代碼，查看你的個人水晶分析表、晶種方向與日常照顧提醒。
         </p>
       </div>
 
@@ -302,7 +302,7 @@
 
       function showIdle() {
         hideProfile();
-        showStatus("idle", "輸入分析表密碼查詢", "個人圖卡只會顯示名字與推薦方向，不顯示聯絡方式、生日、性別、手圍或預算。");
+        showStatus("idle", "輸入分析表密碼查詢", "個人分析表會顯示名字、初步分析與晶種推薦，不顯示聯絡方式、生日、性別、手圍或預算。");
       }
 
       function parseTextList(value) {
@@ -702,27 +702,171 @@
           profile.scene,
           profile.name,
         ].join(" ");
-        return /consultationCard|水晶諮詢圖卡|水晶狀態圖卡/.test(marker);
+        return /consultationCard|水晶諮詢(?:圖卡|分析表)|水晶狀態(?:圖卡|分析表)/.test(marker);
+      }
+
+      function isFullAnalysisText(text) {
+        return /您的專屬水晶能量初步評估|多維度精密能量評估報告|暖心陪伴語|【手[鍊鏈]\s*A/.test(normalizeString(text));
+      }
+
+      function normalizeInlineAnalysisText(text) {
+        return normalizeString(text)
+          .replace(/\s+/g, " ")
+          .replace(/([\u3400-\u9fff])\s+([\u3400-\u9fff])/g, "$1$2")
+          .replace(/\s+([，。、！？；：）】])/g, "$1")
+          .replace(/([（【])\s+/g, "$1")
+          .trim();
+      }
+
+      function isAnalysisSectionHeader(line) {
+        return /^(?:🔮|📿|🧘|💬)\s*【[^】]+】/.test(line);
+      }
+
+      function createAnalysisSection(title) {
+        return {
+          title,
+          fields: [],
+        };
+      }
+
+      function addAnalysisParagraph(section, text) {
+        const body = normalizeInlineAnalysisText(text);
+        if (!body) return;
+
+        const last = section.fields[section.fields.length - 1];
+        if (section.title.includes("暖心陪伴語") && last && last.type === "paragraph") {
+          last.body = normalizeInlineAnalysisText(last.body + body);
+          return;
+        }
+
+        section.fields.push({ type: "paragraph", body });
+      }
+
+      function parseAnalysisReport(text) {
+        const report = normalizeString(text)
+          .replace(/（本地規則\s*Fallback\s*生成）/g, "")
+          .replace(/\(本地規則\s*Fallback\s*生成\)/g, "")
+          .trim();
+        const lines = report.split(/\n+/).map((line) => line.trim()).filter(Boolean);
+        const sections = [];
+        let currentSection = createAnalysisSection("");
+
+        lines.forEach((line) => {
+          if (isAnalysisSectionHeader(line)) {
+            if (currentSection.title || currentSection.fields.length) {
+              sections.push(currentSection);
+            }
+            currentSection = createAnalysisSection(line);
+            return;
+          }
+
+          const fieldMatch = line.match(/^【([^】]+)】：?\s*(.*)$/);
+          if (fieldMatch) {
+            currentSection.fields.push({
+              type: "field",
+              label: fieldMatch[1],
+              body: normalizeInlineAnalysisText(fieldMatch[2]),
+            });
+            return;
+          }
+
+          if (line.startsWith("-")) {
+            currentSection.fields.push({
+              type: "bullet",
+              body: normalizeInlineAnalysisText(line.replace(/^-\s*/, "")),
+            });
+            return;
+          }
+
+          addAnalysisParagraph(currentSection, line);
+        });
+
+        if (currentSection.title || currentSection.fields.length) {
+          sections.push(currentSection);
+        }
+
+        return sections;
+      }
+
+      function renderAnalysisField(field) {
+        if (field.type === "bullet") {
+          return `<li>${escapeHtml(field.body)}</li>`;
+        }
+
+        if (field.type === "field") {
+          const body = field.label === "水晶搭配"
+            ? `<div class="analysis-chip-row">${normalizeString(field.body)
+                .split(/[、，,]+/)
+                .map((item) => item.trim())
+                .filter(Boolean)
+                .map((item) => `<span>${escapeHtml(item)}</span>`)
+                .join("")}</div>`
+            : `<p>${escapeHtml(field.body)}</p>`;
+
+          return `
+            <div class="analysis-field">
+              <strong>${escapeHtml(field.label)}</strong>
+              ${body}
+            </div>
+          `;
+        }
+
+        return `<p class="analysis-paragraph">${escapeHtml(field.body)}</p>`;
+      }
+
+      function renderAnalysisReport(text) {
+        const sections = parseAnalysisReport(text);
+        if (!sections.length) return "";
+
+        return `
+          <div class="analysis-report">
+            ${sections
+              .map((section) => {
+                const bulletItems = section.fields.filter((field) => field.type === "bullet");
+                const nonBulletItems = section.fields.filter((field) => field.type !== "bullet");
+                return `
+                  <section class="analysis-report-section">
+                    ${section.title ? `<h4>${escapeHtml(section.title)}</h4>` : ""}
+                    ${nonBulletItems.map(renderAnalysisField).join("")}
+                    ${bulletItems.length ? `<ul class="analysis-bullet-list">${bulletItems.map(renderAnalysisField).join("")}</ul>` : ""}
+                  </section>
+                `;
+              })
+              .join("")}
+          </div>
+        `;
       }
 
       function renderConsultationCard(profile) {
         const focusItems = [...profile.energyFocus, ...profile.chakraFocus];
+        const hasFullAnalysis = isFullAnalysisText(profile.intention);
 
         profileContent.innerHTML = `
-          <article class="consultation-card-shell" aria-label="個人水晶圖卡">
+          <article class="consultation-card-shell" aria-label="個人水晶分析表">
             <div class="consultation-card-brand">
               <img src="pic/muphe_logo.webp" alt="" />
               <span>MUPHÉ Handmade 沐菲手作水晶</span>
             </div>
             <div class="consultation-card-head">
               ${profile.scene ? `<p class="eyebrow">${escapeHtml(profile.scene)}</p>` : ""}
-              <h2 id="profile-heading" tabindex="-1">${escapeHtml(profile.name || "你的水晶狀態圖卡")}</h2>
-              ${profile.displayName ? `<p class="profile-for">為 ${escapeHtml(profile.displayName)} 整理的個人圖卡</p>` : ""}
-              ${profile.intention ? `<p>${escapeHtml(profile.intention)}</p>` : ""}
+              <h2 id="profile-heading" tabindex="-1">${escapeHtml(profile.name || "你的水晶狀態分析表")}</h2>
+              ${profile.displayName ? `<p class="profile-for">為 ${escapeHtml(profile.displayName)} 整理的個人分析表</p>` : ""}
+              ${!isFullAnalysisText(profile.intention) && profile.intention ? `<p>${escapeHtml(profile.intention)}</p>` : ""}
             </div>
 
             ${
-              focusItems.length
+              hasFullAnalysis
+                ? `
+                  <section class="consultation-card-panel consultation-analysis-panel" aria-labelledby="consultation-analysis-title">
+                    <h3 id="consultation-analysis-title">您的專屬水晶能量初步評估</h3>
+                    ${renderAnalysisReport(profile.intention)}
+                  </section>
+                `
+                : ""
+            }
+
+            ${
+              !hasFullAnalysis && focusItems.length
                 ? `
                   <section class="consultation-card-panel" aria-labelledby="consultation-focus-title">
                     <h3 id="consultation-focus-title">目前最需要照顧的狀態</h3>
@@ -734,13 +878,19 @@
                 : ""
             }
 
-            <section class="consultation-card-panel" aria-labelledby="consultation-crystals-title">
-              <h3 id="consultation-crystals-title">沐菲初步推薦方向</h3>
-              ${renderCrystals(profile.crystals)}
-            </section>
+            ${
+              !hasFullAnalysis
+                ? `
+                  <section class="consultation-card-panel" aria-labelledby="consultation-crystals-title">
+                    <h3 id="consultation-crystals-title">沐菲初步推薦方向</h3>
+                    ${renderCrystals(profile.crystals)}
+                  </section>
+                `
+                : ""
+            }
 
             ${
-              profile.designNotes.length
+              !hasFullAnalysis && profile.designNotes.length
                 ? `
                   <section class="consultation-card-panel" aria-labelledby="consultation-calculation-title">
                     <h3 id="consultation-calculation-title">計算方式</h3>
@@ -786,7 +936,7 @@
 
         profileSection.hidden = false;
         statusRegion.hidden = true;
-        document.title = `${profile.name || "水晶圖卡"}｜沐菲 MUPHÉ Handmade`;
+        document.title = `${profile.name || "水晶分析表"}｜沐菲 MUPHÉ Handmade`;
         document.getElementById("profile-heading").focus({ preventScroll: true });
         profileSection.scrollIntoView({ behavior: "smooth", block: "start" });
       }

@@ -31,18 +31,18 @@ const ANALYSIS_EVALUATION_SHEET_NAME = '分析評估表';
 /** 水晶成本工作表名稱 */
 const CRYSTAL_COST_SHEET_NAME = '水晶成本';
 
-/** 是否將每張客戶個人圖卡同步保存到 Google Drive 後台資料夾 */
+/** 是否將每張客戶個人分析表同步保存到 Google Drive 後台資料夾 */
 const CONSULTATION_CARD_ARCHIVE_ENABLED = true;
 
 /**
- * 客戶圖卡 Google Drive 資料夾 ID
+ * 客戶分析表 Google Drive 資料夾 ID
  * - 留空：自動建立或使用同名資料夾
  * - 填入資料夾 ID：保存到指定後台資料夾
  */
 const CONSULTATION_CARD_FOLDER_ID = '';
 
 /** 自動建立資料夾時使用的名稱 */
-const CONSULTATION_CARD_FOLDER_NAME = 'MUPHÉ 客戶水晶圖卡';
+const CONSULTATION_CARD_FOLDER_NAME = 'MUPHÉ 客戶水晶分析表';
 
 /** 店主通知 Email；留空時嘗試使用 Apps Script 執行帳號 Email */
 const OWNER_EMAIL = 'muphe.handmade@gmail.com';
@@ -226,7 +226,7 @@ const ANALYSIS_EVALUATION_COLUMNS = {
   UPDATED_AT: 2,          // B 欄 — 更新時間
   EVALUATION_ID: 3,       // C 欄 — 評估 ID
   ACCESS_CODE: 4,         // D 欄 — 手鍊檔案查詢碼
-  PROFILE_ID: 5,          // E 欄 — 個人圖卡 ID
+  PROFILE_ID: 5,          // E 欄 — 個人分析表 ID
   CUSTOMER_NAME: 6,       // F 欄 — 客人姓名
   CONTACT: 7,             // G 欄 — 聯絡方式
   GENDER: 8,              // H 欄 — 性別
@@ -240,7 +240,7 @@ const ANALYSIS_EVALUATION_COLUMNS = {
   BUDGET: 16,             // P 欄 — 預算範圍
   DESCRIPTION: 17,        // Q 欄 — 狀態描述
   RECOMMENDATION_TEXT: 18,// R 欄 — 水晶能量初步評估全文
-  PROFILE_URL: 19,        // S 欄 — 個人圖卡連結
+  PROFILE_URL: 19,        // S 欄 — 個人分析表連結
   CONSULTATION_ROW: 20,   // T 欄 — 諮詢紀錄列號
   INTERNAL_NOTES: 21,     // U 欄 — 內部備註
   DESIGN_BRACELETS: 22    // V 欄 — 想設計手鍊
@@ -252,7 +252,7 @@ const ANALYSIS_EVALUATION_HEADER_ROW = [
   '更新時間',
   '評估ID',
   '查詢碼',
-  '個人圖卡ID',
+  '個人分析表ID',
   '客人姓名',
   '聯絡方式',
   '性別',
@@ -266,7 +266,7 @@ const ANALYSIS_EVALUATION_HEADER_ROW = [
   '預算範圍',
   '狀態描述',
   '水晶能量初步評估全文',
-  '個人圖卡連結',
+  '個人分析表連結',
   '諮詢紀錄列號',
   '內部備註',
   '想設計手鍊'
