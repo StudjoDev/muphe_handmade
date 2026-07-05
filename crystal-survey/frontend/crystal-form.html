@@ -1378,6 +1378,76 @@
       max-width: none !important;
     }
 
+    .analysis-countdown-modal {
+      align-items: center;
+      background: rgba(26, 14, 62, 0.84);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      display: none;
+      inset: 0;
+      justify-content: center;
+      padding: 24px;
+      position: fixed;
+      z-index: 1090;
+    }
+
+    .analysis-countdown-modal.active {
+      display: flex;
+      animation: overlay-in 0.28s ease-out;
+    }
+
+    .analysis-countdown-dialog {
+      align-items: center;
+      background: rgba(255, 255, 255, 0.13);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 24px;
+      box-shadow: 0 22px 70px rgba(14, 8, 38, 0.42);
+      display: grid;
+      gap: 14px;
+      justify-items: center;
+      max-width: 420px;
+      padding: 34px 26px;
+      text-align: center;
+      width: min(100%, 420px);
+    }
+
+    .analysis-countdown-orb {
+      animation: pulse-glow 1.3s ease-in-out infinite;
+      background: radial-gradient(circle, rgba(247, 168, 196, 0.95), rgba(183, 148, 246, 0.28) 58%, transparent 72%);
+      border-radius: 999px;
+      height: 74px;
+      width: 74px;
+    }
+
+    .analysis-countdown-title {
+      color: #fff;
+      font-size: clamp(1.18rem, 5vw, 1.55rem);
+      font-weight: 800;
+      line-height: 1.45;
+      margin: 0;
+    }
+
+    .analysis-countdown-time {
+      color: var(--text-label);
+      font-size: clamp(1.06rem, 4.5vw, 1.32rem);
+      font-weight: 800;
+      line-height: 1.35;
+      margin: 0;
+    }
+
+    @keyframes pulse-glow {
+      0%,
+      100% {
+        opacity: 0.78;
+        transform: scale(0.94);
+      }
+
+      50% {
+        opacity: 1;
+        transform: scale(1.08);
+      }
+    }
+
     .submission-frame {
       border: 0;
       height: 1px;
@@ -1621,11 +1691,16 @@
           <button class="close-code-btn" type="button" id="closeProfileCodeBtn">關閉</button>
         </div>
         <a class="profile-open-link" id="openProfileLink" href="../../bracelet.html">前往您的手鍊檔案</a>
-        <p class="profile-access-note">
-          個人圖卡只會顯示您的名字與推薦方向，不會顯示聯絡方式、生日、性別、手圍或預算。
-        </p>
         <p class="profile-code-required">複製分析表密碼後請按「關閉」，沐菲水晶系統將提供您初步的個人分析與晶種推薦。</p>
       </div>
+    </div>
+  </div>
+
+  <div class="analysis-countdown-modal" id="analysisCountdownModal" aria-hidden="true">
+    <div class="analysis-countdown-dialog" role="dialog" aria-modal="true" aria-labelledby="analysisCountdownTitle">
+      <div class="analysis-countdown-orb" aria-hidden="true"></div>
+      <h3 class="analysis-countdown-title" id="analysisCountdownTitle">✨正在分析您的水晶能量✨</h3>
+      <p class="analysis-countdown-time" id="analysisCountdownText">✨6 秒...✨</p>
     </div>
   </div>
 
@@ -2101,6 +2176,44 @@
         </div>
       </div>
 
+      <!-- 第七區：想設計的手鍊 -->
+      <div class="glass-card" data-animate>
+        <div class="section-title">
+          <span class="section-icon">📿</span>
+          <h2>想設計的手鍊</h2>
+        </div>
+
+        <div class="field-group" id="designBraceletsGroup">
+          <label class="field-label">請選擇希望沐菲優先製作的方向（可複選，不確定可留空）</label>
+          <div class="checkbox-group">
+            <div class="checkbox-option">
+              <input type="checkbox" id="designBraceletA" name="designBraceletSelection" value="手鍊 A — 主命宮能量手鍊">
+              <label for="designBraceletA">
+                <span class="emoji-icon">A</span>
+                <span class="goal-text">手鍊 A — 主命宮能量手鍊</span>
+                <span class="check-indicator"></span>
+              </label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="designBraceletB" name="designBraceletSelection" value="手鍊 B — 心靈平衡療癒手鍊">
+              <label for="designBraceletB">
+                <span class="emoji-icon">B</span>
+                <span class="goal-text">手鍊 B — 心靈平衡療癒手鍊</span>
+                <span class="check-indicator"></span>
+              </label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="designBraceletC" name="designBraceletSelection" value="手鍊 C — 流年幸運守護手鍊">
+              <label for="designBraceletC">
+                <span class="emoji-icon">C</span>
+                <span class="goal-text">手鍊 C — 流年幸運守護手鍊</span>
+                <span class="check-indicator"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- 送出按鈕區塊 -->
       <div class="glass-card" data-animate>
         <div class="submit-section">
@@ -2186,6 +2299,8 @@
     const closeProfileCodeBtn = document.getElementById('closeProfileCodeBtn');
     const openProfileLink = document.getElementById('openProfileLink');
     const profileCodeModal = document.getElementById('profileCodeModal');
+    const analysisCountdownModal = document.getElementById('analysisCountdownModal');
+    const analysisCountdownText = document.getElementById('analysisCountdownText');
     const chakraMethodInput = document.getElementById('method3');
     const chakrasGroup = document.getElementById('chakrasGroup');
     const chakraInputs = Array.from(document.querySelectorAll('input[name="targetChakra"]'));
@@ -2199,6 +2314,7 @@
     let pendingRecommendation = '';
     let pendingProfileAccess = null;
     let isWaitingForProfileCodeClose = false;
+    let analysisCountdownTimerId = null;
 
     /* ============================
        背景粒子星光產生器
@@ -2389,6 +2505,11 @@
         document.querySelectorAll('input[name="targetChakra"]:checked')
       ).map((cb) => cb.value);
 
+      /* 收集想設計的手鍊（多選） */
+      const designBraceletSelection = Array.from(
+        document.querySelectorAll('input[name="designBraceletSelection"]:checked')
+      ).map((cb) => cb.value);
+
       /* 取得單選值 */
       const genderEl = document.querySelector('input[name="gender"]:checked');
       const budgetEl = document.querySelector('input[name="budget"]:checked');
@@ -2407,6 +2528,7 @@
         energyGoal: energyGoals,
         calculationMethod: calculationMethods,
         targetChakra: targetChakras,
+        designBraceletSelection: designBraceletSelection,
         description: document.getElementById('description').value.trim(),
         budget: budgetEl ? budgetEl.value : '',
         /* 記錄提交時間 */
@@ -2642,13 +2764,57 @@
       profileCodeModal.setAttribute('aria-hidden', 'true');
     }
 
+    function clearAnalysisCountdown() {
+      if (analysisCountdownTimerId) {
+        clearInterval(analysisCountdownTimerId);
+        analysisCountdownTimerId = null;
+      }
+    }
+
+    function hideAnalysisCountdownModal() {
+      if (!analysisCountdownModal) return;
+
+      analysisCountdownModal.classList.remove('active');
+      analysisCountdownModal.setAttribute('hidden', '');
+      analysisCountdownModal.setAttribute('aria-hidden', 'true');
+    }
+
+    function showAnalysisCountdownBeforeRecommendation() {
+      clearAnalysisCountdown();
+      hideProfileCodeModal();
+
+      if (!analysisCountdownModal || !analysisCountdownText) {
+        showRecommendationResult({ afterProfileCodeClose: true });
+        return;
+      }
+
+      let secondsLeft = 6;
+      analysisCountdownText.textContent = '✨' + secondsLeft + ' 秒...✨';
+      analysisCountdownModal.classList.add('active');
+      analysisCountdownModal.removeAttribute('hidden');
+      analysisCountdownModal.setAttribute('aria-hidden', 'false');
+
+      analysisCountdownTimerId = setInterval(() => {
+        secondsLeft -= 1;
+        if (secondsLeft <= 0) {
+          clearAnalysisCountdown();
+          hideAnalysisCountdownModal();
+          showRecommendationResult({ afterProfileCodeClose: true });
+          return;
+        }
+        analysisCountdownText.textContent = '✨' + secondsLeft + ' 秒...✨';
+      }, 1000);
+    }
+
     function showRecommendationResult(options = {}) {
       if (isWaitingForProfileCodeClose && !options.afterProfileCodeClose) {
         return;
       }
 
       isWaitingForProfileCodeClose = false;
+      clearAnalysisCountdown();
       hideProfileCodeModal();
+      hideAnalysisCountdownModal();
       successPage.classList.add('active');
 
       const recCard = document.getElementById('aiRecommendationCard');
@@ -2699,7 +2865,7 @@
 
     function closeProfileCodeAndShowRecommendation() {
       closeProfileCodeBtn.disabled = true;
-      showRecommendationResult({ afterProfileCodeClose: true });
+      showAnalysisCountdownBeforeRecommendation();
     }
 
     function copyTextWithFallback(text) {
@@ -2743,6 +2909,8 @@
       hideLoading();
       isWaitingForProfileCodeClose = false;
       hideProfileCodeModal();
+      clearAnalysisCountdown();
+      hideAnalysisCountdownModal();
       errorMessage.classList.add('active');
       if (message) {
         errorMessage.querySelector('p').textContent = message;
@@ -2809,6 +2977,8 @@
       /* 標記為送出中，停用按鈕 */
       isSubmitting = true;
       submitBtn.disabled = true;
+      clearAnalysisCountdown();
+      hideAnalysisCountdownModal();
 
       /* 收集表單資料 */
       const data = collectFormData();

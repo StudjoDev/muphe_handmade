@@ -118,7 +118,8 @@ const COLUMNS = {
   BUDGET: 14,           // N 欄 — 預算範圍
   AI_RECOMMENDATION: 15,// O 欄 — AI初步推薦（自動產生）
   STATUS: 16,           // P 欄 — 處理狀態
-  NOTES: 17             // Q 欄 — 備註紀錄
+  NOTES: 17,            // Q 欄 — 備註紀錄
+  DESIGN_BRACELETS: 18  // R 欄 — 想設計手鍊
 };
 
 /** 試算表標題列（第一列的欄位名稱） */
@@ -139,7 +140,8 @@ const HEADER_ROW = [
   '預算範圍',
   'AI初步推薦',
   '處理狀態',
-  '備註紀錄'
+  '備註紀錄',
+  '想設計手鍊'
 ];
 
 /** 訂單工作表標題列 */
@@ -237,7 +239,8 @@ const ANALYSIS_EVALUATION_COLUMNS = {
   RECOMMENDATION_TEXT: 18,// R 欄 — 水晶能量初步評估全文
   PROFILE_URL: 19,        // S 欄 — 個人圖卡連結
   CONSULTATION_ROW: 20,   // T 欄 — 諮詢紀錄列號
-  INTERNAL_NOTES: 21      // U 欄 — 內部備註
+  INTERNAL_NOTES: 21,     // U 欄 — 內部備註
+  DESIGN_BRACELETS: 22    // V 欄 — 想設計手鍊
 };
 
 /** 分析評估表標題列 */
@@ -262,5 +265,6 @@ const ANALYSIS_EVALUATION_HEADER_ROW = [
   '水晶能量初步評估全文',
   '個人圖卡連結',
   '諮詢紀錄列號',
-  '內部備註'
+  '內部備註',
+  '想設計手鍊'
 ];

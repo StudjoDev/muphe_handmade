@@ -583,7 +583,8 @@ function appendAnalysisEvaluationRecord(data, recommendation, timestamp, consult
     recommendation || '',
     profileUrl,
     consultationRow || '',
-    '由諮詢表單自動保存；與手鍊檔案共用查詢碼。'
+    '由諮詢表單自動保存；與手鍊檔案共用查詢碼。',
+    normalizeListValue(data.designBraceletSelection || data.designBracelets)
   ];
 
   evaluationSheet.appendRow(rowData);
@@ -1528,6 +1529,7 @@ function onFormSubmit(e) {
       energyGoal: getArrayValue(responses['期望目標']),
       calculationMethod: getArrayValue(responses['分析方法']),
       targetChakra: getArrayValue(responses['目標脈輪']),
+      designBraceletSelection: getArrayValue(responses['想設計手鍊']),
       description: getFirstValue(responses['狀態描述']),
       budget: getFirstValue(responses['預算範圍'])
     };
@@ -1620,8 +1622,9 @@ function processConsultation(data) {
     const energyGoalStr = normalizeListValue(data.energyGoal);
     const calculationMethodStr = normalizeListValue(data.calculationMethod);
     const targetChakraStr = normalizeListValue(data.targetChakra);
+    const designBraceletSelectionStr = normalizeListValue(data.designBraceletSelection || data.designBracelets);
 
-    // 步驟 4：組建 17 欄資料列
+    // 步驟 4：組建資料列
     const rowData = [
       timestamp,                              // 1. A 欄 — 時間戳記
       data.name || '',                        // 2. B 欄 — 客人姓名
@@ -1639,7 +1642,8 @@ function processConsultation(data) {
       data.budget || '',                      // 14. N 欄 — 預算範圍
       recommendation,                         // 15. O 欄 — AI初步推薦（自動）
       DEFAULT_STATUS,                         // 16. P 欄 — 處理狀態（預設「未處理」）
-      ''                                      // 17. Q 欄 — 備註紀錄（空白）
+      '',                                     // 17. Q 欄 — 備註紀錄（空白）
+      designBraceletSelectionStr              // 18. R 欄 — 想設計手鍊
     ];
 
     // 步驟 5：寫入試算表與個人圖卡；CSV mirror 預設停用以降低 Drive 操作量
@@ -2087,6 +2091,7 @@ function getConsultationColumnWidths() {
   widths[COLUMNS.AI_RECOMMENDATION] = 400;
   widths[COLUMNS.STATUS] = 100;
   widths[COLUMNS.NOTES] = 200;
+  widths[COLUMNS.DESIGN_BRACELETS] = 260;
   return widths;
 }
 
@@ -2171,6 +2176,7 @@ function getAnalysisEvaluationColumnWidths() {
   widths[ANALYSIS_EVALUATION_COLUMNS.PROFILE_URL] = 260;
   widths[ANALYSIS_EVALUATION_COLUMNS.CONSULTATION_ROW] = 120;
   widths[ANALYSIS_EVALUATION_COLUMNS.INTERNAL_NOTES] = 260;
+  widths[ANALYSIS_EVALUATION_COLUMNS.DESIGN_BRACELETS] = 260;
   return widths;
 }
 
@@ -2225,6 +2231,22 @@ function getOrCreateSheet(sheetName, headerRow, columnWidths) {
         sheet.setColumnWidth(Number(columnIndex), widths[columnIndex]);
       });
       console.log('【工作表】✅ 已自動建立工作表：' + targetSheetName);
+    } else {
+      const lastColumn = sheet.getLastColumn();
+      if (lastColumn < headers.length) {
+        const missingHeaders = headers.slice(lastColumn);
+        sheet.getRange(1, lastColumn + 1, 1, missingHeaders.length).setValues([missingHeaders]);
+        const appendedHeaderRange = sheet.getRange(1, lastColumn + 1, 1, missingHeaders.length);
+        appendedHeaderRange.setFontWeight('bold');
+        appendedHeaderRange.setBackground('#E8D5F5');
+        appendedHeaderRange.setHorizontalAlignment('center');
+        Object.keys(widths).forEach(function(columnIndex) {
+          if (Number(columnIndex) > lastColumn) {
+            sheet.setColumnWidth(Number(columnIndex), widths[columnIndex]);
+          }
+        });
+        console.log('【工作表】✅ 已補上新增欄位：' + targetSheetName + '，新增 ' + missingHeaders.join('、'));
+      }
     }
 
     return sheet;
