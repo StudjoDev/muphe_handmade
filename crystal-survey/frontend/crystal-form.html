@@ -1220,6 +1220,68 @@
       white-space: pre-wrap;
     }
 
+    .post-analysis-design-card {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 18px;
+      margin-top: 22px;
+      padding: 18px;
+    }
+
+    .post-analysis-design-card[hidden] {
+      display: none;
+    }
+
+    .post-analysis-design-card .field-label {
+      margin-bottom: 12px;
+    }
+
+    .post-analysis-design-actions {
+      align-items: center;
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .save-design-bracelets-btn {
+      align-items: center;
+      background: var(--gradient-primary);
+      border: none;
+      border-radius: 999px;
+      color: #fff;
+      cursor: pointer;
+      display: inline-flex;
+      font-size: 0.95rem;
+      font-weight: 800;
+      justify-content: center;
+      min-height: 46px;
+      padding: 0 20px;
+      width: 100%;
+    }
+
+    .save-design-bracelets-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.58;
+    }
+
+    .design-bracelet-status {
+      color: rgba(240, 230, 255, 0.82);
+      font-size: 0.88rem;
+      font-weight: 700;
+      line-height: 1.5;
+      margin: 0;
+      min-height: 1.5em;
+      text-align: center;
+    }
+
+    .design-bracelet-status.is-success {
+      color: #d9f8df;
+    }
+
+    .design-bracelet-status.is-error {
+      color: #ffd4dc;
+    }
+
     .recommendation-home-link {
       align-items: center;
       background: var(--gradient-btn);
@@ -2176,44 +2238,6 @@
         </div>
       </div>
 
-      <!-- 第七區：想設計的手鍊 -->
-      <div class="glass-card" data-animate>
-        <div class="section-title">
-          <span class="section-icon">📿</span>
-          <h2>想設計的手鍊</h2>
-        </div>
-
-        <div class="field-group" id="designBraceletsGroup">
-          <label class="field-label">請選擇希望沐菲優先製作的方向（可複選，不確定可留空）</label>
-          <div class="checkbox-group">
-            <div class="checkbox-option">
-              <input type="checkbox" id="designBraceletA" name="designBraceletSelection" value="手鍊 A — 主命宮能量手鍊">
-              <label for="designBraceletA">
-                <span class="emoji-icon">A</span>
-                <span class="goal-text">手鍊 A — 主命宮能量手鍊</span>
-                <span class="check-indicator"></span>
-              </label>
-            </div>
-            <div class="checkbox-option">
-              <input type="checkbox" id="designBraceletB" name="designBraceletSelection" value="手鍊 B — 心靈平衡療癒手鍊">
-              <label for="designBraceletB">
-                <span class="emoji-icon">B</span>
-                <span class="goal-text">手鍊 B — 心靈平衡療癒手鍊</span>
-                <span class="check-indicator"></span>
-              </label>
-            </div>
-            <div class="checkbox-option">
-              <input type="checkbox" id="designBraceletC" name="designBraceletSelection" value="手鍊 C — 流年幸運守護手鍊">
-              <label for="designBraceletC">
-                <span class="emoji-icon">C</span>
-                <span class="goal-text">手鍊 C — 流年幸運守護手鍊</span>
-                <span class="check-indicator"></span>
-              </label>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- 送出按鈕區塊 -->
       <div class="glass-card" data-animate>
         <div class="submit-section">
@@ -2258,6 +2282,45 @@
         <span>🔮</span> 您的專屬水晶能量初步評估
       </h3>
       <div id="aiRecommendationText" class="recommendation-report"></div>
+      <div class="post-analysis-design-card" id="postAnalysisDesignCard" hidden>
+        <div class="section-title">
+          <span class="section-icon">📿</span>
+          <h2>想設計的手鍊</h2>
+        </div>
+        <div class="field-group" id="postDesignBraceletsGroup">
+          <label class="field-label">看完上方分析後，請選擇希望沐菲優先製作的方向（可複選）</label>
+          <div class="checkbox-group">
+            <div class="checkbox-option">
+              <input type="checkbox" id="postDesignBraceletA" name="postDesignBraceletSelection" value="手鍊 A — 主命宮能量手鍊">
+              <label for="postDesignBraceletA">
+                <span class="emoji-icon">A</span>
+                <span class="goal-text">手鍊 A — 主命宮能量手鍊</span>
+                <span class="check-indicator"></span>
+              </label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="postDesignBraceletB" name="postDesignBraceletSelection" value="手鍊 B — 心靈平衡療癒手鍊">
+              <label for="postDesignBraceletB">
+                <span class="emoji-icon">B</span>
+                <span class="goal-text">手鍊 B — 心靈平衡療癒手鍊</span>
+                <span class="check-indicator"></span>
+              </label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="postDesignBraceletC" name="postDesignBraceletSelection" value="手鍊 C — 流年幸運守護手鍊">
+              <label for="postDesignBraceletC">
+                <span class="emoji-icon">C</span>
+                <span class="goal-text">手鍊 C — 流年幸運守護手鍊</span>
+                <span class="check-indicator"></span>
+              </label>
+            </div>
+          </div>
+          <div class="post-analysis-design-actions">
+            <button type="button" class="save-design-bracelets-btn" id="saveDesignBraceletsBtn">儲存我的選擇</button>
+            <p class="design-bracelet-status" id="designBraceletStatus" aria-live="polite"></p>
+          </div>
+        </div>
+      </div>
       <a class="recommendation-home-link" href="../../index.html">回到官網</a>
     </div>
   </div>
@@ -2301,6 +2364,10 @@
     const profileCodeModal = document.getElementById('profileCodeModal');
     const analysisCountdownModal = document.getElementById('analysisCountdownModal');
     const analysisCountdownText = document.getElementById('analysisCountdownText');
+    const postAnalysisDesignCard = document.getElementById('postAnalysisDesignCard');
+    const saveDesignBraceletsBtn = document.getElementById('saveDesignBraceletsBtn');
+    const designBraceletStatus = document.getElementById('designBraceletStatus');
+    const postDesignBraceletInputs = Array.from(document.querySelectorAll('input[name="postDesignBraceletSelection"]'));
     const chakraMethodInput = document.getElementById('method3');
     const chakrasGroup = document.getElementById('chakrasGroup');
     const chakraInputs = Array.from(document.querySelectorAll('input[name="targetChakra"]'));
@@ -2315,6 +2382,7 @@
     let pendingProfileAccess = null;
     let isWaitingForProfileCodeClose = false;
     let analysisCountdownTimerId = null;
+    let isSavingDesignBraceletSelection = false;
 
     /* ============================
        背景粒子星光產生器
@@ -2505,11 +2573,6 @@
         document.querySelectorAll('input[name="targetChakra"]:checked')
       ).map((cb) => cb.value);
 
-      /* 收集想設計的手鍊（多選） */
-      const designBraceletSelection = Array.from(
-        document.querySelectorAll('input[name="designBraceletSelection"]:checked')
-      ).map((cb) => cb.value);
-
       /* 取得單選值 */
       const genderEl = document.querySelector('input[name="gender"]:checked');
       const budgetEl = document.querySelector('input[name="budget"]:checked');
@@ -2528,7 +2591,6 @@
         energyGoal: energyGoals,
         calculationMethod: calculationMethods,
         targetChakra: targetChakras,
-        designBraceletSelection: designBraceletSelection,
         description: document.getElementById('description').value.trim(),
         budget: budgetEl ? budgetEl.value : '',
         /* 記錄提交時間 */
@@ -2827,10 +2889,121 @@
         recCard.style.display = 'none';
       }
 
+      resetPostAnalysisDesignSelection();
       launchConfetti();
 
       /* 捲動到頁面頂部 */
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function getProfileAccessCodeForDesignSelection() {
+      return pendingProfileAccess && pendingProfileAccess.accessCode
+        ? String(pendingProfileAccess.accessCode).trim()
+        : '';
+    }
+
+    function resetPostAnalysisDesignSelection() {
+      if (!postAnalysisDesignCard) return;
+
+      const accessCode = getProfileAccessCodeForDesignSelection();
+      postAnalysisDesignCard.hidden = !accessCode;
+      postDesignBraceletInputs.forEach((input) => {
+        input.checked = false;
+        input.disabled = !accessCode;
+      });
+      setDesignBraceletStatus('', '');
+      if (saveDesignBraceletsBtn) {
+        saveDesignBraceletsBtn.disabled = !accessCode;
+        saveDesignBraceletsBtn.textContent = '儲存我的選擇';
+      }
+      isSavingDesignBraceletSelection = false;
+    }
+
+    function getSelectedDesignBracelets() {
+      return postDesignBraceletInputs
+        .filter((input) => input.checked)
+        .map((input) => input.value);
+    }
+
+    function setDesignBraceletStatus(message, type) {
+      if (!designBraceletStatus) return;
+
+      designBraceletStatus.textContent = message || '';
+      designBraceletStatus.classList.remove('is-success', 'is-error');
+      if (type) {
+        designBraceletStatus.classList.add(type === 'success' ? 'is-success' : 'is-error');
+      }
+    }
+
+    function submitDesignBraceletSelection() {
+      if (isSavingDesignBraceletSelection) return;
+
+      const accessCode = getProfileAccessCodeForDesignSelection();
+      const selectedDesigns = getSelectedDesignBracelets();
+
+      if (!accessCode) {
+        setDesignBraceletStatus('目前缺少分析表密碼，請重新整理後再試。', 'error');
+        return;
+      }
+
+      if (!selectedDesigns.length) {
+        setDesignBraceletStatus('請先勾選想製作的手鍊 A/B/C。', 'error');
+        return;
+      }
+
+      const url = getSubmitUrl();
+      if (!url) {
+        setDesignBraceletStatus('後台連線尚未設定，請聯繫沐菲確認。', 'error');
+        return;
+      }
+
+      isSavingDesignBraceletSelection = true;
+      if (saveDesignBraceletsBtn) {
+        saveDesignBraceletsBtn.disabled = true;
+        saveDesignBraceletsBtn.textContent = '儲存中...';
+      }
+      setDesignBraceletStatus('正在把您的選擇寫入後台紀錄...', '');
+
+      const payload = {
+        type: 'designBraceletSelection',
+        action: 'saveDesignBraceletSelection',
+        source: 'post-analysis-result',
+        accessCode: accessCode,
+        designBraceletSelection: selectedDesigns,
+        submittedAt: new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' })
+      };
+
+      const saveForm = document.createElement('form');
+      saveForm.method = 'post';
+      saveForm.action = url;
+      saveForm.target = SUBMISSION_FRAME_NAME;
+      saveForm.style.display = 'none';
+
+      const payloadField = document.createElement('input');
+      payloadField.type = 'hidden';
+      payloadField.name = 'payload';
+      payloadField.value = JSON.stringify(payload);
+      saveForm.appendChild(payloadField);
+
+      document.body.appendChild(saveForm);
+      HTMLFormElement.prototype.submit.call(saveForm);
+      setTimeout(() => saveForm.remove(), 1000);
+    }
+
+    function handleDesignBraceletSelectionMessage(payload) {
+      isSavingDesignBraceletSelection = false;
+
+      if (saveDesignBraceletsBtn) {
+        saveDesignBraceletsBtn.disabled = false;
+        saveDesignBraceletsBtn.textContent = payload.success ? '更新我的選擇' : '重新儲存';
+      }
+
+      if (payload.success === false) {
+        setDesignBraceletStatus(payload.message || '目前無法儲存選擇，請稍後再試。', 'error');
+        return;
+      }
+
+      setDesignBraceletStatus(payload.message || '已儲存，沐菲會依照您的選擇安排後續設計。', 'success');
     }
 
     function renderProfileAccess(profileAccess) {
@@ -2948,6 +3121,11 @@
         return;
       }
 
+      if (payload.type === 'designSelection') {
+        handleDesignBraceletSelectionMessage(payload);
+        return;
+      }
+
       if (payload.success === false) {
         showError(payload.message || '😔 表單送出時發生錯誤，請稍後再試');
         return;
@@ -3019,6 +3197,12 @@
     window.addEventListener('message', handleSubmissionMessage);
     copyProfileCodeBtn.addEventListener('click', copyProfileCode);
     closeProfileCodeBtn.addEventListener('click', closeProfileCodeAndShowRecommendation);
+    if (saveDesignBraceletsBtn) {
+      saveDesignBraceletsBtn.addEventListener('click', submitDesignBraceletSelection);
+    }
+    postDesignBraceletInputs.forEach((input) => {
+      input.addEventListener('change', () => setDesignBraceletStatus('', ''));
+    });
     if (chakraMethodInput) {
       chakraMethodInput.addEventListener('change', syncChakraGroupVisibility);
     }

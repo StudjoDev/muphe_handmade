@@ -82,6 +82,41 @@ function doPost(e) {
       });
     }
 
+    const action = normalizeRequestAction(payload.action || payload.type);
+    if (action === 'designbraceletselection' || action === 'savedesignbraceletselection') {
+      try {
+        const selectionResult = saveDesignBraceletSelection(payload);
+        return renderSubmissionPage({
+          title: '已儲存手鍊選擇',
+          headline: '已儲存手鍊選擇',
+          message: '已將您的手鍊 A/B/C 選擇寫入後台紀錄。',
+          reference: selectionResult.accessCode || '',
+          postMessagePayload: {
+            app: 'muphe-submission',
+            type: 'designSelection',
+            success: true,
+            message: '已儲存，沐菲會依照您的選擇安排後續設計。',
+            accessCode: selectionResult.accessCode || '',
+            designBracelets: selectionResult.designBracelets || ''
+          }
+        });
+      } catch (selectionError) {
+        console.error('【手鍊選擇儲存失敗】' + selectionError.toString());
+        return renderSubmissionPage({
+          title: '手鍊選擇儲存失敗',
+          headline: '手鍊選擇儲存失敗',
+          message: selectionError.message || '目前無法儲存手鍊選擇，請稍後再試。',
+          isError: true,
+          postMessagePayload: {
+            app: 'muphe-submission',
+            type: 'designSelection',
+            success: false,
+            message: selectionError.message || '目前無法儲存手鍊選擇，請稍後再試。'
+          }
+        });
+      }
+    }
+
     const consultationResult = processSubmission(payload);
     return renderSubmissionPage({
       title: '諮詢表單已送出',
@@ -584,7 +619,7 @@ function appendAnalysisEvaluationRecord(data, recommendation, timestamp, consult
     profileUrl,
     consultationRow || '',
     '由諮詢表單自動保存；與手鍊檔案共用查詢碼。',
-    normalizeListValue(data.designBraceletSelection || data.designBracelets)
+    normalizeDesignBraceletSelection(data.designBraceletSelection || data.designBracelets)
   ];
 
   evaluationSheet.appendRow(rowData);
@@ -594,6 +629,131 @@ function appendAnalysisEvaluationRecord(data, recommendation, timestamp, consult
     accessCode: accessCode,
     rowNumber: evaluationSheet.getLastRow()
   };
+}
+
+/**
+ * 儲存客戶看完分析結果後選擇的手鍊 A/B/C。
+ * 使用分析表密碼回寫同一筆諮詢主表與分析評估表，方便後台製作手鍊。
+ * @param {Object} payload - 前端結果頁送出的選擇資料
+ * @returns {Object} 儲存結果
+ */
+function saveDesignBraceletSelection(payload) {
+  const accessCodeRaw = payload.accessCode || payload.profileCode || payload.code || '';
+  const normalizedAccessCode = normalizeBraceletAccessCode(accessCodeRaw);
+  const designBracelets = normalizeDesignBraceletSelection(payload.designBraceletSelection || payload.designBracelets);
+
+  if (!normalizedAccessCode) {
+    throw new Error('缺少分析表密碼，無法儲存手鍊選擇。');
+  }
+
+  if (!designBracelets) {
+    throw new Error('請至少選擇一款想設計的手鍊。');
+  }
+
+  return withScriptLock(function() {
+    const timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy/MM/dd HH:mm:ss');
+    const consultationSheet = getOrCreateSheet(SHEET_NAME, HEADER_ROW, getConsultationColumnWidths());
+    const evaluationSheet = getOrCreateSheet(
+      ANALYSIS_EVALUATION_SHEET_NAME,
+      ANALYSIS_EVALUATION_HEADER_ROW,
+      getAnalysisEvaluationColumnWidths()
+    );
+    const match = findAnalysisEvaluationRowByAccessCode(evaluationSheet, normalizedAccessCode);
+
+    if (!match) {
+      throw new Error('找不到對應的分析表密碼，請確認密碼是否正確。');
+    }
+
+    evaluationSheet.getRange(match.rowNumber, ANALYSIS_EVALUATION_COLUMNS.UPDATED_AT).setValue(timestamp);
+    evaluationSheet.getRange(match.rowNumber, ANALYSIS_EVALUATION_COLUMNS.DESIGN_BRACELETS).setValue(designBracelets);
+
+    if (match.consultationRow && match.consultationRow > 1) {
+      consultationSheet.getRange(match.consultationRow, COLUMNS.DESIGN_BRACELETS).setValue(designBracelets);
+    }
+
+    SpreadsheetApp.flush();
+    syncCsvMirrorFromSheet(consultationSheet);
+
+    return {
+      success: true,
+      accessCode: match.displayAccessCode || accessCodeRaw,
+      designBracelets: designBracelets,
+      analysisEvaluationRow: match.rowNumber,
+      consultationRow: match.consultationRow || ''
+    };
+  });
+}
+
+/**
+ * 依分析表密碼找出分析評估表資料列。
+ * @param {Sheet} evaluationSheet - 分析評估表
+ * @param {string} normalizedAccessCode - 正規化後密碼
+ * @returns {Object|null} 命中的資料列資訊
+ */
+function findAnalysisEvaluationRowByAccessCode(evaluationSheet, normalizedAccessCode) {
+  const lastRow = evaluationSheet.getLastRow();
+  if (lastRow <= 1) {
+    return null;
+  }
+
+  const values = evaluationSheet
+    .getRange(2, 1, lastRow - 1, ANALYSIS_EVALUATION_HEADER_ROW.length)
+    .getDisplayValues();
+
+  for (let i = values.length - 1; i >= 0; i--) {
+    const row = values[i];
+    const rowAccessCode = row[ANALYSIS_EVALUATION_COLUMNS.ACCESS_CODE - 1];
+    if (normalizeBraceletAccessCode(rowAccessCode) !== normalizedAccessCode) {
+      continue;
+    }
+
+    const consultationRow = parseInt(row[ANALYSIS_EVALUATION_COLUMNS.CONSULTATION_ROW - 1], 10);
+    return {
+      rowNumber: i + 2,
+      displayAccessCode: rowAccessCode,
+      consultationRow: isNaN(consultationRow) ? 0 : consultationRow
+    };
+  }
+
+  return null;
+}
+
+/**
+ * 將前端 A/B/C 選擇正規化成後台固定文字，避免人工輸入格式不同。
+ * @param {Array|string} value - 選擇資料
+ * @returns {string} 逗號分隔的固定選項
+ */
+function normalizeDesignBraceletSelection(value) {
+  const optionMap = {
+    A: '手鍊 A — 主命宮能量手鍊',
+    B: '手鍊 B — 心靈平衡療癒手鍊',
+    C: '手鍊 C — 流年幸運守護手鍊'
+  };
+  const items = Array.isArray(value)
+    ? value
+    : String(value || '').split(/\r?\n|[,，;；]+/);
+  const selected = {};
+
+  items.forEach(function(item) {
+    const text = normalizeHalfWidthText(item).trim();
+    if (!text) {
+      return;
+    }
+
+    const match = text.match(/(?:手鍊\s*)?([ABC])(?:\s|$|—|-|－)/i) || text.match(/^([ABC])$/i);
+    if (match && optionMap[match[1].toUpperCase()]) {
+      selected[match[1].toUpperCase()] = true;
+    }
+  });
+
+  return ['A', 'B', 'C']
+    .filter(function(code) {
+      return selected[code];
+    })
+    .map(function(code) {
+      return optionMap[code];
+    })
+    .join(', ');
 }
 
 /**
@@ -1622,7 +1782,7 @@ function processConsultation(data) {
     const energyGoalStr = normalizeListValue(data.energyGoal);
     const calculationMethodStr = normalizeListValue(data.calculationMethod);
     const targetChakraStr = normalizeListValue(data.targetChakra);
-    const designBraceletSelectionStr = normalizeListValue(data.designBraceletSelection || data.designBracelets);
+    const designBraceletSelectionStr = normalizeDesignBraceletSelection(data.designBraceletSelection || data.designBracelets);
 
     // 步驟 4：組建資料列
     const rowData = [
