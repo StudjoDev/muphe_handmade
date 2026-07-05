@@ -1085,9 +1085,144 @@
       line-height: 1.7;
     }
 
+    .recommendation-card {
+      border: 1.5px solid rgba(183, 148, 246, 0.4);
+      box-shadow: 0 8px 32px rgba(45, 27, 105, 0.4);
+      display: none;
+      margin-top: 32px;
+      max-width: 760px;
+      opacity: 1;
+      text-align: left;
+      transform: none;
+      width: 100%;
+    }
+
+    .recommendation-card-title {
+      align-items: center;
+      border-bottom: 1px solid rgba(183, 148, 246, 0.2);
+      color: var(--text-label);
+      display: flex;
+      font-size: 1.08rem;
+      font-weight: 700;
+      gap: 8px;
+      line-height: 1.4;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+    }
+
+    .recommendation-report {
+      color: var(--text-primary);
+      display: grid;
+      gap: 18px;
+      font-size: 0.92rem;
+      line-height: 1.68;
+    }
+
+    .recommendation-section {
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+      display: grid;
+      gap: 10px;
+      padding-top: 18px;
+    }
+
+    .recommendation-section:first-child {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .recommendation-section-title {
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: 0;
+      line-height: 1.45;
+      margin: 0;
+    }
+
+    .recommendation-paragraph {
+      color: rgba(240, 230, 255, 0.86);
+      margin: 0;
+      max-width: none;
+    }
+
+    .recommendation-field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .recommendation-field-label {
+      color: var(--rose-quartz);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+    }
+
+    .recommendation-field-body {
+      color: rgba(255, 255, 255, 0.9);
+      line-height: 1.62;
+    }
+
+    .recommendation-field-body.is-long {
+      color: rgba(240, 230, 255, 0.82);
+      font-size: 0.88rem;
+    }
+
+    .crystal-chip-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .crystal-chip {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 999px;
+      color: #fff;
+      font-size: 0.84rem;
+      font-weight: 700;
+      line-height: 1.2;
+      padding: 7px 11px;
+    }
+
+    .recommendation-summary-list,
+    .recommendation-bullet-list {
+      display: grid;
+      gap: 8px;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .recommendation-summary-list li,
+    .recommendation-bullet-list li {
+      background: rgba(255, 255, 255, 0.08);
+      border-left: 3px solid rgba(247, 168, 196, 0.68);
+      color: rgba(240, 230, 255, 0.84);
+      font-size: 0.86rem;
+      line-height: 1.58;
+      padding: 8px 10px;
+    }
+
+    .recommendation-cta {
+      background: rgba(247, 168, 196, 0.12);
+      border: 1px solid rgba(247, 168, 196, 0.26);
+      border-radius: 14px;
+      color: #fff;
+      font-weight: 700;
+      line-height: 1.58;
+      padding: 12px 14px;
+    }
+
+    .recommendation-fallback-text {
+      color: rgba(240, 230, 255, 0.9);
+      font-size: 0.92rem;
+      line-height: 1.7;
+      white-space: pre-wrap;
+    }
+
     .recommendation-home-link {
       align-items: center;
-      background: var(--gradient-primary);
+      background: var(--gradient-btn);
       border-radius: 999px;
       color: #fff;
       display: inline-flex;
@@ -2005,15 +2140,11 @@
     <p>感謝您的信任，我們會盡快與您聯繫，<br>為您打造最適合的水晶能量方案。</p>
 
     <!-- AI 推薦結果精美展示區塊 -->
-    <div id="aiRecommendationCard" class="glass-card"
-      style="display: none; margin-top: 32px; text-align: left; max-width: 560px; width: 100%; border: 1.5px solid rgba(183, 148, 246, 0.4); box-shadow: 0 8px 32px rgba(45, 27, 105, 0.4); opacity: 1; transform: none;">
-      <h3
-        style="color: var(--text-label); margin-bottom: 16px; font-size: 1.15rem; font-weight: 600; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(183, 148, 246, 0.2); padding-bottom: 10px;">
+    <div id="aiRecommendationCard" class="glass-card recommendation-card">
+      <h3 class="recommendation-card-title">
         <span>🔮</span> 您的專屬水晶能量初步評估
       </h3>
-      <div id="aiRecommendationText"
-        style="font-size: 0.95rem; color: var(--text-primary); white-space: pre-wrap; line-height: 1.8; letter-spacing: 0.5px;">
-      </div>
+      <div id="aiRecommendationText" class="recommendation-report"></div>
       <a class="recommendation-home-link" href="../../index.html">回到官網</a>
     </div>
   </div>
@@ -2375,6 +2506,119 @@
         .replace(/\(本地規則\s*Fallback\s*生成\)/g, '');
     }
 
+    function isRecommendationSectionHeader(line) {
+      return /^(?:🔮|📿|🧘|💬)\s*【[^】]+】/.test(line);
+    }
+
+    function createTextElement(tagName, className, text) {
+      const element = document.createElement(tagName);
+      if (className) {
+        element.className = className;
+      }
+      element.textContent = text;
+      return element;
+    }
+
+    function createRecommendationSection(title) {
+      const section = document.createElement('section');
+      section.className = 'recommendation-section';
+      section.appendChild(createTextElement('h4', 'recommendation-section-title', title));
+      return section;
+    }
+
+    function appendCrystalChips(container, text) {
+      const list = document.createElement('div');
+      list.className = 'crystal-chip-list';
+      const crystals = String(text || '').split(/[、，,]+/).map((item) => item.trim()).filter(Boolean);
+      crystals.forEach((crystal) => {
+        list.appendChild(createTextElement('span', 'crystal-chip', crystal));
+      });
+      container.appendChild(list);
+    }
+
+    function appendSummaryList(container, text) {
+      const list = document.createElement('ul');
+      list.className = 'recommendation-summary-list';
+      const items = String(text || '').split(/；|;/).map((item) => item.trim()).filter(Boolean);
+      items.forEach((item) => {
+        list.appendChild(createTextElement('li', '', item));
+      });
+      container.appendChild(list);
+    }
+
+    function appendRecommendationField(section, label, body) {
+      const field = document.createElement('div');
+      field.className = 'recommendation-field';
+      field.appendChild(createTextElement('div', 'recommendation-field-label', label));
+
+      if (label === '水晶搭配') {
+        appendCrystalChips(field, body);
+      } else if (label === '評分摘要') {
+        appendSummaryList(field, body);
+      } else {
+        const bodyClass = body.length > 42 ? 'recommendation-field-body is-long' : 'recommendation-field-body';
+        field.appendChild(createTextElement('div', bodyClass, body));
+      }
+
+      section.appendChild(field);
+    }
+
+    function appendRecommendationBullet(section, text) {
+      let list = section.querySelector('.recommendation-bullet-list');
+      if (!list) {
+        list = document.createElement('ul');
+        list.className = 'recommendation-bullet-list';
+        section.appendChild(list);
+      }
+      list.appendChild(createTextElement('li', '', text.replace(/^-\s*/, '').trim()));
+    }
+
+    function renderRecommendationReport(container, text) {
+      const report = cleanRecommendationText(text).trim();
+      container.innerHTML = '';
+
+      if (!report) {
+        container.appendChild(createTextElement('div', 'recommendation-fallback-text', '目前尚未取得推薦內容。'));
+        return;
+      }
+
+      const lines = report.split(/\n+/).map((line) => line.trim()).filter(Boolean);
+      let currentSection = null;
+
+      lines.forEach((line) => {
+        if (isRecommendationSectionHeader(line)) {
+          currentSection = createRecommendationSection(line);
+          container.appendChild(currentSection);
+          return;
+        }
+
+        if (line.startsWith('✨')) {
+          container.appendChild(createTextElement('div', 'recommendation-cta', line));
+          currentSection = null;
+          return;
+        }
+
+        if (!currentSection) {
+          currentSection = document.createElement('section');
+          currentSection.className = 'recommendation-section';
+          container.appendChild(currentSection);
+        }
+
+        const fieldMatch = line.match(/^【([^】]+)】：?\s*(.*)$/);
+        if (fieldMatch) {
+          appendRecommendationField(currentSection, fieldMatch[1], fieldMatch[2]);
+          return;
+        }
+
+        if (line.startsWith('-')) {
+          appendRecommendationBullet(currentSection, line);
+          return;
+        }
+
+        currentSection.appendChild(createTextElement('p', 'recommendation-paragraph', line));
+      });
+    }
+
     function showProfileCodeModal() {
       if (!profileCodeModal) {
         showRecommendationResult({ afterProfileCodeClose: true });
@@ -2411,7 +2655,7 @@
       const recText = document.getElementById('aiRecommendationText');
 
       if (pendingRecommendation && recCard && recText) {
-        recText.textContent = pendingRecommendation;
+        renderRecommendationReport(recText, pendingRecommendation);
         recCard.style.display = 'block';
       } else if (recCard) {
         recCard.style.display = 'none';
