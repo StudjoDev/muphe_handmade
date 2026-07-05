@@ -706,7 +706,7 @@
       }
 
       function isFullAnalysisText(text) {
-        return /您的專屬水晶能量初步評估|多維度精密能量評估報告|暖心陪伴語|【手[鍊鏈]\s*A/.test(normalizeString(text));
+        return /您的專屬水晶能量初步評估|多維度.*能量.*評估|暖心陪伴語|配戴與消磁儀式建議|【手[鍊鏈]\s*[ABC]/.test(normalizeString(text));
       }
 
       function normalizeInlineAnalysisText(text) {
@@ -715,6 +715,17 @@
           .replace(/([\u3400-\u9fff])\s+([\u3400-\u9fff])/g, "$1$2")
           .replace(/\s+([，。、！？；：）】])/g, "$1")
           .replace(/([（【])\s+/g, "$1")
+          .trim();
+      }
+
+      function prepareAnalysisReportText(text) {
+        return normalizeString(text)
+          .replace(/（本地規則\s*Fallback\s*生成）/g, "")
+          .replace(/\(本地規則\s*Fallback\s*生成\)/g, "")
+          .replace(/\s+(?=(?:🔮|📿|🧘|💬)\s*【)/g, "\n")
+          .replace(/\s+(?=【(?:基本資料|狀態優先|分析模組|計算式|設計公式|色系調和|狀態判讀|水晶搭配|評分摘要|能量解說)】)/g, "\n")
+          .replace(/\s+-\s+/g, "\n- ")
+          .replace(/\n{3,}/g, "\n\n")
           .trim();
       }
 
@@ -743,20 +754,21 @@
       }
 
       function parseAnalysisReport(text) {
-        const report = normalizeString(text)
-          .replace(/（本地規則\s*Fallback\s*生成）/g, "")
-          .replace(/\(本地規則\s*Fallback\s*生成\)/g, "")
-          .trim();
+        const report = prepareAnalysisReportText(text);
         const lines = report.split(/\n+/).map((line) => line.trim()).filter(Boolean);
         const sections = [];
         let currentSection = createAnalysisSection("");
 
         lines.forEach((line) => {
-          if (isAnalysisSectionHeader(line)) {
+          const headerMatch = line.match(/^((?:🔮|📿|🧘|💬)\s*【[^】]+】)\s*(.*)$/);
+          if (headerMatch) {
             if (currentSection.title || currentSection.fields.length) {
               sections.push(currentSection);
             }
-            currentSection = createAnalysisSection(line);
+            currentSection = createAnalysisSection(headerMatch[1]);
+            if (headerMatch[2]) {
+              addAnalysisParagraph(currentSection, headerMatch[2]);
+            }
             return;
           }
 
@@ -801,6 +813,13 @@
                 .filter(Boolean)
                 .map((item) => `<span>${escapeHtml(item)}</span>`)
                 .join("")}</div>`
+            : field.label === "評分摘要"
+              ? `<ul class="analysis-summary-list">${normalizeString(field.body)
+                  .split(/；|;/)
+                  .map((item) => item.trim())
+                  .filter(Boolean)
+                  .map((item) => `<li>${escapeHtml(item)}</li>`)
+                  .join("")}</ul>`
             : `<p>${escapeHtml(field.body)}</p>`;
 
           return `
@@ -839,7 +858,8 @@
 
       function renderConsultationCard(profile) {
         const focusItems = [...profile.energyFocus, ...profile.chakraFocus];
-        const hasFullAnalysis = isFullAnalysisText(profile.intention);
+        const analysisText = isFullAnalysisText(profile.intention) ? profile.intention : "";
+        const hasFullAnalysis = !!analysisText;
 
         profileContent.innerHTML = `
           <article class="consultation-card-shell" aria-label="個人水晶分析表">
@@ -851,7 +871,7 @@
               ${profile.scene ? `<p class="eyebrow">${escapeHtml(profile.scene)}</p>` : ""}
               <h2 id="profile-heading" tabindex="-1">${escapeHtml(profile.name || "你的水晶狀態分析表")}</h2>
               ${profile.displayName ? `<p class="profile-for">為 ${escapeHtml(profile.displayName)} 整理的個人分析表</p>` : ""}
-              ${!isFullAnalysisText(profile.intention) && profile.intention ? `<p>${escapeHtml(profile.intention)}</p>` : ""}
+              ${!hasFullAnalysis && profile.intention ? `<p>${escapeHtml(profile.intention)}</p>` : ""}
             </div>
 
             ${
@@ -859,7 +879,7 @@
                 ? `
                   <section class="consultation-card-panel consultation-analysis-panel" aria-labelledby="consultation-analysis-title">
                     <h3 id="consultation-analysis-title">您的專屬水晶能量初步評估</h3>
-                    ${renderAnalysisReport(profile.intention)}
+                    ${renderAnalysisReport(analysisText)}
                   </section>
                 `
                 : ""

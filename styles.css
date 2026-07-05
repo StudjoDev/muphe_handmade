@@ -2174,43 +2174,52 @@ details p {
 
 .analysis-report {
   display: grid;
-  gap: 16px;
+  gap: 14px;
 }
 
 .analysis-report-section {
-  border-top: 1px solid rgba(36, 26, 43, 0.1);
+  background: rgba(255, 255, 255, 0.46);
+  border: 1px solid rgba(36, 26, 43, 0.09);
+  border-radius: 8px;
   display: grid;
-  gap: 10px;
-  padding-top: 14px;
+  gap: 12px;
+  padding: 14px;
 }
 
 .analysis-report-section:first-child {
-  border-top: 0;
-  padding-top: 0;
+  border-color: rgba(75, 45, 95, 0.12);
 }
 
 .analysis-report-section h4 {
   color: var(--plum);
-  font-size: 1.02rem;
+  font-size: 1.04rem;
   font-weight: 900;
   line-height: 1.42;
   margin: 0;
 }
 
 .analysis-field {
+  border-top: 1px solid rgba(36, 26, 43, 0.08);
   display: grid;
-  gap: 6px;
+  gap: 7px;
+  padding-top: 10px;
+}
+
+.analysis-field:first-of-type {
+  border-top: 0;
+  padding-top: 0;
 }
 
 .analysis-field strong {
-  color: var(--gold);
+  color: var(--plum);
   font-size: 0.82rem;
   font-weight: 900;
 }
 
 .analysis-field p,
 .analysis-paragraph,
-.analysis-bullet-list {
+.analysis-bullet-list,
+.analysis-summary-list {
   color: var(--muted);
   font-size: 0.94rem;
   line-height: 1.72;
@@ -2234,14 +2243,16 @@ details p {
   padding: 7px 10px;
 }
 
-.analysis-bullet-list {
+.analysis-bullet-list,
+.analysis-summary-list {
   display: grid;
   gap: 8px;
   list-style: none;
   padding: 0;
 }
 
-.analysis-bullet-list li {
+.analysis-bullet-list li,
+.analysis-summary-list li {
   background: rgba(75, 45, 95, 0.06);
   border-left: 3px solid rgba(199, 122, 116, 0.62);
   padding: 8px 10px;
