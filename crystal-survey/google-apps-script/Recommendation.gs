@@ -719,6 +719,27 @@ function summarizeScoredSelection(selected) {
   }).join('；');
 }
 
+function describeCrystalFunctionSelection(selected) {
+  const seen = {};
+  return selected
+    .map(function(item) {
+      const name = normalizeCrystalName(item && item.name);
+      if (!name || seen[name]) {
+        return '';
+      }
+      seen[name] = true;
+      const crystal = item.crystal || getCrystalRecord(name);
+      const desc = crystal && crystal.desc
+        ? crystal.desc
+        : '作為整體能量配置的補充晶種';
+      return name + '：' + desc;
+    })
+    .filter(function(text) {
+      return text !== '';
+    })
+    .join('；');
+}
+
 function ensureSelectedCrystals(selected, requiredNames, reason, limit) {
   const updated = selected.slice();
   const seen = {};
@@ -859,7 +880,7 @@ function generateRuleBasedRecommendation(data) {
     '【色系調和】：' + (colorInfo ? '依偏好色系「' + colorInfo.label + '」加入 ' + colorInfo.name + '（' + colorInfo.desc + '）' : '未指定偏好色系，先以命格與五行平衡為主'),
     '【水晶搭配】：' + braceletACrystals,
     '【評分摘要】：' + summarizeScoredSelection(braceletASelection),
-    '【能量解說】：本款手鍊以先天命格為主軸，系統會同時讀取生命靈數、出生季節五行缺口、偏好色系與預算範圍，從水晶資料庫中加權挑選最能穩固底氣的晶種。' + (colorInfo ? '其中「' + colorInfo.label + '」會提高同色系晶種分數，讓能量方向與外觀感受更貼近您的直覺喜好。' : '') + '這組配置負責替整體能量場打底，讓後續客製設計更有核心方向。'
+    '【能量解說】：' + describeCrystalFunctionSelection(braceletASelection)
   ].join('\n');
 
   // 手鍊 B
@@ -869,7 +890,7 @@ function generateRuleBasedRecommendation(data) {
     '【狀態判讀】：' + statePrioritySummary + (stateInfo ? ' 建議以 ' + stateCrystalNames + ' 作為後天狀態修復的主軸。' : ''),
     '【水晶搭配】：' + braceletBCrystals,
     '【評分摘要】：' + summarizeScoredSelection(braceletBSelection),
-    '【能量解說】：本款手鍊以後天狀態修復為主軸，系統會優先提高目標脈輪、期望目標與狀態描述命中的晶種分數。若文字中出現焦慮、失眠、職場消耗、感情受傷、專注困難等訊號，推薦會自動轉向對應的療癒、防護、安定或清明晶種，讓分析更貼近當下真正需要被照顧的狀態。'
+    '【能量解說】：' + describeCrystalFunctionSelection(braceletBSelection)
   ].join('\n');
 
   // 手鍊 C
@@ -878,7 +899,7 @@ function generateRuleBasedRecommendation(data) {
     '【分析模組】：基於您的西方星座（' + zodiacSign + '）與東方生肖（' + chineseZodiac + '年）雙重幸運神護持',
     '【水晶搭配】：' + braceletCCrystals,
     '【評分摘要】：' + summarizeScoredSelection(braceletCSelection),
-    '【能量解說】：本款手鍊以流年守護與外在機會為主軸，系統會提高星座、生肖、避邪防護、貴人緣與年度狀態相關晶種分數。它不是只看單一星座幸運石，而是把星座生肖與您填寫的目標一起加權，形成更適合日常角色切換的守護方向。'
+    '【能量解說】：' + describeCrystalFunctionSelection(braceletCSelection)
   ].join('\n');
 
   // 總報告組合

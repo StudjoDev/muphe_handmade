@@ -170,6 +170,42 @@
         orderUrl: ["productUrl", "product_url", "orderUrl", "order_url", "shopUrl", "reorderUrl", "商品或公開頁網址", "訂購連結"],
       };
 
+      const crystalFunctionDescriptions = {
+        白水晶: "淨化與放大整體能量，讓思緒回到清明狀態。",
+        紫水晶: "安定思緒、沉澱焦躁，適合睡前關機與智慧整理。",
+        粉水晶: "照顧愛與安全感，支援自我接納、人緣與關係修復。",
+        草莓晶: "提升柔和吸引力與人際甜度，適合想被善待與被看見的階段。",
+        紅紋石: "補充熱情、心力與被愛感，適合感情修復與重新啟動行動。",
+        月光石: "安撫情緒起伏，支援柔軟、睡眠與內在安全感。",
+        橙月光石: "讓情緒與人際流動回到溫暖節奏，適合敏感、需要被接住的狀態。",
+        太陽石: "補充亮度、勇氣與舞台感，讓行動更有熱度。",
+        金太陽石: "推動執行魄力與財運亮度，適合需要發光與衝刺的階段。",
+        黃水晶: "聚焦財氣、自信與行動力，適合事業推進與資源累積。",
+        金髮晶: "提升財運磁場與決策膽識，適合需要衝業績與被看見的時刻。",
+        鈦晶: "強化企圖心、財富格局與抗壓氣勢，適合高強度目標。",
+        綠幽靈: "連結事業成長與心輪修復，適合正財、穩定發展與長期累積。",
+        葡萄石: "柔和修復心輪與壓力，讓財務、人緣與療癒感更平衡。",
+        綠髮晶: "支援正財與事業拓展，適合想累積成果與提高行動續航。",
+        海藍寶: "讓表達更溫和清楚，也能替焦躁情緒降溫。",
+        天河石: "平衡理性表達與情緒壓力，適合需要說清楚又保持柔和的場景。",
+        青金石: "支援洞察、判斷與清楚表達，適合決策、考試與簡報。",
+        螢石: "整理混亂資訊與專注力，適合腦袋打結、需要清楚排序時。",
+        黑曜石: "建立界線與防護，排除不必要消耗與外界干擾。",
+        黑髮晶: "強化防護、穩定與抗干擾力，適合職場界線與外界雜訊。",
+        黑鈦晶: "同時具備防護與財氣推進感，適合高壓環境下守住氣場。",
+        茶晶: "讓能量落地、穩住節奏，適合疲憊、防護與守財。",
+        拉長石: "守護敏感能量與直覺，適合需要防護、轉化與內在洞察時。",
+        藍砂石: "穩定思緒與夜間能量，適合想安定、收束注意力的時候。",
+        藍碧璽: "支援深度溝通、直覺與精細思考，適合高預算的精緻配置。",
+        舒俱徠石: "照顧深層療癒與高頻安定，適合需要強力心靈支持的高預算配置。",
+      };
+
+      const crystalFunctionAliases = {
+        粉晶: "粉水晶",
+        白晶: "白水晶",
+        黑碧璽: "黑曜石",
+      };
+
       function normalizeString(value) {
         if (value === null || value === undefined) return "";
         if (Array.isArray(value)) return value.map(normalizeString).filter(Boolean).join("、");
@@ -800,6 +836,100 @@
         return sections;
       }
 
+      function normalizeCrystalFunctionName(name) {
+        const cleaned = normalizeString(name).replace(/[（(].*?[）)]/g, "").trim();
+        return crystalFunctionAliases[cleaned] || cleaned;
+      }
+
+      function parseAnalysisCrystalNames(text) {
+        const seen = new Set();
+        return normalizeString(text)
+          .split(/\s*(?:、|，|,|\+|與|配搭|和)\s*/)
+          .map(normalizeCrystalFunctionName)
+          .filter((name) => {
+            if (!name || seen.has(name)) return false;
+            seen.add(name);
+            return true;
+          });
+      }
+
+      function buildCrystalFunctionItems(crystalNames) {
+        return crystalNames.map((name) => ({
+          name,
+          description: crystalFunctionDescriptions[name] || "作為整體能量配置的補充晶種，協助完成這款手鍊的能量分工。",
+        }));
+      }
+
+      function parseEnergyExplanationItems(text) {
+        return normalizeString(text)
+          .split(/；|;/)
+          .map((item) => item.trim())
+          .filter(Boolean)
+          .map((item) => {
+            const match = item.match(/^([^：:]{1,16})[:：]\s*(.+)$/);
+            return match
+              ? {
+                  name: normalizeCrystalFunctionName(match[1]),
+                  description: normalizeInlineAnalysisText(match[2]),
+                }
+              : {
+                  name: "",
+                  description: normalizeInlineAnalysisText(item),
+                };
+          });
+      }
+
+      function shouldUseCrystalFunctionExplanation(body, crystalNames) {
+        if (!crystalNames.length) return false;
+        const normalizedBody = normalizeString(body);
+        const mentionedCount = crystalNames.filter((name) => normalizedBody.includes(name)).length;
+        return mentionedCount < Math.min(2, crystalNames.length) || /系統會|水晶資料庫|加權|主軸|提高|狀態描述|星座|生肖/.test(normalizedBody);
+      }
+
+      function enrichAnalysisSectionsWithCrystalFunctions(sections) {
+        return sections.map((section) => {
+          const crystalField = section.fields.find((field) => field.type === "field" && field.label === "水晶搭配");
+          const crystalNames = crystalField ? parseAnalysisCrystalNames(crystalField.body) : [];
+          if (!crystalNames.length) return section;
+
+          return {
+            ...section,
+            fields: section.fields.map((field) => {
+              if (field.type !== "field" || field.label !== "能量解說") return field;
+              if (!shouldUseCrystalFunctionExplanation(field.body, crystalNames)) {
+                return {
+                  ...field,
+                  items: parseEnergyExplanationItems(field.body),
+                };
+              }
+              return {
+                ...field,
+                body: buildCrystalFunctionItems(crystalNames)
+                  .map((item) => `${item.name}：${item.description}`)
+                  .join("；"),
+                items: buildCrystalFunctionItems(crystalNames),
+              };
+            }),
+          };
+        });
+      }
+
+      function renderEnergyExplanationItems(items) {
+        return `
+          <ul class="analysis-summary-list analysis-energy-list">
+            ${items
+              .filter((item) => item && (item.name || item.description))
+              .map((item) => `
+                <li>
+                  ${item.name ? `<strong>${escapeHtml(item.name)}</strong>` : ""}
+                  <span>${escapeHtml(item.description)}</span>
+                </li>
+              `)
+              .join("")}
+          </ul>
+        `;
+      }
+
       function renderAnalysisField(field) {
         if (field.type === "bullet") {
           return `<li>${escapeHtml(field.body)}</li>`;
@@ -820,6 +950,8 @@
                   .filter(Boolean)
                   .map((item) => `<li>${escapeHtml(item)}</li>`)
                   .join("")}</ul>`
+            : field.label === "能量解說"
+              ? renderEnergyExplanationItems(field.items || parseEnergyExplanationItems(field.body))
             : `<p>${escapeHtml(field.body)}</p>`;
 
           return `
@@ -834,7 +966,7 @@
       }
 
       function renderAnalysisReport(text) {
-        const sections = parseAnalysisReport(text)
+        const sections = enrichAnalysisSectionsWithCrystalFunctions(parseAnalysisReport(text))
           .filter((section) => !section.title.includes("暖心陪伴語"));
         if (!sections.length) return "";
 

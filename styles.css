@@ -2258,6 +2258,20 @@ details p {
   padding: 8px 10px;
 }
 
+.analysis-energy-list li {
+  display: grid;
+  gap: 4px;
+}
+
+.analysis-energy-list strong {
+  color: var(--plum);
+  font-weight: 900;
+}
+
+.analysis-energy-list span {
+  color: var(--muted);
+}
+
 .consultation-guidance-panel {
   background: rgba(255, 255, 255, 0.46);
   border-color: rgba(36, 26, 43, 0.09);
