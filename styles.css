@@ -2258,6 +2258,40 @@ details p {
   padding: 8px 10px;
 }
 
+.consultation-guidance-panel {
+  background: rgba(255, 255, 255, 0.46);
+  border-color: rgba(36, 26, 43, 0.09);
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.consultation-guidance-panel h3 {
+  color: var(--plum);
+  font-size: 1.04rem;
+  font-weight: 900;
+  line-height: 1.42;
+  margin: 0;
+}
+
+.consultation-guidance-panel .profile-note-list {
+  color: var(--muted);
+  display: grid;
+  font-size: 0.94rem;
+  gap: 8px;
+  line-height: 1.72;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.consultation-guidance-panel .profile-note-list li {
+  background: rgba(75, 45, 95, 0.06);
+  border-left: 3px solid rgba(199, 122, 116, 0.62);
+  padding: 8px 10px;
+}
+
 .consultation-card-panel .profile-crystal-list {
   grid-template-columns: 1fr;
 }

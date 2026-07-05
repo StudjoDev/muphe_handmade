@@ -921,12 +921,12 @@
                 : ""
             }
 
-            <section class="consultation-card-panel" aria-labelledby="consultation-wearing-title">
+            <section class="consultation-card-panel consultation-guidance-panel" aria-labelledby="consultation-wearing-title">
               <h3 id="consultation-wearing-title">配戴與日常提醒</h3>
               ${renderList(profile.wearingGuide)}
             </section>
 
-            <section class="consultation-card-panel" aria-labelledby="consultation-care-title">
+            <section class="consultation-card-panel consultation-guidance-panel" aria-labelledby="consultation-care-title">
               <h3 id="consultation-care-title">保養與淨化</h3>
               ${renderList(profile.careGuide)}
             </section>
@@ -934,7 +934,7 @@
             ${
               profile.ritual.length
                 ? `
-                  <section class="consultation-card-panel" aria-labelledby="consultation-ritual-title">
+                  <section class="consultation-card-panel consultation-guidance-panel" aria-labelledby="consultation-ritual-title">
                     <h3 id="consultation-ritual-title">小儀式</h3>
                     ${renderList(profile.ritual)}
                   </section>
