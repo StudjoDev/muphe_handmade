@@ -1116,13 +1116,16 @@
       gap: 18px;
       font-size: 0.92rem;
       line-height: 1.68;
+      width: 100%;
     }
 
     .recommendation-section {
       border-top: 1px solid rgba(255, 255, 255, 0.12);
       display: grid;
       gap: 10px;
+      min-width: 0;
       padding-top: 18px;
+      width: 100%;
     }
 
     .recommendation-section:first-child {
@@ -1142,6 +1145,13 @@
     .recommendation-paragraph {
       color: rgba(240, 230, 255, 0.86);
       margin: 0;
+      max-width: none;
+      overflow-wrap: break-word;
+      width: 100%;
+    }
+
+    .success-page .recommendation-report p,
+    .success-page .recommendation-report .recommendation-paragraph {
       max-width: none;
     }
 
@@ -2706,8 +2716,35 @@
     function createRecommendationSection(title) {
       const section = document.createElement('section');
       section.className = 'recommendation-section';
+      section.dataset.sectionTitle = String(title || '');
       section.appendChild(createTextElement('h4', 'recommendation-section-title', title));
       return section;
+    }
+
+    function normalizeInlineRecommendationText(text) {
+      return String(text || '')
+        .replace(/\s+/g, ' ')
+        .replace(/([\u3400-\u9fff])\s+([\u3400-\u9fff])/g, '$1$2')
+        .replace(/\s+([，。、！？；：）】])/g, '$1')
+        .replace(/([（【])\s+/g, '$1')
+        .trim();
+    }
+
+    function isCaringRecommendationSection(section) {
+      return !!(section && String(section.dataset.sectionTitle || '').includes('暖心陪伴語'));
+    }
+
+    function appendRecommendationParagraph(section, line) {
+      const text = normalizeInlineRecommendationText(line);
+      if (!text) return;
+
+      const previous = section.lastElementChild;
+      if (isCaringRecommendationSection(section) && previous && previous.classList.contains('recommendation-paragraph')) {
+        previous.textContent = normalizeInlineRecommendationText(previous.textContent + text);
+        return;
+      }
+
+      section.appendChild(createTextElement('p', 'recommendation-paragraph', text));
     }
 
     function appendCrystalChips(container, text) {
@@ -2799,7 +2836,7 @@
           return;
         }
 
-        currentSection.appendChild(createTextElement('p', 'recommendation-paragraph', line));
+        appendRecommendationParagraph(currentSection, line);
       });
     }
 

@@ -2057,6 +2057,7 @@ details p {
   color: var(--plum);
   display: block;
   font-size: 1.04rem;
+  font-weight: 800;
 }
 
 .profile-crystal-list p,
@@ -2168,6 +2169,18 @@ details p {
 
 .consultation-card-panel .profile-crystal-list {
   grid-template-columns: 1fr;
+}
+
+.consultation-card-panel .profile-crystal-list strong,
+.consultation-card-panel .profile-crystal-list p {
+  color: var(--plum);
+  font-size: 1.04rem;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.consultation-card-panel .profile-crystal-list p {
+  margin-top: 8px;
 }
 
 .consultation-tag-row {

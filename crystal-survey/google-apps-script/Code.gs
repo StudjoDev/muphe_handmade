@@ -1121,7 +1121,7 @@ function buildConsultationCardArchiveHtml(options) {
     renderArchiveSection('配戴與日常提醒', renderArchiveList(wearingGuide)),
     renderArchiveSection('保養與淨化', renderArchiveList(careInstructions)),
     renderArchiveSection('小儀式', renderArchiveList(ritual)),
-    renderArchiveSection('給你的一句話', renderArchiveList(makerNote)),
+    renderArchiveSection('沐菲貼心語', renderArchiveList(makerNote)),
     '</main>',
     '</body>',
     '</html>'
