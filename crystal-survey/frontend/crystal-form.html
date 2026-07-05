@@ -677,6 +677,14 @@
       background: linear-gradient(135deg, #ffb6c1, #ff69b4) !important;
     }
 
+    .swatch-red {
+      background: linear-gradient(135deg, #ff8a80, #c62828) !important;
+    }
+
+    .swatch-orange {
+      background: linear-gradient(135deg, #ffcc80, #ef6c00) !important;
+    }
+
     .swatch-purple {
       background: linear-gradient(135deg, #b794f6, #9b59b6) !important;
     }
@@ -689,6 +697,14 @@
       background: linear-gradient(135deg, #ffd700, #daa520) !important;
     }
 
+    .swatch-blue {
+      background: linear-gradient(135deg, #90cdf4, #2563eb) !important;
+    }
+
+    .swatch-wood {
+      background: linear-gradient(135deg, #c49a6c, #6f4e37) !important;
+    }
+
     .swatch-black {
       background: linear-gradient(135deg, #444, #111) !important;
     }
@@ -698,7 +714,7 @@
     }
 
     .swatch-all {
-      background: conic-gradient(#ffb6c1, #b794f6, #85e89d, #ffd700, #444, #f0e6ff, #ffb6c1) !important;
+      background: conic-gradient(#c62828, #ef6c00, #ffd700, #34d058, #2563eb, #9b59b6, #ff69b4, #6f4e37, #111, #fff, #c62828) !important;
     }
 
     /* ============================
@@ -1473,7 +1489,7 @@
         <p class="profile-access-note">
           個人圖卡只會顯示您的名字與推薦方向，不會顯示聯絡方式、生日、性別、手圍或預算。
         </p>
-        <p class="profile-code-required">複製分析表密碼後請按「關閉」，系統才會顯示 AI 初步推薦。</p>
+        <p class="profile-code-required">複製分析表密碼後請按「關閉」，沐菲水晶系統將提供您初步的個人分析與晶種推薦。</p>
       </div>
     </div>
   </div>
@@ -1638,50 +1654,78 @@
         <div class="field-group" id="colorGroup">
           <div class="swatch-group">
             <div class="swatch-option">
-              <input type="checkbox" id="color1" name="colorPreference" value="粉紅色系">
+              <input type="checkbox" id="color1" name="colorPreference" value="紅色">
               <label for="color1">
-                <div class="swatch-circle swatch-pink"></div>
-                <span class="swatch-label">粉紅色系</span>
+                <div class="swatch-circle swatch-red"></div>
+                <span class="swatch-label">紅色</span>
               </label>
             </div>
             <div class="swatch-option">
-              <input type="checkbox" id="color2" name="colorPreference" value="紫色系">
+              <input type="checkbox" id="color2" name="colorPreference" value="橙色">
               <label for="color2">
-                <div class="swatch-circle swatch-purple"></div>
-                <span class="swatch-label">紫色系</span>
+                <div class="swatch-circle swatch-orange"></div>
+                <span class="swatch-label">橙色</span>
               </label>
             </div>
             <div class="swatch-option">
-              <input type="checkbox" id="color3" name="colorPreference" value="綠色系">
+              <input type="checkbox" id="color3" name="colorPreference" value="黃金色">
               <label for="color3">
-                <div class="swatch-circle swatch-green"></div>
-                <span class="swatch-label">綠色系</span>
-              </label>
-            </div>
-            <div class="swatch-option">
-              <input type="checkbox" id="color4" name="colorPreference" value="黃金色系">
-              <label for="color4">
                 <div class="swatch-circle swatch-gold"></div>
-                <span class="swatch-label">黃金色系</span>
+                <span class="swatch-label">黃金色</span>
               </label>
             </div>
             <div class="swatch-option">
-              <input type="checkbox" id="color5" name="colorPreference" value="黑色系">
+              <input type="checkbox" id="color4" name="colorPreference" value="綠色">
+              <label for="color4">
+                <div class="swatch-circle swatch-green"></div>
+                <span class="swatch-label">綠色</span>
+              </label>
+            </div>
+            <div class="swatch-option">
+              <input type="checkbox" id="color5" name="colorPreference" value="藍色">
               <label for="color5">
-                <div class="swatch-circle swatch-black"></div>
-                <span class="swatch-label">黑色系</span>
+                <div class="swatch-circle swatch-blue"></div>
+                <span class="swatch-label">藍色</span>
               </label>
             </div>
             <div class="swatch-option">
-              <input type="checkbox" id="color6" name="colorPreference" value="透明/白色系">
+              <input type="checkbox" id="color6" name="colorPreference" value="紫色">
               <label for="color6">
-                <div class="swatch-circle swatch-clear"></div>
-                <span class="swatch-label">透明/白色</span>
+                <div class="swatch-circle swatch-purple"></div>
+                <span class="swatch-label">紫色</span>
               </label>
             </div>
             <div class="swatch-option">
-              <input type="checkbox" id="color7" name="colorPreference" value="不限">
+              <input type="checkbox" id="color7" name="colorPreference" value="粉色">
               <label for="color7">
+                <div class="swatch-circle swatch-pink"></div>
+                <span class="swatch-label">粉色</span>
+              </label>
+            </div>
+            <div class="swatch-option">
+              <input type="checkbox" id="color8" name="colorPreference" value="木質">
+              <label for="color8">
+                <div class="swatch-circle swatch-wood"></div>
+                <span class="swatch-label">木質</span>
+              </label>
+            </div>
+            <div class="swatch-option">
+              <input type="checkbox" id="color9" name="colorPreference" value="黑色">
+              <label for="color9">
+                <div class="swatch-circle swatch-black"></div>
+                <span class="swatch-label">黑色</span>
+              </label>
+            </div>
+            <div class="swatch-option">
+              <input type="checkbox" id="color10" name="colorPreference" value="白色透明">
+              <label for="color10">
+                <div class="swatch-circle swatch-clear"></div>
+                <span class="swatch-label">白色透明</span>
+              </label>
+            </div>
+            <div class="swatch-option">
+              <input type="checkbox" id="color11" name="colorPreference" value="不限">
+              <label for="color11">
                 <div class="swatch-circle swatch-all"></div>
                 <span class="swatch-label">不限</span>
               </label>
@@ -1690,11 +1734,11 @@
         </div>
       </div>
 
-      <!-- 精密能量客製演算學 -->
+      <!-- 精密能量客製分析模組 -->
       <div class="glass-card" data-animate>
         <div class="section-title">
           <span class="section-icon">🔮</span>
-          <h2>精密能量客製演算</h2>
+          <h2>精密能量客製分析模組</h2>
         </div>
 
         <!-- 5. 諮詢分析方法 (多選) -->
