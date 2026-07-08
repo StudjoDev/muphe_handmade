@@ -173,7 +173,7 @@ const BRACELET_PROFILE_COLUMNS = {
   CREATED_AT: 1,        // A 欄 — 建立時間
   UPDATED_AT: 2,        // B 欄 — 更新時間
   PROFILE_ID: 3,        // C 欄 — 檔案 ID
-  ACCESS_CODE: 4,       // D 欄 — QR/短碼查詢碼
+  ACCESS_CODE: 4,       // D 欄 — 手鍊檔案碼
   ACCESS_TOKEN: 5,      // E 欄 — QR token
   PUBLISHED: 6,         // F 欄 — 是否公開
   DISPLAY_NAME: 7,      // G 欄 — 公開顯示名稱
@@ -199,7 +199,7 @@ const BRACELET_PROFILE_HEADER_ROW = [
   '建立時間',
   '更新時間',
   '檔案ID',
-  '查詢碼',
+  '手鍊檔案碼',
   '查詢Token',
   '是否公開',
   '公開顯示名稱',
@@ -225,7 +225,7 @@ const ANALYSIS_EVALUATION_COLUMNS = {
   CREATED_AT: 1,          // A 欄 — 建立時間
   UPDATED_AT: 2,          // B 欄 — 更新時間
   EVALUATION_ID: 3,       // C 欄 — 評估 ID
-  ACCESS_CODE: 4,         // D 欄 — 手鍊檔案查詢碼
+  ACCESS_CODE: 4,         // D 欄 — 分析表密碼
   PROFILE_ID: 5,          // E 欄 — 個人分析表 ID
   CUSTOMER_NAME: 6,       // F 欄 — 客人姓名
   CONTACT: 7,             // G 欄 — 聯絡方式
@@ -240,7 +240,7 @@ const ANALYSIS_EVALUATION_COLUMNS = {
   BUDGET: 16,             // P 欄 — 預算範圍
   DESCRIPTION: 17,        // Q 欄 — 狀態描述
   RECOMMENDATION_TEXT: 18,// R 欄 — 水晶能量初步評估全文
-  PROFILE_URL: 19,        // S 欄 — 個人分析表連結
+  PROFILE_URL: 19,        // S 欄 — 分析表連結
   CONSULTATION_ROW: 20,   // T 欄 — 諮詢紀錄列號
   INTERNAL_NOTES: 21,     // U 欄 — 內部備註
   DESIGN_BRACELETS: 22    // V 欄 — 想設計手鍊
@@ -251,7 +251,7 @@ const ANALYSIS_EVALUATION_HEADER_ROW = [
   '建立時間',
   '更新時間',
   '評估ID',
-  '查詢碼',
+  '分析表密碼',
   '個人分析表ID',
   '客人姓名',
   '聯絡方式',
@@ -266,7 +266,7 @@ const ANALYSIS_EVALUATION_HEADER_ROW = [
   '預算範圍',
   '狀態描述',
   '水晶能量初步評估全文',
-  '個人分析表連結',
+  '分析表連結',
   '諮詢紀錄列號',
   '內部備註',
   '想設計手鍊'

@@ -1684,6 +1684,35 @@ details p {
   padding: 24px;
 }
 
+.bracelet-lookup-mode {
+  background: rgba(75, 45, 95, 0.08);
+  border: 1px solid rgba(75, 45, 95, 0.14);
+  border-radius: 999px;
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding: 5px;
+}
+
+.bracelet-lookup-mode button {
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  color: rgba(36, 26, 43, 0.72);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 900;
+  min-height: 42px;
+  padding: 0 14px;
+}
+
+.bracelet-lookup-mode button.is-active {
+  background: #fffdf8;
+  box-shadow: 0 8px 20px rgba(36, 26, 43, 0.12);
+  color: var(--plum);
+}
+
 .bracelet-code-form {
   display: grid;
   gap: 10px;

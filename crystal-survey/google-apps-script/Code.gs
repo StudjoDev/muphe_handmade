@@ -30,6 +30,9 @@
 function doGet(e) {
   try {
     const action = normalizeRequestAction(getRequestParameter(e, 'action'));
+    if (action === 'analysisprofile') {
+      return handleAnalysisProfileLookup(e);
+    }
     if (action === 'braceletprofile') {
       return handleBraceletProfileLookup(e);
     }
@@ -155,8 +158,67 @@ function doPost(e) {
 }
 
 // ============================
-// 🔎 手鍊公開檔案 API
+// 🔎 分析表與手鍊公開檔案 API
 // ============================
+
+/**
+ * 客戶分析表查詢入口。
+ * 支援 ?action=analysisProfile&code=...
+ * @param {Object} e - HTTP GET 事件物件
+ * @returns {TextOutput} JSON 或 JSONP 文字回應
+ */
+function handleAnalysisProfileLookup(e) {
+  try {
+    const accessCode = normalizeBraceletAccessCode(getRequestParameter(e, 'code'));
+
+    if (!accessCode) {
+      return createJsonTextOutput(e, {
+        success: false,
+        error: {
+          code: 'missing_lookup',
+          message: '請提供分析表密碼'
+        }
+      });
+    }
+
+    if (!isBraceletLookupLengthAllowed(accessCode, '')) {
+      return createJsonTextOutput(e, {
+        success: false,
+        error: {
+          code: 'invalid_lookup',
+          message: '分析表密碼格式不正確'
+        }
+      });
+    }
+
+    const profile = findPublishedAnalysisProfile(accessCode);
+    if (!profile) {
+      return createJsonTextOutput(e, {
+        success: false,
+        error: {
+          code: 'not_found',
+          message: '找不到對應的分析表'
+        }
+      });
+    }
+
+    return createJsonTextOutput(e, {
+      success: true,
+      data: profile,
+      retrievedAt: formatApiTimestamp(new Date())
+    });
+
+  } catch (error) {
+    console.error('【分析表查詢錯誤】' + error.toString());
+    return createJsonTextOutput(e, {
+      success: false,
+      error: {
+        code: 'server_error',
+        message: '系統目前無法查詢分析表'
+      }
+    });
+  }
+}
 
 /**
  * 手鍊公開檔案查詢入口。
@@ -314,6 +376,87 @@ function findPublishedBraceletProfile(accessCode, accessToken) {
 }
 
 /**
+ * 從分析評估表查詢客戶可看的分析表。
+ * 舊資料若只存在手鍊檔案表，會回退讀取手鍊檔案中的分析表列。
+ * @param {string} accessCode - 正規化後的分析表密碼
+ * @returns {Object|null} 公開分析表資料
+ */
+function findPublishedAnalysisProfile(accessCode) {
+  const evaluationSheet = getOrCreateSheet(
+    ANALYSIS_EVALUATION_SHEET_NAME,
+    ANALYSIS_EVALUATION_HEADER_ROW,
+    getAnalysisEvaluationColumnWidths()
+  );
+  const lastRow = evaluationSheet.getLastRow();
+
+  if (lastRow > 1) {
+    const rows = evaluationSheet
+      .getRange(2, 1, lastRow - 1, ANALYSIS_EVALUATION_HEADER_ROW.length)
+      .getDisplayValues();
+
+    for (let i = rows.length - 1; i >= 0; i--) {
+      const row = rows[i];
+      const rowCode = normalizeBraceletAccessCode(getAnalysisEvaluationCell(row, ANALYSIS_EVALUATION_COLUMNS.ACCESS_CODE));
+      if (accessCode && rowCode && rowCode === accessCode) {
+        return buildPublicAnalysisProfile(row);
+      }
+    }
+  }
+
+  return findLegacyConsultationAnalysisProfile(accessCode);
+}
+
+/**
+ * 舊版資料相容：從手鍊檔案表讀取由諮詢表單自動產生的分析表。
+ * @param {string} accessCode - 正規化後的分析表密碼
+ * @returns {Object|null} 公開分析表資料
+ */
+function findLegacyConsultationAnalysisProfile(accessCode) {
+  const sheet = getOrCreateSheet(
+    BRACELET_PROFILE_SHEET_NAME,
+    BRACELET_PROFILE_HEADER_ROW,
+    getBraceletProfileColumnWidths()
+  );
+  const lastRow = sheet.getLastRow();
+
+  if (lastRow <= 1) {
+    return null;
+  }
+
+  const rows = sheet
+    .getRange(2, 1, lastRow - 1, BRACELET_PROFILE_HEADER_ROW.length)
+    .getDisplayValues();
+
+  for (let i = rows.length - 1; i >= 0; i--) {
+    const row = rows[i];
+    if (!isBraceletProfilePublished(row) || !isConsultationAnalysisProfileRow(row)) {
+      continue;
+    }
+
+    const rowCode = normalizeBraceletAccessCode(getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.ACCESS_CODE));
+    if (accessCode && rowCode && rowCode === accessCode) {
+      return buildPublicBraceletProfile(row);
+    }
+  }
+
+  return null;
+}
+
+/**
+ * 判斷手鍊檔案列是否其實是舊版分析表。
+ * @param {Array} row - 手鍊檔案表資料列
+ * @returns {boolean} 是否為分析表
+ */
+function isConsultationAnalysisProfileRow(row) {
+  const marker = [
+    getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.SCENE),
+    getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.BRACELET_NAME),
+    getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.INTERNAL_NOTES)
+  ].join(' ');
+  return /水晶諮詢(?:圖卡|分析表)|水晶狀態(?:圖卡|分析表)|諮詢表單自動生成/.test(marker);
+}
+
+/**
  * 使用姓名與生日找回由諮詢表單建立的個人分析表查詢碼。
  * @param {*} name - 使用者輸入姓名
  * @param {*} birthDate - 使用者輸入生日
@@ -336,19 +479,24 @@ function findBraceletAccessCodeByCustomerIdentity(name, birthDate) {
     .getRange(2, 1, consultationLastRow - 1, HEADER_ROW.length)
     .getDisplayValues();
 
+  const evaluationSheet = getOrCreateSheet(
+    ANALYSIS_EVALUATION_SHEET_NAME,
+    ANALYSIS_EVALUATION_HEADER_ROW,
+    getAnalysisEvaluationColumnWidths()
+  );
+  const evaluationLastRow = evaluationSheet.getLastRow();
+  const evaluationRows = evaluationLastRow > 1
+    ? evaluationSheet.getRange(2, 1, evaluationLastRow - 1, ANALYSIS_EVALUATION_HEADER_ROW.length).getDisplayValues()
+    : [];
   const profileSheet = getOrCreateSheet(
     BRACELET_PROFILE_SHEET_NAME,
     BRACELET_PROFILE_HEADER_ROW,
     getBraceletProfileColumnWidths()
   );
   const profileLastRow = profileSheet.getLastRow();
-  if (profileLastRow <= 1) {
-    return null;
-  }
-
-  const profileRows = profileSheet
-    .getRange(2, 1, profileLastRow - 1, BRACELET_PROFILE_HEADER_ROW.length)
-    .getDisplayValues();
+  const profileRows = profileLastRow > 1
+    ? profileSheet.getRange(2, 1, profileLastRow - 1, BRACELET_PROFILE_HEADER_ROW.length).getDisplayValues()
+    : [];
 
   for (let i = consultationRows.length - 1; i >= 0; i--) {
     const row = consultationRows[i];
@@ -360,10 +508,42 @@ function findBraceletAccessCodeByCustomerIdentity(name, birthDate) {
     }
 
     const consultationRowNumber = i + 2;
-    const credential = findPublishedBraceletCredentialByConsultationRow(profileRows, consultationRowNumber);
+    const credential = findAnalysisCredentialByConsultationRow(evaluationRows, consultationRowNumber) ||
+      findPublishedBraceletCredentialByConsultationRow(profileRows, consultationRowNumber);
     if (credential) {
       return credential;
     }
+  }
+
+  return null;
+}
+
+/**
+ * 從分析評估表列中，依諮詢紀錄列號找出分析表密碼。
+ * @param {Array[]} evaluationRows - 分析評估表資料列
+ * @param {number} consultationRowNumber - 諮詢紀錄列號
+ * @returns {Object|null} 查詢憑證
+ */
+function findAnalysisCredentialByConsultationRow(evaluationRows, consultationRowNumber) {
+  const rowNumberText = String(consultationRowNumber);
+
+  for (let i = evaluationRows.length - 1; i >= 0; i--) {
+    const row = evaluationRows[i];
+    const rowConsultation = String(getAnalysisEvaluationCell(row, ANALYSIS_EVALUATION_COLUMNS.CONSULTATION_ROW) || '').trim();
+    if (rowConsultation !== rowNumberText) {
+      continue;
+    }
+
+    const accessCode = getAnalysisEvaluationCell(row, ANALYSIS_EVALUATION_COLUMNS.ACCESS_CODE);
+    if (!accessCode) {
+      continue;
+    }
+
+    return {
+      accessCode: accessCode,
+      profileId: getAnalysisEvaluationCell(row, ANALYSIS_EVALUATION_COLUMNS.PROFILE_ID),
+      profileUrl: getAnalysisProfileUrl(accessCode)
+    };
   }
 
   return null;
@@ -447,6 +627,53 @@ function buildPublicBraceletProfile(row) {
 }
 
 /**
+ * 將分析評估表列轉成對外安全的個人分析表。
+ * 不輸出聯絡方式、生日、性別、手圍、預算或內部備註。
+ * @param {Array} row - 分析評估表列資料
+ * @returns {Object} 對外公開資料
+ */
+function buildPublicAnalysisProfile(row) {
+  const accessCode = getAnalysisEvaluationCell(row, ANALYSIS_EVALUATION_COLUMNS.ACCESS_CODE);
+  const recommendation = getAnalysisEvaluationCell(row, ANALYSIS_EVALUATION_COLUMNS.RECOMMENDATION_TEXT);
+  const data = {
+    name: getAnalysisEvaluationCell(row, ANALYSIS_EVALUATION_COLUMNS.CUSTOMER_NAME),
+    gender: getAnalysisEvaluationCell(row, ANALYSIS_EVALUATION_COLUMNS.GENDER),
+    birthDate: getAnalysisEvaluationCell(row, ANALYSIS_EVALUATION_COLUMNS.BIRTH_DATE),
+    birthTime: getAnalysisEvaluationCell(row, ANALYSIS_EVALUATION_COLUMNS.BIRTH_TIME),
+    calculationMethod: getAnalysisEvaluationCell(row, ANALYSIS_EVALUATION_COLUMNS.CALCULATION_METHOD),
+    energyGoal: getAnalysisEvaluationCell(row, ANALYSIS_EVALUATION_COLUMNS.ENERGY_GOAL),
+    targetChakra: getAnalysisEvaluationCell(row, ANALYSIS_EVALUATION_COLUMNS.TARGET_CHAKRA),
+    colorPreference: getAnalysisEvaluationCell(row, ANALYSIS_EVALUATION_COLUMNS.COLOR_PREFERENCE),
+    wristSize: getAnalysisEvaluationCell(row, ANALYSIS_EVALUATION_COLUMNS.WRIST_SIZE),
+    budget: getAnalysisEvaluationCell(row, ANALYSIS_EVALUATION_COLUMNS.BUDGET),
+    description: getAnalysisEvaluationCell(row, ANALYSIS_EVALUATION_COLUMNS.DESCRIPTION)
+  };
+  const publicFields = buildConsultationCardPublicFields(data, recommendation, accessCode);
+
+  return {
+    profileId: getAnalysisEvaluationCell(row, ANALYSIS_EVALUATION_COLUMNS.PROFILE_ID) ||
+      getAnalysisEvaluationCell(row, ANALYSIS_EVALUATION_COLUMNS.EVALUATION_ID),
+    profileType: 'analysisEvaluation',
+    displayName: publicFields.displayName,
+    braceletName: publicFields.braceletName,
+    scene: publicFields.scene,
+    summary: publicFields.summary,
+    crystals: publicFields.crystals,
+    energyFocus: publicFields.energyFocus,
+    chakraFocus: publicFields.chakraFocus,
+    designNotes: publicFields.designNotes,
+    wearingGuide: publicFields.wearingGuide,
+    careInstructions: publicFields.careInstructions,
+    ritual: publicFields.ritual,
+    makerNote: publicFields.makerNote,
+    imageUrl: '',
+    productUrl: getAnalysisProfileUrl(accessCode),
+    publishedAt: getAnalysisEvaluationCell(row, ANALYSIS_EVALUATION_COLUMNS.CREATED_AT),
+    updatedAt: getAnalysisEvaluationCell(row, ANALYSIS_EVALUATION_COLUMNS.UPDATED_AT)
+  };
+}
+
+/**
  * 產生一組可填入手鍊檔案工作表的檔案 ID、查詢碼與 token。
  * 在 Apps Script 編輯器中手動執行，或由後台操作流程呼叫。
  * @returns {Object} 新憑證
@@ -482,14 +709,56 @@ function generateBraceletProfileId() {
  * @returns {string} 查詢碼
  */
 function generateBraceletProfileAccessCode(sheet) {
+  const evaluationSheet = getOrCreateSheet(
+    ANALYSIS_EVALUATION_SHEET_NAME,
+    ANALYSIS_EVALUATION_HEADER_ROW,
+    getAnalysisEvaluationColumnWidths()
+  );
+
   for (let attempt = 0; attempt < 10; attempt++) {
     const code = 'MUPHE-' + generateReadableCodeSegment(4) + '-' + generateReadableCodeSegment(4);
-    if (!braceletAccessCodeExists(sheet, code)) {
+    if (!braceletAccessCodeExists(sheet, code) && !analysisAccessCodeExists(evaluationSheet, code)) {
       return code;
     }
   }
 
-  return 'MUPHE-' + generateReadableCodeSegment(4) + '-' + generateReadableCodeSegment(6);
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const code = 'MUPHE-' + generateReadableCodeSegment(4) + '-' + generateReadableCodeSegment(6);
+    if (!braceletAccessCodeExists(sheet, code) && !analysisAccessCodeExists(evaluationSheet, code)) {
+      return code;
+    }
+  }
+
+  return 'MUPHE-' + generateReadableCodeSegment(6) + '-' + generateReadableCodeSegment(6);
+}
+
+/**
+ * 產生分析表密碼，避免和分析評估表、手鍊檔案碼重複。
+ * @param {Sheet} evaluationSheet - 分析評估表
+ * @returns {string} 分析表密碼
+ */
+function generateAnalysisAccessCode(evaluationSheet) {
+  const profileSheet = getOrCreateSheet(
+    BRACELET_PROFILE_SHEET_NAME,
+    BRACELET_PROFILE_HEADER_ROW,
+    getBraceletProfileColumnWidths()
+  );
+
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const code = 'MUPHE-' + generateReadableCodeSegment(4) + '-' + generateReadableCodeSegment(4);
+    if (!analysisAccessCodeExists(evaluationSheet, code) && !braceletAccessCodeExists(profileSheet, code)) {
+      return code;
+    }
+  }
+
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const code = 'MUPHE-' + generateReadableCodeSegment(4) + '-' + generateReadableCodeSegment(6);
+    if (!analysisAccessCodeExists(evaluationSheet, code) && !braceletAccessCodeExists(profileSheet, code)) {
+      return code;
+    }
+  }
+
+  return 'MUPHE-' + generateReadableCodeSegment(6) + '-' + generateReadableCodeSegment(6);
 }
 
 /**
@@ -511,6 +780,15 @@ function generateAnalysisEvaluationId() {
 }
 
 /**
+ * 產生個人分析表 ID。
+ * @returns {string} 分析表 ID
+ */
+function generateAnalysisProfileId() {
+  const token = Utilities.getUuid().replace(/-/g, '').substring(0, 12).toUpperCase();
+  return 'AP-' + token;
+}
+
+/**
  * 由諮詢表單自動建立一份可用密碼查詢的個人水晶分析表。
  * 對外內容只保留名字與推薦方向，不寫入聯絡方式、生日、性別、手圍或預算。
  * @param {Object} data - 諮詢表單資料
@@ -529,7 +807,7 @@ function appendConsultationCardProfile(data, recommendation, timestamp, consulta
   const accessCode = generateBraceletProfileAccessCode(profileSheet);
   const accessToken = generateBraceletProfileAccessToken();
   const publicFields = buildConsultationCardPublicFields(data, recommendation, accessCode);
-  const profileUrl = getBraceletProfileUrl(accessCode);
+  const profileUrl = getAnalysisProfileUrl(accessCode);
   const archiveResult = archiveConsultationCardProfile({
     profileId: profileId,
     accessCode: accessCode,
@@ -593,9 +871,22 @@ function appendAnalysisEvaluationRecord(data, recommendation, timestamp, consult
     getAnalysisEvaluationColumnWidths()
   );
   const evaluationId = generateAnalysisEvaluationId();
-  const accessCode = profileResult && profileResult.accessCode ? profileResult.accessCode : '';
-  const profileId = profileResult && profileResult.profileId ? profileResult.profileId : '';
-  const profileUrl = profileResult && profileResult.profileUrl ? profileResult.profileUrl : '';
+  const accessCode = profileResult && profileResult.accessCode
+    ? profileResult.accessCode
+    : generateAnalysisAccessCode(evaluationSheet);
+  const profileId = profileResult && profileResult.profileId ? profileResult.profileId : generateAnalysisProfileId();
+  const profileUrl = getAnalysisProfileUrl(accessCode);
+  const publicFields = buildConsultationCardPublicFields(data, recommendation, accessCode);
+  const archiveResult = archiveConsultationCardProfile({
+    profileId: profileId,
+    accessCode: accessCode,
+    profileUrl: profileUrl,
+    createdAt: timestamp,
+    publicFields: publicFields
+  });
+  const archiveNote = archiveResult && archiveResult.fileUrl
+    ? '；分析表歸檔：' + archiveResult.fileUrl
+    : '';
 
   const rowData = [
     timestamp,
@@ -618,7 +909,7 @@ function appendAnalysisEvaluationRecord(data, recommendation, timestamp, consult
     recommendation || '',
     profileUrl,
     consultationRow || '',
-    '由諮詢表單自動保存；與手鍊檔案共用查詢碼。',
+    '由諮詢表單自動保存；分析表密碼獨立於手鍊檔案碼。' + archiveNote,
     normalizeDesignBraceletSelection(data.designBraceletSelection || data.designBracelets)
   ];
 
@@ -627,6 +918,9 @@ function appendAnalysisEvaluationRecord(data, recommendation, timestamp, consult
   return {
     evaluationId: evaluationId,
     accessCode: accessCode,
+    profileId: profileId,
+    profileUrl: profileUrl,
+    archiveFileUrl: archiveResult ? archiveResult.fileUrl : '',
     rowNumber: evaluationSheet.getLastRow()
   };
 }
@@ -637,6 +931,11 @@ function appendAnalysisEvaluationRecord(data, recommendation, timestamp, consult
  * @returns {Object} 回填結果
  */
 function backfillConsultationAnalysisSheets() {
+  return {
+    skipped: true,
+    message: '此回填工具已停用：分析表全文不再寫回手鍊檔案，請改查「分析評估表」。'
+  };
+
   return withScriptLock(function() {
     const profileSheet = getOrCreateSheet(
       BRACELET_PROFILE_SHEET_NAME,
@@ -1655,6 +1954,25 @@ function buildPublicChakraFocus(data) {
  * @returns {string} 網址
  */
 function getBraceletProfileUrl(accessCode) {
+  return getPublicProfilePageUrl(accessCode, 'bracelet');
+}
+
+/**
+ * 建立可分享的分析表網址。
+ * @param {string} accessCode - 分析表密碼
+ * @returns {string} 網址
+ */
+function getAnalysisProfileUrl(accessCode) {
+  return getPublicProfilePageUrl(accessCode, 'analysis');
+}
+
+/**
+ * 建立查詢頁網址。
+ * @param {string} accessCode - 查詢碼
+ * @param {string} profileType - analysis 或 bracelet
+ * @returns {string} 網址
+ */
+function getPublicProfilePageUrl(accessCode, profileType) {
   const storeUrl = String(typeof STORE_SITE_URL === 'undefined' ? '' : STORE_SITE_URL || '').trim();
   if (!storeUrl) {
     return '';
@@ -1664,7 +1982,8 @@ function getBraceletProfileUrl(accessCode) {
     .replace(/[?#].*$/, '')
     .replace(/index\.html$/i, '')
     .replace(/\/?$/, '/');
-  return cleanBase + 'bracelet.html?code=' + encodeURIComponent(accessCode);
+  const mode = profileType === 'bracelet' ? 'bracelet' : 'analysis';
+  return cleanBase + 'bracelet.html?type=' + encodeURIComponent(mode) + '&code=' + encodeURIComponent(accessCode);
 }
 
 function sanitizePublicDisplayName(value) {
@@ -1710,6 +2029,28 @@ function braceletAccessCodeExists(sheet, accessCode) {
 
   const values = sheet
     .getRange(2, BRACELET_PROFILE_COLUMNS.ACCESS_CODE, lastRow - 1, 1)
+    .getDisplayValues();
+
+  return values.some(function(row) {
+    return normalizeBraceletAccessCode(row[0]) === normalizedCode;
+  });
+}
+
+/**
+ * 檢查分析表密碼是否已存在。
+ * @param {Sheet} sheet - 分析評估表
+ * @param {string} accessCode - 分析表密碼
+ * @returns {boolean} 是否存在
+ */
+function analysisAccessCodeExists(sheet, accessCode) {
+  const normalizedCode = normalizeBraceletAccessCode(accessCode);
+  const lastRow = sheet.getLastRow();
+  if (!normalizedCode || lastRow <= 1) {
+    return false;
+  }
+
+  const values = sheet
+    .getRange(2, ANALYSIS_EVALUATION_COLUMNS.ACCESS_CODE, lastRow - 1, 1)
     .getDisplayValues();
 
   return values.some(function(row) {
@@ -1842,6 +2183,16 @@ function isBraceletProfilePublished(row) {
  * @returns {string} 欄位文字
  */
 function getBraceletProfileCell(row, columnIndex) {
+  return String(row[columnIndex - 1] || '').trim();
+}
+
+/**
+ * 取得分析評估表欄位文字。
+ * @param {Array} row - 工作表列資料
+ * @param {number} columnIndex - 1-indexed 欄位位置
+ * @returns {string} 欄位文字
+ */
+function getAnalysisEvaluationCell(row, columnIndex) {
   return String(row[columnIndex - 1] || '').trim();
 }
 
@@ -2086,24 +2437,21 @@ function processConsultation(data) {
       designBraceletSelectionStr              // 18. R 欄 — 想設計手鍊
     ];
 
-    // 步驟 5：寫入試算表與個人分析表；CSV mirror 預設停用以降低 Drive 操作量
+    // 步驟 5：寫入試算表與分析評估表；手鍊檔案等實際設計完成後另行建立
     const writeResult = withScriptLock(function() {
       sheet.appendRow(rowData);
       const consultationRow = sheet.getLastRow();
-      const profileResult = appendConsultationCardProfile(data, recommendation, timestamp, consultationRow);
-      const evaluationResult = appendAnalysisEvaluationRecord(data, recommendation, timestamp, consultationRow, profileResult);
+      const evaluationResult = appendAnalysisEvaluationRecord(data, recommendation, timestamp, consultationRow);
       try {
         SpreadsheetApp.flush();
         return {
           csvUrl: syncCsvMirrorFromSheet(sheet),
-          profile: profileResult,
           evaluation: evaluationResult
         };
       } catch (csvError) {
         console.error('【CSV 同步失敗】' + csvError.toString());
         return {
           csvUrl: '',
-          profile: profileResult,
           evaluation: evaluationResult
         };
       }
@@ -2112,11 +2460,8 @@ function processConsultation(data) {
     if (writeResult.csvUrl) {
       console.log('【CSV 同步】✅ 已更新：' + writeResult.csvUrl);
     }
-    if (writeResult.profile && writeResult.profile.accessCode) {
-      console.log('【個人分析表】✅ 已建立查詢密碼：' + writeResult.profile.accessCode);
-    }
     if (writeResult.evaluation && writeResult.evaluation.accessCode) {
-      console.log('【分析評估表】✅ 已保存初步評估全文：' + writeResult.evaluation.accessCode);
+      console.log('【分析評估表】✅ 已建立分析表密碼並保存初步評估全文：' + writeResult.evaluation.accessCode);
     }
 
     // 步驟 6：發送 Email 通知（失敗不影響資料寫入）
@@ -2135,8 +2480,8 @@ function processConsultation(data) {
       recommendation: recommendation,
       csvUrl: writeResult.csvUrl || '',
       name: data.name || '',
-      accessCode: writeResult.profile ? writeResult.profile.accessCode : '',
-      profileUrl: writeResult.profile ? writeResult.profile.profileUrl : ''
+      accessCode: writeResult.evaluation ? writeResult.evaluation.accessCode : '',
+      profileUrl: writeResult.evaluation ? writeResult.evaluation.profileUrl : ''
     };
 
   } catch (error) {
@@ -2688,10 +3033,21 @@ function getOrCreateSheet(sheetName, headerRow, columnWidths) {
         sheet.setColumnWidth(Number(columnIndex), widths[columnIndex]);
       });
       console.log('【工作表】✅ 已自動建立工作表：' + targetSheetName);
-    } else {
-      const lastColumn = sheet.getLastColumn();
-      if (lastColumn < headers.length) {
-        const missingHeaders = headers.slice(lastColumn);
+	    } else {
+	      const lastColumn = sheet.getLastColumn();
+	      const headerWidth = Math.min(lastColumn, headers.length);
+	      if (headerWidth > 0) {
+	        const currentHeaders = sheet.getRange(1, 1, 1, headerWidth).getDisplayValues()[0];
+	        const shouldSyncHeaders = currentHeaders.some(function(header, index) {
+	          return String(header || '').trim() !== String(headers[index] || '').trim();
+	        });
+	        if (shouldSyncHeaders) {
+	          sheet.getRange(1, 1, 1, headerWidth).setValues([headers.slice(0, headerWidth)]);
+	          console.log('【工作表】✅ 已同步標題列：' + targetSheetName);
+	        }
+	      }
+	      if (lastColumn < headers.length) {
+	        const missingHeaders = headers.slice(lastColumn);
         sheet.getRange(1, lastColumn + 1, 1, missingHeaders.length).setValues([missingHeaders]);
         const appendedHeaderRange = sheet.getRange(1, lastColumn + 1, 1, missingHeaders.length);
         appendedHeaderRange.setFontWeight('bold');

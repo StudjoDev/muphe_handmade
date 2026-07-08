@@ -1762,7 +1762,7 @@
           <button class="copy-code-btn" type="button" id="copyProfileCodeBtn">複製分析表密碼</button>
           <button class="close-code-btn" type="button" id="closeProfileCodeBtn">關閉</button>
         </div>
-        <a class="profile-open-link" id="openProfileLink" href="../../bracelet.html">前往您的手鍊檔案</a>
+        <a class="profile-open-link" id="openProfileLink" href="../../bracelet.html">前往個人分析表</a>
         <p class="profile-code-required">複製分析表密碼後請按「關閉」，沐菲水晶系統將提供您初步的個人分析與晶種推薦。</p>
       </div>
     </div>
@@ -3051,7 +3051,7 @@
         return;
       }
 
-      const localProfileUrl = '../../bracelet.html?code=' + encodeURIComponent(accessCode);
+      const localProfileUrl = '../../bracelet.html?type=analysis&code=' + encodeURIComponent(accessCode);
       profileAccessCode.textContent = accessCode;
       openProfileLink.href = profileAccess.profileUrl || localProfileUrl;
       profileAccessCard.classList.add('active');
