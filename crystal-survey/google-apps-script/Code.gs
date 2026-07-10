@@ -381,7 +381,7 @@ function findPublishedBraceletProfile(accessCode, accessToken) {
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
-    if (!isBraceletProfilePublished(row) || isConsultationAnalysisProfileRow(row)) {
+    if (!isBraceletProfilePublished(row)) {
       continue;
     }
 
@@ -390,7 +390,9 @@ function findPublishedBraceletProfile(accessCode, accessToken) {
     const isCodeMatch = Boolean(accessCode && rowCode && rowCode === accessCode);
     const isTokenMatch = Boolean(accessToken && rowToken && rowToken === accessToken);
 
-    if (isCodeMatch || isTokenMatch) {
+    // 明確以 MUPHE-B 手鍊檔案碼查詢時，舊資料即使保留諮詢表標記也可讀取。
+    // token 查詢仍排除舊分析表，避免舊連結把諮詢內容誤當成出貨檔案。
+    if (isCodeMatch || (isTokenMatch && !isConsultationAnalysisProfileRow(row))) {
       return buildPublicBraceletProfile(row);
     }
   }
