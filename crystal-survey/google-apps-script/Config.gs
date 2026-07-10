@@ -225,7 +225,7 @@ const ANALYSIS_EVALUATION_COLUMNS = {
   CREATED_AT: 1,          // A 欄 — 建立時間
   UPDATED_AT: 2,          // B 欄 — 更新時間
   EVALUATION_ID: 3,       // C 欄 — 評估 ID
-  ACCESS_CODE: 4,         // D 欄 — 分析表密碼
+  ACCESS_CODE: 4,         // D 欄 — 諮詢表密碼
   PROFILE_ID: 5,          // E 欄 — 個人分析表 ID
   CUSTOMER_NAME: 6,       // F 欄 — 客人姓名
   CONTACT: 7,             // G 欄 — 聯絡方式
@@ -251,7 +251,7 @@ const ANALYSIS_EVALUATION_HEADER_ROW = [
   '建立時間',
   '更新時間',
   '評估ID',
-  '分析表密碼',
+  '諮詢表密碼',
   '個人分析表ID',
   '客人姓名',
   '聯絡方式',

@@ -330,6 +330,7 @@ button {
 .hero-secondary-actions,
 .hero-shop-action {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
 }
 
@@ -1549,6 +1550,10 @@ details p {
   .hero-secondary-actions .secondary-link {
     padding: 0 14px;
     width: auto;
+  }
+
+  .hero-secondary-actions .secondary-link:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
   }
 
   .hero-shop-action {

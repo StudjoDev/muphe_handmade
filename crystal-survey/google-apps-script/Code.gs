@@ -125,7 +125,7 @@ function doPost(e) {
       title: '諮詢表單已送出',
       headline: '諮詢表單已送出',
       message: consultationResult.accessCode
-        ? '感謝您的信任，我們已收到資料並已產生您的分析表密碼。'
+        ? '感謝您的信任，我們已收到資料並已產生您的諮詢表密碼。'
         : '感謝您的信任，我們已收到資料並會盡快與您聯繫。',
       reference: consultationResult.accessCode || consultationResult.name || '',
       postMessagePayload: {
@@ -176,7 +176,7 @@ function handleAnalysisProfileLookup(e) {
         success: false,
         error: {
           code: 'missing_lookup',
-          message: '請提供分析表密碼'
+          message: '請提供諮詢表密碼'
         }
       });
     }
@@ -186,7 +186,7 @@ function handleAnalysisProfileLookup(e) {
         success: false,
         error: {
           code: 'invalid_lookup',
-          message: '分析表密碼格式不正確'
+          message: '諮詢表密碼格式不正確'
         }
       });
     }
@@ -281,7 +281,7 @@ function handleBraceletProfileLookup(e) {
 }
 
 /**
- * 忘記分析表密碼查詢入口。
+ * 忘記諮詢表密碼查詢入口。
  * 使用姓名與生日比對諮詢紀錄，只回傳查詢碼，不回傳生日、聯絡方式或其他個資。
  * @param {Object} e - HTTP GET 事件物件
  * @returns {TextOutput} JSON 或 JSONP 文字回應
@@ -307,7 +307,7 @@ function handleForgotBraceletCodeLookup(e) {
         success: false,
         error: {
           code: 'not_found',
-          message: '找不到符合的分析表密碼，請確認姓名與生日是否與表單相同。'
+          message: '找不到符合的諮詢表密碼，請確認姓名與生日是否與表單相同。'
         }
       });
     }
@@ -322,12 +322,12 @@ function handleForgotBraceletCodeLookup(e) {
     });
 
   } catch (error) {
-    console.error('【忘記分析表密碼查詢錯誤】' + error.toString());
+    console.error('【忘記諮詢表密碼查詢錯誤】' + error.toString());
     return createJsonTextOutput(e, {
       success: false,
       error: {
         code: 'server_error',
-        message: '系統目前無法找回分析表密碼'
+        message: '系統目前無法找回諮詢表密碼'
       }
     });
   }
@@ -358,7 +358,7 @@ function findPublishedBraceletProfile(accessCode, accessToken) {
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
-    if (!isBraceletProfilePublished(row)) {
+    if (!isBraceletProfilePublished(row) || isConsultationAnalysisProfileRow(row)) {
       continue;
     }
 
@@ -378,7 +378,7 @@ function findPublishedBraceletProfile(accessCode, accessToken) {
 /**
  * 從分析評估表查詢客戶可看的分析表。
  * 舊資料若只存在手鍊檔案表，會回退讀取手鍊檔案中的分析表列。
- * @param {string} accessCode - 正規化後的分析表密碼
+ * @param {string} accessCode - 正規化後的諮詢表密碼
  * @returns {Object|null} 公開分析表資料
  */
 function findPublishedAnalysisProfile(accessCode) {
@@ -408,7 +408,7 @@ function findPublishedAnalysisProfile(accessCode) {
 
 /**
  * 舊版資料相容：從手鍊檔案表讀取由諮詢表單自動產生的分析表。
- * @param {string} accessCode - 正規化後的分析表密碼
+ * @param {string} accessCode - 正規化後的諮詢表密碼
  * @returns {Object|null} 公開分析表資料
  */
 function findLegacyConsultationAnalysisProfile(accessCode) {
@@ -519,7 +519,7 @@ function findBraceletAccessCodeByCustomerIdentity(name, birthDate) {
 }
 
 /**
- * 從分析評估表列中，依諮詢紀錄列號找出分析表密碼。
+ * 從分析評估表列中，依諮詢紀錄列號找出諮詢表密碼。
  * @param {Array[]} evaluationRows - 分析評估表資料列
  * @param {number} consultationRowNumber - 諮詢紀錄列號
  * @returns {Object|null} 查詢憑證
@@ -733,9 +733,9 @@ function generateBraceletProfileAccessCode(sheet) {
 }
 
 /**
- * 產生分析表密碼，避免和分析評估表、手鍊檔案碼重複。
+ * 產生諮詢表密碼，避免和分析評估表、手鍊檔案碼重複。
  * @param {Sheet} evaluationSheet - 分析評估表
- * @returns {string} 分析表密碼
+ * @returns {string} 諮詢表密碼
  */
 function generateAnalysisAccessCode(evaluationSheet) {
   const profileSheet = getOrCreateSheet(
@@ -909,7 +909,7 @@ function appendAnalysisEvaluationRecord(data, recommendation, timestamp, consult
     recommendation || '',
     profileUrl,
     consultationRow || '',
-    '由諮詢表單自動保存；分析表密碼獨立於手鍊檔案碼。' + archiveNote,
+    '由諮詢表單自動保存；諮詢表密碼獨立於手鍊檔案碼。' + archiveNote,
     normalizeDesignBraceletSelection(data.designBraceletSelection || data.designBracelets)
   ];
 
@@ -927,7 +927,7 @@ function appendAnalysisEvaluationRecord(data, recommendation, timestamp, consult
 
 /**
  * 將既有「分析評估表」全文回填到「手鍊檔案」公開摘要欄。
- * 讓舊的分析表密碼也能顯示完整「您的專屬水晶能量初步評估」內容。
+ * 讓舊的諮詢表密碼也能顯示完整「您的專屬水晶能量初步評估」內容。
  * @returns {Object} 回填結果
  */
 function backfillConsultationAnalysisSheets() {
@@ -1012,7 +1012,7 @@ function backfillConsultationAnalysisSheets() {
 
 /**
  * 儲存客戶看完分析結果後選擇的手鍊 A/B/C。
- * 使用分析表密碼回寫同一筆諮詢主表與分析評估表，方便後台製作手鍊。
+ * 使用諮詢表密碼回寫同一筆諮詢主表與分析評估表，方便後台製作手鍊。
  * @param {Object} payload - 前端結果頁送出的選擇資料
  * @returns {Object} 儲存結果
  */
@@ -1022,7 +1022,7 @@ function saveDesignBraceletSelection(payload) {
   const designBracelets = normalizeDesignBraceletSelection(payload.designBraceletSelection || payload.designBracelets);
 
   if (!normalizedAccessCode) {
-    throw new Error('缺少分析表密碼，無法儲存手鍊選擇。');
+    throw new Error('缺少諮詢表密碼，無法儲存手鍊選擇。');
   }
 
   if (!designBracelets) {
@@ -1040,7 +1040,7 @@ function saveDesignBraceletSelection(payload) {
     const match = findAnalysisEvaluationRowByAccessCode(evaluationSheet, normalizedAccessCode);
 
     if (!match) {
-      throw new Error('找不到對應的分析表密碼，請確認密碼是否正確。');
+      throw new Error('找不到對應的諮詢表密碼，請確認密碼是否正確。');
     }
 
     evaluationSheet.getRange(match.rowNumber, ANALYSIS_EVALUATION_COLUMNS.UPDATED_AT).setValue(timestamp);
@@ -1064,7 +1064,7 @@ function saveDesignBraceletSelection(payload) {
 }
 
 /**
- * 依分析表密碼找出分析評估表資料列。
+ * 依諮詢表密碼找出分析評估表資料列。
  * @param {Sheet} evaluationSheet - 分析評估表
  * @param {string} normalizedAccessCode - 正規化後密碼
  * @returns {Object|null} 命中的資料列資訊
@@ -1494,7 +1494,7 @@ function buildConsultationCardArchiveHtml(options) {
     '<main class="card">',
     '<p class="brand">MUPHÉ Handmade 沐菲手作水晶</p>',
     '<h1>' + escapeHtml(title) + '</h1>',
-    '<p class="code">分析表密碼：' + escapeHtml(options.accessCode || '') + '</p>',
+    '<p class="code">諮詢表密碼：' + escapeHtml(options.accessCode || '') + '</p>',
     options.profileUrl ? '<p style="margin-top:10px;">查詢連結：' + escapeHtml(options.profileUrl) + '</p>' : '',
     renderArchiveSection('您的專屬水晶能量初步評估', renderArchiveReport(publicFields.summary)),
     publicFields.summary ? '' : renderArchiveSection('目前最需要照顧的狀態', renderArchiveTags(energyFocus.concat(chakraFocus))),
@@ -1587,7 +1587,7 @@ function buildConsultationCardPublicFields(data, recommendation, accessCode) {
     wearingGuide: [
       '需要面對' + firstTheme + '相關場景時，先深呼吸三次，再把手鍊戴上，提醒自己把注意力收回身上。',
       '若今天特別疲憊，睡前可把手鍊放在掌心 30 秒，對自己說一句「我允許自己慢慢放鬆」。',
-      '後續討論客製時，可直接提供這組分析表密碼：' + accessCode
+      '後續討論客製時，可直接提供這組諮詢表密碼：' + accessCode
     ],
     careInstructions: [
       '日常避免碰撞、泡水、香水與清潔劑。',
@@ -1959,7 +1959,7 @@ function getBraceletProfileUrl(accessCode) {
 
 /**
  * 建立可分享的分析表網址。
- * @param {string} accessCode - 分析表密碼
+ * @param {string} accessCode - 諮詢表密碼
  * @returns {string} 網址
  */
 function getAnalysisProfileUrl(accessCode) {
@@ -1983,7 +1983,10 @@ function getPublicProfilePageUrl(accessCode, profileType) {
     .replace(/index\.html$/i, '')
     .replace(/\/?$/, '/');
   const mode = profileType === 'bracelet' ? 'bracelet' : 'analysis';
-  return cleanBase + 'bracelet.html?type=' + encodeURIComponent(mode) + '&code=' + encodeURIComponent(accessCode);
+  if (mode === 'analysis') {
+    return cleanBase + 'consultation.html?code=' + encodeURIComponent(accessCode);
+  }
+  return cleanBase + 'bracelet.html?code=' + encodeURIComponent(accessCode);
 }
 
 function sanitizePublicDisplayName(value) {
@@ -2037,9 +2040,9 @@ function braceletAccessCodeExists(sheet, accessCode) {
 }
 
 /**
- * 檢查分析表密碼是否已存在。
+ * 檢查諮詢表密碼是否已存在。
  * @param {Sheet} sheet - 分析評估表
- * @param {string} accessCode - 分析表密碼
+ * @param {string} accessCode - 諮詢表密碼
  * @returns {boolean} 是否存在
  */
 function analysisAccessCodeExists(sheet, accessCode) {
@@ -2461,7 +2464,7 @@ function processConsultation(data) {
       console.log('【CSV 同步】✅ 已更新：' + writeResult.csvUrl);
     }
     if (writeResult.evaluation && writeResult.evaluation.accessCode) {
-      console.log('【分析評估表】✅ 已建立分析表密碼並保存初步評估全文：' + writeResult.evaluation.accessCode);
+      console.log('【分析評估表】✅ 已建立諮詢表密碼並保存初步評估全文：' + writeResult.evaluation.accessCode);
     }
 
     // 步驟 6：發送 Email 通知（失敗不影響資料寫入）

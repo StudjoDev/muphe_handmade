@@ -4,8 +4,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>手鍊檔案查詢｜沐菲 MUPHÉ Handmade</title>
-  <meta name="description" content="輸入手鍊檔案碼，查詢 MUPHÉ Handmade 客製水晶的實際晶種配置、配戴指南與保養提醒。" />
+  <title>您的諮詢表單｜沐菲 MUPHÉ Handmade</title>
+  <meta name="description" content="輸入諮詢表密碼，查詢 MUPHÉ Handmade 水晶諮詢的個人分析表、初步推薦與日常提醒。" />
   <link rel="icon" type="image/png" href="pic/muphe_logo.png" />
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -22,8 +22,8 @@
     <nav class="desktop-nav" aria-label="主導覽">
       <a href="index.html#shop">客制手鍊</a>
       <a href="index.html#guide">水晶百科</a>
-      <a href="consultation.html">諮詢表單</a>
-      <a href="bracelet.html" aria-current="page">手鍊檔案</a>
+      <a href="consultation.html" aria-current="page">諮詢表單</a>
+      <a href="bracelet.html">手鍊檔案</a>
       <a href="index.html#faq">購物須知</a>
     </nav>
 
@@ -39,24 +39,24 @@
   <div class="mobile-nav" data-mobile-nav aria-label="手機導覽">
     <a href="index.html#shop">客制手鍊</a>
     <a href="index.html#guide">水晶百科</a>
-    <a href="consultation.html">諮詢表單</a>
-    <a href="bracelet.html" aria-current="page">手鍊檔案</a>
+    <a href="consultation.html" aria-current="page">諮詢表單</a>
+    <a href="bracelet.html">手鍊檔案</a>
     <a href="index.html#faq">購物須知</a>
   </div>
 
   <main id="top" data-bracelet-app>
     <section class="bracelet-hero" aria-labelledby="bracelet-title">
       <div class="bracelet-hero-copy reveal">
-        <p class="eyebrow">Bracelet Profile</p>
-        <h1 id="bracelet-title">您的手鍊檔案</h1>
+        <p class="eyebrow">Consultation Form</p>
+        <h1 id="bracelet-title">您的諮詢表單</h1>
         <p>
-          輸入店主提供的手鍊檔案碼，查看實際晶種配置、配戴指南與保養提醒。諮詢表密碼請改到「您的諮詢表單」查詢。
+          貼上諮詢完成後取得的諮詢表密碼，查看你的個人水晶分析表、初步推薦與配戴日常提醒。
         </p>
       </div>
 
       <div class="bracelet-lookup reveal" data-lookup-card>
         <form class="bracelet-code-form" data-code-form>
-          <label for="bracelet-code" data-code-label>手鍊檔案碼</label>
+          <label for="bracelet-code" data-code-label>諮詢表密碼</label>
           <div class="bracelet-code-row">
             <input
               id="bracelet-code"
@@ -71,8 +71,36 @@
             />
             <button class="primary-link" type="submit">查詢</button>
           </div>
-          <p id="bracelet-code-help" data-code-help>手鍊檔案是實際設計與出貨內容，請輸入店主提供的手鍊檔案碼。</p>
+          <p id="bracelet-code-help" data-code-help>貼上表單送出後取得的諮詢表密碼即可查詢；手動輸入時不用區分大小寫。</p>
         </form>
+
+        <div class="forgot-code" data-forgot-code>
+          <button
+            class="forgot-code-toggle"
+            type="button"
+            aria-expanded="false"
+            aria-controls="forgot-code-panel"
+            data-forgot-toggle
+          >
+            忘記諮詢表密碼？
+          </button>
+          <div class="forgot-code-panel" id="forgot-code-panel" hidden data-forgot-panel>
+            <form class="forgot-code-form" data-forgot-form>
+              <div class="forgot-code-field">
+                <label for="forgot-name">姓名</label>
+                <input id="forgot-name" name="name" type="text" autocomplete="name" placeholder="請輸入表單姓名" data-forgot-name />
+              </div>
+
+              <div class="forgot-code-field">
+                <label for="forgot-birth-date">生日</label>
+                <input id="forgot-birth-date" name="birthDate" type="date" data-forgot-birth-date />
+              </div>
+
+              <button class="secondary-link" type="submit">找回諮詢表密碼</button>
+            </form>
+            <div class="forgot-code-result" aria-live="polite" hidden data-forgot-status></div>
+          </div>
+        </div>
 
         <div class="bracelet-status" aria-live="polite" data-profile-status></div>
       </div>
@@ -85,11 +113,11 @@
     <section class="bracelet-support-strip" aria-label="手鍊服務">
       <div>
         <p class="eyebrow">Aftercare</p>
-        <h2>需要調整手圍或重新客製？</h2>
+        <h2>看完分析後想開始客製？</h2>
       </div>
       <div class="bracelet-support-actions">
         <a class="primary-link" href="crystal-survey/frontend/crystal-form.html">聯繫店主</a>
-        <a class="secondary-link" href="index.html#shop">回到手鍊系列</a>
+        <a class="secondary-link" href="bracelet.html">前往手鍊檔案</a>
       </div>
     </section>
   </main>
@@ -98,7 +126,7 @@
     <img class="footer-logo" src="pic/muphe_logo.webp" alt="MUPHÉ Handmade 沐菲品牌標誌" loading="lazy" />
     <div>
       <strong>MUPHÉ Handmade 沐菲</strong>
-      <p>每一條手作水晶，都保留一份能被查詢、配戴與照顧的日常檔案。</p>
+      <p>每一份水晶諮詢，都可以回到分析表重新確認當下真正需要的狀態。</p>
     </div>
   </footer>
 
@@ -120,7 +148,7 @@
           emptyTitle: "請輸入諮詢表密碼",
           emptyMessage: "密碼會在諮詢表單送出後顯示。",
           help: "貼上表單送出後取得的諮詢表密碼即可查詢；手動輸入時不用區分大小寫。",
-          idleMessage: "分析表會顯示名字、初步分析與晶種推薦，不顯示聯絡方式、生日、性別、手圍或預算。",
+          idleMessage: "輸入諮詢表密碼後，就能查看諮詢完成時生成的個人分析表。",
           action: ANALYSIS_PROFILE_ACTION,
         },
         bracelet: {
@@ -152,7 +180,7 @@
       const forgotStatus = document.querySelector("[data-forgot-status]");
       const mobileNav = document.querySelector("[data-mobile-nav]");
       const menuToggle = document.querySelector("[data-menu-toggle]");
-      let currentLookupMode = "bracelet";
+      let currentLookupMode = "analysis";
 
       const fieldKeys = {
         profileType: ["profileType", "profile_type", "type", "檔案類型"],
@@ -340,11 +368,11 @@
       }
 
       function getLookupCopy(mode = currentLookupMode) {
-        return lookupModeCopy[mode] || lookupModeCopy.bracelet;
+        return lookupModeCopy[mode] || lookupModeCopy.analysis;
       }
 
       function setLookupMode(mode, options = {}) {
-        const normalizedMode = "bracelet";
+        const normalizedMode = "analysis";
         currentLookupMode = normalizedMode;
         const copy = getLookupCopy();
 
@@ -356,7 +384,7 @@
           button.setAttribute("aria-pressed", isActive ? "true" : "false");
         });
 
-        const showForgot = false;
+        const showForgot = normalizedMode === "analysis";
         if (forgotToggle) forgotToggle.hidden = !showForgot;
         if (forgotPanel && !showForgot) {
           forgotPanel.hidden = true;
@@ -1204,7 +1232,7 @@
         nextUrl.searchParams.delete("type");
         nextUrl.searchParams.delete("token");
         window.history.replaceState({}, "", nextUrl);
-        lookupProfile({ code, mode: "bracelet" }, { allowBraceletFallback: false });
+        lookupProfile({ code, mode: "analysis" }, { allowBraceletFallback: false });
       });
 
       lookupModeButtons.forEach((button) => {
@@ -1304,14 +1332,15 @@
       const initialToken = normalizeString(urlParams.get("token"));
       const requestedType = normalizeString(urlParams.get("type") || urlParams.get("mode")).toLowerCase();
 
-      if (requestedType === "analysis") {
-        const redirectUrl = new URL("consultation.html", window.location.href);
+      if (requestedType === "bracelet" || initialToken) {
+        const redirectUrl = new URL("bracelet.html", window.location.href);
         if (initialCode) redirectUrl.searchParams.set("code", initialCode);
+        if (initialToken) redirectUrl.searchParams.set("token", initialToken);
         window.location.replace(redirectUrl.toString());
         return;
       }
 
-      const initialMode = "bracelet";
+      const initialMode = "analysis";
 
       setLookupMode(initialMode, { updateUrl: false, refreshIdle: false });
 
