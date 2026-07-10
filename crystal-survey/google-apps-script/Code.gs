@@ -276,6 +276,19 @@ function handleBraceletProfileLookup(e) {
 
     const profile = findPublishedBraceletProfile(accessCode, accessToken);
     if (!profile) {
+      const productionState = findBraceletProductionState(accessCode, accessToken);
+      if (productionState) {
+        return createJsonTextOutput(e, {
+          success: false,
+          error: {
+            code: 'not_ready',
+            message: '手鍊檔案尚在設計製作中，完成實際水晶配置後才會公開。'
+          },
+          data: {
+            productionStatus: productionState.productionStatus
+          }
+        });
+      }
       return createJsonTextOutput(e, {
         success: false,
         error: {
@@ -381,7 +394,7 @@ function findPublishedBraceletProfile(accessCode, accessToken) {
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
-    if (!isBraceletProfilePublished(row)) {
+    if (!isBraceletProfilePublished(row) || !isBraceletProductionReady(row) || isConsultationAnalysisProfileRow(row)) {
       continue;
     }
 
@@ -390,13 +403,37 @@ function findPublishedBraceletProfile(accessCode, accessToken) {
     const isCodeMatch = Boolean(accessCode && rowCode && rowCode === accessCode);
     const isTokenMatch = Boolean(accessToken && rowToken && rowToken === accessToken);
 
-    // 明確以 MUPHE-B 手鍊檔案碼查詢時，舊資料即使保留諮詢表標記也可讀取。
-    // token 查詢仍排除舊分析表，避免舊連結把諮詢內容誤當成出貨檔案。
-    if (isCodeMatch || (isTokenMatch && !isConsultationAnalysisProfileRow(row))) {
+    if (isCodeMatch || isTokenMatch) {
       return buildPublicBraceletProfile(row);
     }
   }
 
+  return null;
+}
+
+/**
+ * 查詢手鍊檔案目前製作狀態；只回傳狀態，不洩漏設計內容。
+ */
+function findBraceletProductionState(accessCode, accessToken) {
+  const sheet = getOrCreateSheet(
+    BRACELET_PROFILE_SHEET_NAME,
+    BRACELET_PROFILE_HEADER_ROW,
+    getBraceletProfileColumnWidths()
+  );
+  const lastRow = sheet.getLastRow();
+  if (lastRow <= 1) return null;
+
+  const rows = sheet.getRange(2, 1, lastRow - 1, BRACELET_PROFILE_HEADER_ROW.length).getDisplayValues();
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    const rowCode = normalizeBraceletAccessCode(getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.ACCESS_CODE));
+    const rowToken = normalizeBraceletAccessToken(getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.ACCESS_TOKEN));
+    if ((accessCode && rowCode === accessCode) || (accessToken && rowToken === accessToken)) {
+      return {
+        productionStatus: getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.PRODUCTION_STATUS) || BRACELET_PRODUCTION_STATUS_PENDING
+      };
+    }
+  }
   return null;
 }
 
@@ -494,16 +531,6 @@ function findBraceletAccessCodeByCustomerIdentity(name, birthDate) {
     return null;
   }
 
-  const consultationSheet = getOrCreateSheet(SHEET_NAME, HEADER_ROW, getConsultationColumnWidths());
-  const consultationLastRow = consultationSheet.getLastRow();
-  if (consultationLastRow <= 1) {
-    return null;
-  }
-
-  const consultationRows = consultationSheet
-    .getRange(2, 1, consultationLastRow - 1, HEADER_ROW.length)
-    .getDisplayValues();
-
   const evaluationSheet = getOrCreateSheet(
     ANALYSIS_EVALUATION_SHEET_NAME,
     ANALYSIS_EVALUATION_HEADER_ROW,
@@ -521,34 +548,6 @@ function findBraceletAccessCodeByCustomerIdentity(name, birthDate) {
   if (directEvaluationCredential) {
     return directEvaluationCredential;
   }
-
-  const profileSheet = getOrCreateSheet(
-    BRACELET_PROFILE_SHEET_NAME,
-    BRACELET_PROFILE_HEADER_ROW,
-    getBraceletProfileColumnWidths()
-  );
-  const profileLastRow = profileSheet.getLastRow();
-  const profileRows = profileLastRow > 1
-    ? profileSheet.getRange(2, 1, profileLastRow - 1, BRACELET_PROFILE_HEADER_ROW.length).getDisplayValues()
-    : [];
-
-  for (let i = consultationRows.length - 1; i >= 0; i--) {
-    const row = consultationRows[i];
-    const rowName = normalizeCustomerLookupName(row[COLUMNS.NAME - 1]);
-    const rowBirthDate = normalizeLookupBirthDate(row[COLUMNS.BIRTH_DATE - 1]);
-
-    if (rowName !== normalizedName || rowBirthDate !== normalizedBirthDate) {
-      continue;
-    }
-
-    const consultationRowNumber = i + 2;
-    const credential = findAnalysisCredentialByConsultationRow(evaluationRows, consultationRowNumber) ||
-      findPublishedBraceletCredentialByConsultationRow(profileRows, consultationRowNumber);
-    if (credential) {
-      return credential;
-    }
-  }
-
   return null;
 }
 
@@ -918,7 +917,9 @@ function appendConsultationCardProfile(data, recommendation, timestamp, consulta
     '',
     profileUrl,
     timestamp,
-    '由諮詢表單自動生成；諮詢紀錄列號 ' + consultationRow + '；公開分析表已排除聯絡方式、生日、性別、手圍與預算。' + archiveNote
+    '由諮詢表單自動生成；諮詢紀錄列號 ' + consultationRow + '；此列不是實際成品檔案。' + archiveNote,
+    profileId,
+    BRACELET_PRODUCTION_STATUS_PENDING
   ];
 
   profileSheet.appendRow(rowData);
@@ -988,7 +989,9 @@ function appendAnalysisEvaluationRecord(data, recommendation, timestamp, consult
     consultationRow || '',
     '由諮詢表單自動保存；諮詢表密碼獨立於手鍊檔案碼。' + archiveNote,
     normalizeDesignBraceletSelection(data.designBraceletSelection || data.designBracelets),
-    buildConsultationCrystalPrompt(data)
+    buildConsultationCrystalPrompt(data),
+    DEFAULT_STATUS,
+    ''
   ];
 
   evaluationSheet.appendRow(rowData);
@@ -1133,7 +1136,6 @@ function saveDesignBraceletSelection(payload) {
 
   return withScriptLock(function() {
     const timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy/MM/dd HH:mm:ss');
-    const consultationSheet = getOrCreateSheet(SHEET_NAME, HEADER_ROW, getConsultationColumnWidths());
     const evaluationSheet = getOrCreateSheet(
       ANALYSIS_EVALUATION_SHEET_NAME,
       ANALYSIS_EVALUATION_HEADER_ROW,
@@ -1148,12 +1150,7 @@ function saveDesignBraceletSelection(payload) {
     evaluationSheet.getRange(match.rowNumber, ANALYSIS_EVALUATION_COLUMNS.UPDATED_AT).setValue(timestamp);
     evaluationSheet.getRange(match.rowNumber, ANALYSIS_EVALUATION_COLUMNS.DESIGN_BRACELETS).setValue(designBracelets);
 
-    if (match.consultationRow && match.consultationRow > 1) {
-      consultationSheet.getRange(match.consultationRow, COLUMNS.DESIGN_BRACELETS).setValue(designBracelets);
-    }
-
     SpreadsheetApp.flush();
-    syncCsvMirrorFromSheet(consultationSheet);
 
     return {
       success: true,
@@ -2485,6 +2482,11 @@ function isBraceletProfilePublished(row) {
   ].indexOf(value) !== -1;
 }
 
+/** 只有完成實際設計的手鍊檔案才能公開。 */
+function isBraceletProductionReady(row) {
+  return getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.PRODUCTION_STATUS) === BRACELET_PRODUCTION_STATUS_READY;
+}
+
 /**
  * 取得手鍊檔案欄位文字。
  * @param {Array} row - 工作表列資料
@@ -2704,66 +2706,21 @@ function processSubmission(data) {
  */
 function processConsultation(data) {
   try {
-    // 步驟 1：取得試算表
-    const sheet = getOrCreateSheet(SHEET_NAME, HEADER_ROW, getConsultationColumnWidths());
-
-    // 步驟 2：準備資料列
+    // 步驟 1：準備資料列
     const timestamp = Utilities.formatDate(
       new Date(),
       Session.getScriptTimeZone(),
       'yyyy/MM/dd HH:mm:ss'
     );
 
-    // 步驟 3：產生規則推薦；若 GEMINI_API_KEY 留空，Recommendation.gs 會自動使用本地規則
+    // 步驟 2：產生規則推薦；若 GEMINI_API_KEY 留空，Recommendation.gs 會自動使用本地規則
     const recommendation = generateRecommendation(data);
 
-    // 格式化可能為陣列的欄位為逗號分隔字串以寫入試算表
-    const colorPreferenceStr = normalizeListValue(data.colorPreference);
-    const energyGoalStr = normalizeListValue(data.energyGoal);
-    const calculationMethodStr = normalizeListValue(data.calculationMethod);
-    const targetChakraStr = normalizeListValue(data.targetChakra);
-    const designBraceletSelectionStr = normalizeDesignBraceletSelection(data.designBraceletSelection || data.designBracelets);
-
-    // 步驟 4：組建資料列
-    const rowData = [
-      timestamp,                              // 1. A 欄 — 時間戳記
-      data.name || '',                        // 2. B 欄 — 客人姓名
-      data.contact || '',                     // 3. C 欄 — 聯絡方式
-      data.gender || '',                      // 4. D 欄 — 性別
-      data.birthDate || '',                   // 5. E 欄 — 出生日期
-      data.birthTime || '',                   // 6. F 欄 — 出生時間
-      data.preference || '手鍊/手環',          // 7. G 欄 — 配戴習慣
-      data.wristSize || '',                   // 8. H 欄 — 淨手圍
-      colorPreferenceStr,                     // 9. I 欄 — 偏好色系
-      energyGoalStr,                          // 10. J 欄 — 期望目標
-      calculationMethodStr,                   // 11. K 欄 — 分析方法
-      targetChakraStr,                        // 12. L 欄 — 目標脈輪
-      data.description || '',                 // 13. M 欄 — 狀態描述
-      data.budget || '',                      // 14. N 欄 — 預算範圍
-      recommendation,                         // 15. O 欄 — AI初步推薦（自動）
-      DEFAULT_STATUS,                         // 16. P 欄 — 處理狀態（預設「未處理」）
-      '',                                     // 17. Q 欄 — 備註紀錄（空白）
-      designBraceletSelectionStr              // 18. R 欄 — 想設計手鍊
-    ];
-
-    // 步驟 5：寫入試算表與分析評估表；手鍊檔案等實際設計完成後另行建立
+    // 步驟 3：只寫入「諮詢表單」主表；手鍊檔案等實際設計完成後另行建立。
     const writeResult = withScriptLock(function() {
-      sheet.appendRow(rowData);
-      const consultationRow = sheet.getLastRow();
-      const evaluationResult = appendAnalysisEvaluationRecord(data, recommendation, timestamp, consultationRow);
-      try {
-        SpreadsheetApp.flush();
-        return {
-          csvUrl: syncCsvMirrorFromSheet(sheet),
-          evaluation: evaluationResult
-        };
-      } catch (csvError) {
-        console.error('【CSV 同步失敗】' + csvError.toString());
-        return {
-          csvUrl: '',
-          evaluation: evaluationResult
-        };
-      }
+      const evaluationResult = appendAnalysisEvaluationRecord(data, recommendation, timestamp, '');
+      SpreadsheetApp.flush();
+      return { csvUrl: '', evaluation: evaluationResult };
     });
     console.log('【資料寫入】✅ 已寫入新資料：' + data.name);
     if (writeResult.csvUrl) {
@@ -2777,7 +2734,7 @@ function processConsultation(data) {
     try {
       sendOwnerEmail(
         '[MUPHÉ] 新諮詢 - ' + (data.name || '未填姓名'),
-        formatConsultationEmailBody(data, recommendation, sheet.getParent().getUrl())
+        formatConsultationEmailBody(data, recommendation, SpreadsheetApp.openById(SPREADSHEET_ID).getUrl())
       );
     } catch (notifyError) {
       console.error('【通知發送失敗】' + notifyError.toString());
@@ -3241,6 +3198,8 @@ function getBraceletProfileColumnWidths() {
   widths[BRACELET_PROFILE_COLUMNS.PRODUCT_URL] = 260;
   widths[BRACELET_PROFILE_COLUMNS.PUBLISHED_AT] = 150;
   widths[BRACELET_PROFILE_COLUMNS.INTERNAL_NOTES] = 260;
+  widths[BRACELET_PROFILE_COLUMNS.SOURCE_CONSULTATION_ID] = 180;
+  widths[BRACELET_PROFILE_COLUMNS.PRODUCTION_STATUS] = 150;
   return widths;
 }
 
@@ -3272,6 +3231,8 @@ function getAnalysisEvaluationColumnWidths() {
   widths[ANALYSIS_EVALUATION_COLUMNS.INTERNAL_NOTES] = 260;
   widths[ANALYSIS_EVALUATION_COLUMNS.DESIGN_BRACELETS] = 260;
   widths[ANALYSIS_EVALUATION_COLUMNS.CRYSTAL_PROMPT] = 420;
+  widths[ANALYSIS_EVALUATION_COLUMNS.STATUS] = 120;
+  widths[ANALYSIS_EVALUATION_COLUMNS.NOTES] = 260;
   return widths;
 }
 

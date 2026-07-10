@@ -20,7 +20,7 @@
     </a>
 
     <nav class="desktop-nav" aria-label="主導覽">
-      <a href="index.html#shop">客制手鍊</a>
+      <a href="index.html#shop">客製手鍊</a>
       <a href="index.html#guide">水晶百科</a>
       <a href="consultation.html">諮詢表單</a>
       <a href="bracelet.html" aria-current="page">手鍊檔案</a>
@@ -37,7 +37,7 @@
   </header>
 
   <div class="mobile-nav" data-mobile-nav aria-label="手機導覽">
-    <a href="index.html#shop">客制手鍊</a>
+    <a href="index.html#shop">客製手鍊</a>
     <a href="index.html#guide">水晶百科</a>
     <a href="consultation.html">諮詢表單</a>
     <a href="bracelet.html" aria-current="page">手鍊檔案</a>
@@ -88,7 +88,7 @@
         <h2>需要調整手圍或重新客製？</h2>
       </div>
       <div class="bracelet-support-actions">
-        <a class="primary-link" href="crystal-survey/frontend/crystal-form.html">聯繫店主</a>
+        <a class="primary-link" href="mailto:muphe.handmade@gmail.com?subject=MUPHE%20水晶手鍊客製諮詢">Email 聯繫沐菲</a>
         <a class="secondary-link" href="index.html#shop">回到手鍊系列</a>
       </div>
     </section>
@@ -503,7 +503,7 @@
           ritual: parseTextList(pick(source, fieldKeys.ritual)),
           makerNote: parseTextList(pick(source, fieldKeys.makerNote)),
           photo: normalizeHref(pick(source, fieldKeys.photo)),
-          contactUrl: normalizeHref(pick(source, fieldKeys.contactUrl)) || "crystal-survey/frontend/crystal-form.html",
+          contactUrl: normalizeHref(pick(source, fieldKeys.contactUrl)) || "mailto:muphe.handmade@gmail.com?subject=MUPHE%20水晶手鍊客製諮詢",
           orderUrl: normalizeHref(pick(source, fieldKeys.orderUrl)) || "index.html#shop",
         };
 
@@ -710,7 +710,7 @@
               ${profile.displayName ? `<p class="profile-for">為 ${escapeHtml(profile.displayName)} 整理的公開檔案</p>` : ""}
               ${profile.intention ? `<p>${escapeHtml(profile.intention)}</p>` : ""}
               <div class="profile-actions">
-                <a class="primary-link" href="${escapeHtml(profile.contactUrl)}">聯繫店主</a>
+                <a class="primary-link" href="${escapeHtml(profile.contactUrl)}">Email 聯繫沐菲</a>
                 <a class="secondary-link" href="${escapeHtml(profile.orderUrl)}">訂製或加購</a>
               </div>
             </div>

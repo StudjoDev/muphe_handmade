@@ -191,7 +191,9 @@ const BRACELET_PROFILE_COLUMNS = {
   IMAGE_URL: 19,        // S 欄 — 圖片網址
   PRODUCT_URL: 20,      // T 欄 — 商品或公開頁網址
   PUBLISHED_AT: 21,     // U 欄 — 公開時間
-  INTERNAL_NOTES: 22    // V 欄 — 內部備註（不對外輸出）
+  INTERNAL_NOTES: 22,   // V 欄 — 內部備註（不對外輸出）
+  SOURCE_CONSULTATION_ID: 23, // W 欄 — 來源諮詢 ID
+  PRODUCTION_STATUS: 24 // X 欄 — 製作狀態
 };
 
 /** 手鍊公開檔案工作表標題列 */
@@ -217,7 +219,9 @@ const BRACELET_PROFILE_HEADER_ROW = [
   '圖片網址',
   '商品或公開頁網址',
   '公開時間',
-  '內部備註'
+  '內部備註',
+  '來源諮詢ID',
+  '製作狀態'
 ];
 
 /** 分析評估表欄位在試算表中的位置（1-indexed） */
@@ -244,7 +248,9 @@ const ANALYSIS_EVALUATION_COLUMNS = {
   CONSULTATION_ROW: 20,   // T 欄 — 諮詢紀錄列號
   INTERNAL_NOTES: 21,     // U 欄 — 內部備註
   DESIGN_BRACELETS: 22,   // V 欄 — 想設計手鍊
-  CRYSTAL_PROMPT: 23      // W 欄 — 提示詞（不含人工水晶設計）
+  CRYSTAL_PROMPT: 23,     // W 欄 — 提示詞（不含人工水晶設計）
+  STATUS: 24,             // X 欄 — 處理狀態
+  NOTES: 25               // Y 欄 — 備註紀錄
 };
 
 /** 分析評估表標題列 */
@@ -271,8 +277,14 @@ const ANALYSIS_EVALUATION_HEADER_ROW = [
   '諮詢紀錄列號',
   '內部備註',
   '想設計手鍊',
-  '提示詞'
+  '提示詞',
+  '處理狀態',
+  '備註紀錄'
 ];
+
+/** 手鍊製作狀態；只有「已完成」可對外顯示實際成品檔案。 */
+const BRACELET_PRODUCTION_STATUS_READY = '已完成';
+const BRACELET_PRODUCTION_STATUS_PENDING = '待確認實際設計';
 
 /** 水晶成本工作表欄位在試算表中的位置（1-indexed） */
 const CRYSTAL_COST_COLUMNS = {
