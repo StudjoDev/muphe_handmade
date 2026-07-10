@@ -50,7 +50,7 @@
         <p class="eyebrow">Bracelet Profile</p>
         <h1 id="bracelet-title">您的手鍊檔案</h1>
         <p>
-          輸入店主提供的手鍊檔案碼，查看實際晶種配置、配戴指南與保養提醒。諮詢表密碼請改到「您的諮詢表單」查詢。
+          輸入店主提供的 MUPHE-B 開頭手鍊檔案碼，查看實際晶種配置、配戴指南與保養提醒。諮詢表密碼請改到「您的諮詢表單」查詢。
         </p>
       </div>
 
@@ -65,13 +65,13 @@
               autocomplete="off"
               inputmode="latin"
               maxlength="64"
-              placeholder="例如 MUPHE-ABCD-2345"
+              placeholder="例如 MUPHE-B-ABCD-2345"
               aria-describedby="bracelet-code-help"
               data-code-input
             />
             <button class="primary-link" type="submit">查詢</button>
           </div>
-          <p id="bracelet-code-help" data-code-help>手鍊檔案是實際設計與出貨內容，請輸入店主提供的手鍊檔案碼。</p>
+          <p id="bracelet-code-help" data-code-help>手鍊檔案是實際設計與出貨內容，請輸入店主提供的 MUPHE-B 開頭手鍊檔案碼。</p>
         </form>
 
         <div class="bracelet-status" aria-live="polite" data-profile-status></div>
@@ -118,8 +118,8 @@
           loadingTitle: "正在讀取分析表",
           loadingMessage: "請稍候，正在向 MUPHÉ 分析表服務確認公開資料。",
           emptyTitle: "請輸入諮詢表密碼",
-          emptyMessage: "密碼會在諮詢表單送出後顯示。",
-          help: "貼上表單送出後取得的諮詢表密碼即可查詢；手動輸入時不用區分大小寫。",
+          emptyMessage: "密碼會在諮詢表單送出後顯示，格式為 MUPHE-C-XXXX-XXXX。",
+          help: "貼上表單送出後取得的 MUPHE-C 開頭諮詢表密碼即可查詢；手動輸入時不用區分大小寫。",
           idleMessage: "分析表會顯示名字、初步分析與晶種推薦，不顯示聯絡方式、生日、性別、手圍或預算。",
           action: ANALYSIS_PROFILE_ACTION,
         },
@@ -129,9 +129,9 @@
           loadingTitle: "正在讀取手鍊檔案",
           loadingMessage: "請稍候，正在向 MUPHÉ 手鍊檔案服務確認公開資料。",
           emptyTitle: "請輸入手鍊檔案碼",
-          emptyMessage: "手鍊檔案碼會由店主在實際客製設計完成後提供。",
-          help: "手鍊檔案是實際設計與出貨內容，請輸入店主提供的手鍊檔案碼。",
-          idleMessage: "手鍊檔案會顯示實際晶種配置、配戴指南與保養提醒。",
+          emptyMessage: "手鍊檔案碼會由店主在實際客製設計完成後提供，格式為 MUPHE-B-XXXX-XXXX。",
+          help: "手鍊檔案是實際設計與出貨內容，請輸入店主提供的 MUPHE-B 開頭手鍊檔案碼。",
+          idleMessage: "手鍊檔案會顯示實際晶種配置、配戴指南與保養提醒。若手上是 MUPHE-C 開頭，請改到「您的諮詢表單」查詢。",
           action: BRACELET_PROFILE_ACTION,
         },
       };

@@ -21,6 +21,9 @@
 // 🌐 Web App 入口點
 // ============================
 
+const CONSULTATION_ACCESS_CODE_PREFIX = 'MUPHE-C';
+const BRACELET_ACCESS_CODE_PREFIX = 'MUPHE-B';
+
 /**
  * HTTP GET 請求處理
  * 當使用者透過瀏覽器訪問 Web App URL 時，返回 HTML 表單頁面
@@ -191,6 +194,16 @@ function handleAnalysisProfileLookup(e) {
       });
     }
 
+    if (!isConsultationAccessCodeFormat(accessCode)) {
+      return createJsonTextOutput(e, {
+        success: false,
+        error: {
+          code: 'invalid_lookup',
+          message: '諮詢表密碼格式不正確，請確認是否輸入 MUPHE-C 開頭的諮詢表密碼'
+        }
+      });
+    }
+
     const profile = findPublishedAnalysisProfile(accessCode);
     if (!profile) {
       return createJsonTextOutput(e, {
@@ -247,6 +260,16 @@ function handleBraceletProfileLookup(e) {
         error: {
           code: 'invalid_lookup',
           message: '查詢碼或 token 格式不正確'
+        }
+      });
+    }
+
+    if (accessCode && !isBraceletAccessCodeFormat(accessCode)) {
+      return createJsonTextOutput(e, {
+        success: false,
+        error: {
+          code: 'invalid_lookup',
+          message: '手鍊檔案碼格式不正確，請確認是否輸入 MUPHE-B 開頭的手鍊檔案碼'
         }
       });
     }
@@ -745,6 +768,17 @@ function generateBraceletProfileId() {
 }
 
 /**
+ * 依指定前綴產生容易人工讀取的查詢碼。
+ * @param {string} prefix - 查詢碼前綴
+ * @param {number} firstLength - 第一段短碼長度
+ * @param {number} secondLength - 第二段短碼長度
+ * @returns {string} 查詢碼
+ */
+function buildReadableAccessCode(prefix, firstLength, secondLength) {
+  return prefix + '-' + generateReadableCodeSegment(firstLength) + '-' + generateReadableCodeSegment(secondLength);
+}
+
+/**
  * 產生不易混淆且不與現有資料重複的短查詢碼。
  * @param {Sheet} sheet - 手鍊檔案工作表
  * @returns {string} 查詢碼
@@ -757,20 +791,20 @@ function generateBraceletProfileAccessCode(sheet) {
   );
 
   for (let attempt = 0; attempt < 10; attempt++) {
-    const code = 'MUPHE-' + generateReadableCodeSegment(4) + '-' + generateReadableCodeSegment(4);
+    const code = buildReadableAccessCode(BRACELET_ACCESS_CODE_PREFIX, 4, 4);
     if (!braceletAccessCodeExists(sheet, code) && !analysisAccessCodeExists(evaluationSheet, code)) {
       return code;
     }
   }
 
   for (let attempt = 0; attempt < 10; attempt++) {
-    const code = 'MUPHE-' + generateReadableCodeSegment(4) + '-' + generateReadableCodeSegment(6);
+    const code = buildReadableAccessCode(BRACELET_ACCESS_CODE_PREFIX, 4, 6);
     if (!braceletAccessCodeExists(sheet, code) && !analysisAccessCodeExists(evaluationSheet, code)) {
       return code;
     }
   }
 
-  return 'MUPHE-' + generateReadableCodeSegment(6) + '-' + generateReadableCodeSegment(6);
+  return buildReadableAccessCode(BRACELET_ACCESS_CODE_PREFIX, 6, 6);
 }
 
 /**
@@ -786,20 +820,20 @@ function generateAnalysisAccessCode(evaluationSheet) {
   );
 
   for (let attempt = 0; attempt < 10; attempt++) {
-    const code = 'MUPHE-' + generateReadableCodeSegment(4) + '-' + generateReadableCodeSegment(4);
+    const code = buildReadableAccessCode(CONSULTATION_ACCESS_CODE_PREFIX, 4, 4);
     if (!analysisAccessCodeExists(evaluationSheet, code) && !braceletAccessCodeExists(profileSheet, code)) {
       return code;
     }
   }
 
   for (let attempt = 0; attempt < 10; attempt++) {
-    const code = 'MUPHE-' + generateReadableCodeSegment(4) + '-' + generateReadableCodeSegment(6);
+    const code = buildReadableAccessCode(CONSULTATION_ACCESS_CODE_PREFIX, 4, 6);
     if (!analysisAccessCodeExists(evaluationSheet, code) && !braceletAccessCodeExists(profileSheet, code)) {
       return code;
     }
   }
 
-  return 'MUPHE-' + generateReadableCodeSegment(6) + '-' + generateReadableCodeSegment(6);
+  return buildReadableAccessCode(CONSULTATION_ACCESS_CODE_PREFIX, 6, 6);
 }
 
 /**
@@ -2266,7 +2300,7 @@ function generateUniqueConsultationAccessCodeForRepair_(evaluationSheet, reserve
   }
 
   for (let attempt = 0; attempt < 40; attempt++) {
-    const code = 'MUPHE-' + generateReadableCodeSegment(6) + '-' + generateReadableCodeSegment(6);
+    const code = buildReadableAccessCode(CONSULTATION_ACCESS_CODE_PREFIX, 6, 6);
     const normalizedCode = normalizeBraceletAccessCode(code);
     if (normalizedCode && !reservedCodes[normalizedCode] && !analysisAccessCodeExists(evaluationSheet, code)) {
       return code;
@@ -2371,6 +2405,36 @@ function normalizeHalfWidthText(value) {
  */
 function isBraceletLookupLengthAllowed(accessCode, accessToken) {
   return (!accessCode || accessCode.length <= 64) && (!accessToken || accessToken.length <= 128);
+}
+
+/**
+ * 確認查詢碼是否符合指定頁面的前綴。
+ * @param {string} accessCode - 正規化或原始查詢碼
+ * @param {string} prefix - 查詢碼前綴
+ * @returns {boolean} 是否符合
+ */
+function hasAccessCodePrefix(accessCode, prefix) {
+  const normalizedCode = normalizeBraceletAccessCode(accessCode);
+  const normalizedPrefix = normalizeBraceletAccessCode(prefix);
+  return normalizedCode.indexOf(normalizedPrefix) === 0;
+}
+
+/**
+ * 判斷是否為諮詢表密碼。
+ * @param {string} accessCode - 查詢碼
+ * @returns {boolean} 是否符合諮詢表密碼格式
+ */
+function isConsultationAccessCodeFormat(accessCode) {
+  return hasAccessCodePrefix(accessCode, CONSULTATION_ACCESS_CODE_PREFIX);
+}
+
+/**
+ * 判斷是否為手鍊檔案碼。
+ * @param {string} accessCode - 查詢碼
+ * @returns {boolean} 是否符合手鍊檔案碼格式
+ */
+function isBraceletAccessCodeFormat(accessCode) {
+  return hasAccessCodePrefix(accessCode, BRACELET_ACCESS_CODE_PREFIX);
 }
 
 /**
