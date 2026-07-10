@@ -394,7 +394,7 @@ function findPublishedBraceletProfile(accessCode, accessToken) {
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
-    if (!isBraceletProfilePublished(row) || !isBraceletProductionReady(row) || isConsultationAnalysisProfileRow(row)) {
+    if (!isBraceletProfilePublished(row) || !isBraceletProductionReady(row)) {
       continue;
     }
 
