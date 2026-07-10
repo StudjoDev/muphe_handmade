@@ -25,8 +25,8 @@ const ORDER_SHEET_NAME = 'Orders';
 /** 手鍊公開檔案工作表名稱 */
 const BRACELET_PROFILE_SHEET_NAME = '手鍊檔案';
 
-/** 分析評估全文工作表名稱 */
-const ANALYSIS_EVALUATION_SHEET_NAME = '分析評估表';
+/** 諮詢表單分析工作表名稱 */
+const ANALYSIS_EVALUATION_SHEET_NAME = '諮詢表單';
 
 /** 水晶成本工作表名稱 */
 const CRYSTAL_COST_SHEET_NAME = '水晶成本';

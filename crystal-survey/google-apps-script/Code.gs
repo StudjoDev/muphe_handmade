@@ -376,8 +376,8 @@ function findPublishedBraceletProfile(accessCode, accessToken) {
 }
 
 /**
- * 從分析評估表查詢客戶可看的分析表。
- * 舊資料若只存在手鍊檔案表，會回退讀取手鍊檔案中的分析表列。
+ * 從諮詢表單查詢客戶可看的分析表。
+ * 手鍊檔案碼不可再回退讀取為分析表，避免兩種密碼互相誤導。
  * @param {string} accessCode - 正規化後的諮詢表密碼
  * @returns {Object|null} 公開分析表資料
  */
@@ -403,7 +403,7 @@ function findPublishedAnalysisProfile(accessCode) {
     }
   }
 
-  return findLegacyConsultationAnalysisProfile(accessCode);
+  return null;
 }
 
 /**
@@ -488,6 +488,15 @@ function findBraceletAccessCodeByCustomerIdentity(name, birthDate) {
   const evaluationRows = evaluationLastRow > 1
     ? evaluationSheet.getRange(2, 1, evaluationLastRow - 1, ANALYSIS_EVALUATION_HEADER_ROW.length).getDisplayValues()
     : [];
+  const directEvaluationCredential = findAnalysisCredentialByCustomerIdentity(
+    evaluationRows,
+    normalizedName,
+    normalizedBirthDate
+  );
+  if (directEvaluationCredential) {
+    return directEvaluationCredential;
+  }
+
   const profileSheet = getOrCreateSheet(
     BRACELET_PROFILE_SHEET_NAME,
     BRACELET_PROFILE_HEADER_ROW,
@@ -513,6 +522,38 @@ function findBraceletAccessCodeByCustomerIdentity(name, birthDate) {
     if (credential) {
       return credential;
     }
+  }
+
+  return null;
+}
+
+/**
+ * 直接用客戶姓名與生日從諮詢表單中找出諮詢表密碼。
+ * @param {Array[]} evaluationRows - 諮詢表單資料列
+ * @param {string} normalizedName - 正規化姓名
+ * @param {string} normalizedBirthDate - 正規化生日 yyyyMMdd
+ * @returns {Object|null} 查詢憑證
+ */
+function findAnalysisCredentialByCustomerIdentity(evaluationRows, normalizedName, normalizedBirthDate) {
+  for (let i = evaluationRows.length - 1; i >= 0; i--) {
+    const row = evaluationRows[i];
+    const rowName = normalizeCustomerLookupName(getAnalysisEvaluationCell(row, ANALYSIS_EVALUATION_COLUMNS.CUSTOMER_NAME));
+    const rowBirthDate = normalizeLookupBirthDate(getAnalysisEvaluationCell(row, ANALYSIS_EVALUATION_COLUMNS.BIRTH_DATE));
+
+    if (rowName !== normalizedName || rowBirthDate !== normalizedBirthDate) {
+      continue;
+    }
+
+    const accessCode = getAnalysisEvaluationCell(row, ANALYSIS_EVALUATION_COLUMNS.ACCESS_CODE);
+    if (!accessCode) {
+      continue;
+    }
+
+    return {
+      accessCode: accessCode,
+      profileId: getAnalysisEvaluationCell(row, ANALYSIS_EVALUATION_COLUMNS.PROFILE_ID),
+      profileUrl: getAnalysisProfileUrl(accessCode)
+    };
   }
 
   return null;
@@ -2059,6 +2100,180 @@ function analysisAccessCodeExists(sheet, accessCode) {
   return values.some(function(row) {
     return normalizeBraceletAccessCode(row[0]) === normalizedCode;
   });
+}
+
+/**
+ * 只檢查諮詢表密碼是否和手鍊檔案碼或其他諮詢表密碼重覆，不修改資料。
+ * @returns {Object} 檢查結果
+ */
+function auditDuplicateConsultationAccessCodes() {
+  return repairDuplicateConsultationAccessCodes_(false);
+}
+
+/**
+ * 檢查後台密碼並修正衝突：手鍊檔案碼保留不動，只重新產生衝突的諮詢表密碼。
+ * @returns {Object} 修正結果
+ */
+function repairDuplicateConsultationAccessCodes() {
+  return repairDuplicateConsultationAccessCodes_(true);
+}
+
+/**
+ * 檢查並可選擇修正諮詢表密碼衝突。
+ * @param {boolean} shouldRepair - 是否實際寫回新密碼
+ * @returns {Object} 檢查或修正結果
+ */
+function repairDuplicateConsultationAccessCodes_(shouldRepair) {
+  const evaluationSheet = getOrCreateSheet(
+    ANALYSIS_EVALUATION_SHEET_NAME,
+    ANALYSIS_EVALUATION_HEADER_ROW,
+    getAnalysisEvaluationColumnWidths()
+  );
+  const profileSheet = getOrCreateSheet(
+    BRACELET_PROFILE_SHEET_NAME,
+    BRACELET_PROFILE_HEADER_ROW,
+    getBraceletProfileColumnWidths()
+  );
+  const now = new Date();
+  const timestamp = formatApiTimestamp(now);
+  const braceletCodes = {};
+  const usedConsultationCodes = {};
+  const conflicts = [];
+  const repaired = [];
+
+  const profileLastRow = profileSheet.getLastRow();
+  if (profileLastRow > 1) {
+    const profileRows = profileSheet
+      .getRange(2, 1, profileLastRow - 1, BRACELET_PROFILE_HEADER_ROW.length)
+      .getDisplayValues();
+
+    profileRows.forEach(function(row, index) {
+      const code = getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.ACCESS_CODE);
+      const normalizedCode = normalizeBraceletAccessCode(code);
+      if (!normalizedCode) return;
+
+      if (!braceletCodes[normalizedCode]) {
+        braceletCodes[normalizedCode] = [];
+      }
+      braceletCodes[normalizedCode].push({
+        rowNumber: index + 2,
+        code: code,
+        name: getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.BRACELET_NAME)
+      });
+    });
+  }
+
+  Object.keys(braceletCodes).forEach(function(code) {
+    usedConsultationCodes[code] = true;
+  });
+
+  const evaluationLastRow = evaluationSheet.getLastRow();
+  if (evaluationLastRow <= 1) {
+    return {
+      success: true,
+      repaired: 0,
+      conflicts: [],
+      message: '諮詢表單目前沒有可檢查的資料。'
+    };
+  }
+
+  const evaluationRows = evaluationSheet
+    .getRange(2, 1, evaluationLastRow - 1, ANALYSIS_EVALUATION_HEADER_ROW.length)
+    .getDisplayValues();
+
+  evaluationRows.forEach(function(row, index) {
+    const rowNumber = index + 2;
+    const displayCode = getAnalysisEvaluationCell(row, ANALYSIS_EVALUATION_COLUMNS.ACCESS_CODE);
+    const normalizedCode = normalizeBraceletAccessCode(displayCode);
+    if (!normalizedCode) return;
+
+    const conflictReasons = [];
+    if (braceletCodes[normalizedCode]) {
+      conflictReasons.push('與手鍊檔案碼重覆');
+    }
+    if (usedConsultationCodes[normalizedCode] && !braceletCodes[normalizedCode]) {
+      conflictReasons.push('與其他諮詢表密碼重覆');
+    }
+
+    if (!conflictReasons.length) {
+      usedConsultationCodes[normalizedCode] = true;
+      return;
+    }
+
+    const newCode = generateUniqueConsultationAccessCodeForRepair_(evaluationSheet, usedConsultationCodes);
+    const newNormalizedCode = normalizeBraceletAccessCode(newCode);
+    const conflict = {
+      rowNumber: rowNumber,
+      oldCode: displayCode,
+      newCode: newCode,
+      customerName: getAnalysisEvaluationCell(row, ANALYSIS_EVALUATION_COLUMNS.CUSTOMER_NAME),
+      reason: conflictReasons.join('、')
+    };
+    conflicts.push(conflict);
+
+    if (shouldRepair) {
+      const oldProfileUrl = getAnalysisEvaluationCell(row, ANALYSIS_EVALUATION_COLUMNS.PROFILE_URL);
+      const recommendationText = getAnalysisEvaluationCell(row, ANALYSIS_EVALUATION_COLUMNS.RECOMMENDATION_TEXT);
+      const internalNotes = getAnalysisEvaluationCell(row, ANALYSIS_EVALUATION_COLUMNS.INTERNAL_NOTES);
+      const newProfileUrl = getAnalysisProfileUrl(newCode);
+      const repairedRecommendation = displayCode
+        ? String(recommendationText || '').split(displayCode).join(newCode)
+        : recommendationText;
+      const repairNote =
+        '系統於 ' + timestamp + ' 修正重覆諮詢表密碼：' + displayCode + ' -> ' + newCode +
+        (oldProfileUrl ? '；原連結：' + oldProfileUrl : '');
+
+      evaluationSheet.getRange(rowNumber, ANALYSIS_EVALUATION_COLUMNS.UPDATED_AT).setValue(now);
+      evaluationSheet.getRange(rowNumber, ANALYSIS_EVALUATION_COLUMNS.ACCESS_CODE).setValue(newCode);
+      evaluationSheet.getRange(rowNumber, ANALYSIS_EVALUATION_COLUMNS.RECOMMENDATION_TEXT).setValue(repairedRecommendation);
+      evaluationSheet.getRange(rowNumber, ANALYSIS_EVALUATION_COLUMNS.PROFILE_URL).setValue(newProfileUrl);
+      evaluationSheet.getRange(rowNumber, ANALYSIS_EVALUATION_COLUMNS.INTERNAL_NOTES).setValue(
+        [internalNotes, repairNote].filter(Boolean).join('；')
+      );
+
+      repaired.push(conflict);
+    }
+
+    usedConsultationCodes[newNormalizedCode] = true;
+  });
+
+  SpreadsheetApp.flush();
+
+  return {
+    success: true,
+    repaired: repaired.length,
+    conflictCount: conflicts.length,
+    conflicts: conflicts,
+    message: shouldRepair
+      ? '已檢查完成，衝突的諮詢表密碼已重新產生。'
+      : '已檢查完成，未修改資料。'
+  };
+}
+
+/**
+ * 產生維護修正用的唯一諮詢表密碼，避開手鍊檔案碼與本次已使用的新舊碼。
+ * @param {Sheet} evaluationSheet - 分析評估表
+ * @param {Object} reservedCodes - 已保留的正規化密碼集合
+ * @returns {string} 新諮詢表密碼
+ */
+function generateUniqueConsultationAccessCodeForRepair_(evaluationSheet, reservedCodes) {
+  for (let attempt = 0; attempt < 40; attempt++) {
+    const code = generateAnalysisAccessCode(evaluationSheet);
+    const normalizedCode = normalizeBraceletAccessCode(code);
+    if (normalizedCode && !reservedCodes[normalizedCode]) {
+      return code;
+    }
+  }
+
+  for (let attempt = 0; attempt < 40; attempt++) {
+    const code = 'MUPHE-' + generateReadableCodeSegment(6) + '-' + generateReadableCodeSegment(6);
+    const normalizedCode = normalizeBraceletAccessCode(code);
+    if (normalizedCode && !reservedCodes[normalizedCode] && !analysisAccessCodeExists(evaluationSheet, code)) {
+      return code;
+    }
+  }
+
+  throw new Error('無法產生不重覆的諮詢表密碼，請稍後再試。');
 }
 
 /**
