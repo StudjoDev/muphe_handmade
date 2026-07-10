@@ -243,7 +243,8 @@ const ANALYSIS_EVALUATION_COLUMNS = {
   PROFILE_URL: 19,        // S 欄 — 分析表連結
   CONSULTATION_ROW: 20,   // T 欄 — 諮詢紀錄列號
   INTERNAL_NOTES: 21,     // U 欄 — 內部備註
-  DESIGN_BRACELETS: 22    // V 欄 — 想設計手鍊
+  DESIGN_BRACELETS: 22,   // V 欄 — 想設計手鍊
+  CRYSTAL_PROMPT: 23      // W 欄 — 提示詞（不含人工水晶設計）
 };
 
 /** 分析評估表標題列 */
@@ -269,7 +270,8 @@ const ANALYSIS_EVALUATION_HEADER_ROW = [
   '分析表連結',
   '諮詢紀錄列號',
   '內部備註',
-  '想設計手鍊'
+  '想設計手鍊',
+  '提示詞'
 ];
 
 /** 水晶成本工作表欄位在試算表中的位置（1-indexed） */

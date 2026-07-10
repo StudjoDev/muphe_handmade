@@ -987,7 +987,8 @@ function appendAnalysisEvaluationRecord(data, recommendation, timestamp, consult
     profileUrl,
     consultationRow || '',
     '由諮詢表單自動保存；諮詢表密碼獨立於手鍊檔案碼。' + archiveNote,
-    normalizeDesignBraceletSelection(data.designBraceletSelection || data.designBracelets)
+    normalizeDesignBraceletSelection(data.designBraceletSelection || data.designBracelets),
+    buildConsultationCrystalPrompt(data)
   ];
 
   evaluationSheet.appendRow(rowData);
@@ -1000,6 +1001,30 @@ function appendAnalysisEvaluationRecord(data, recommendation, timestamp, consult
     archiveFileUrl: archiveResult ? archiveResult.fileUrl : '',
     rowNumber: evaluationSheet.getLastRow()
   };
+}
+
+/**
+ * 將客戶填寫內容整理成後台可直接使用的水晶推薦提示詞。
+ * 水晶設計由店主完成，因此不納入自動提示詞。
+ * @param {Object} data - 諮詢表單資料
+ * @returns {string} 水晶種類推薦提示詞
+ */
+function buildConsultationCrystalPrompt(data) {
+  const fields = [
+    ['出生日期', data.birthDate],
+    ['出生時間', data.birthTime],
+    ['能量分析模組', normalizeListValue(data.calculationMethod)],
+    ['期望目標', normalizeListValue(data.energyGoal)],
+    ['目標脈輪', normalizeListValue(data.targetChakra)],
+    ['偏好色系', normalizeListValue(data.colorPreference)],
+    ['狀態描述', data.description]
+  ];
+  const lines = fields
+    .filter(function(item) { return String(item[1] || '').trim(); })
+    .map(function(item) { return item[0] + '：' + String(item[1]).trim(); });
+
+  lines.push('以上資訊分析水晶種類推薦。');
+  return lines.join('\n');
 }
 
 /**
@@ -3246,6 +3271,7 @@ function getAnalysisEvaluationColumnWidths() {
   widths[ANALYSIS_EVALUATION_COLUMNS.CONSULTATION_ROW] = 120;
   widths[ANALYSIS_EVALUATION_COLUMNS.INTERNAL_NOTES] = 260;
   widths[ANALYSIS_EVALUATION_COLUMNS.DESIGN_BRACELETS] = 260;
+  widths[ANALYSIS_EVALUATION_COLUMNS.CRYSTAL_PROMPT] = 420;
   return widths;
 }
 
