@@ -193,7 +193,9 @@ const BRACELET_PROFILE_COLUMNS = {
   PUBLISHED_AT: 21,     // U 欄 — 公開時間
   INTERNAL_NOTES: 22,   // V 欄 — 內部備註（不對外輸出）
   SOURCE_CONSULTATION_ID: 23, // W 欄 — 來源諮詢 ID
-  PRODUCTION_STATUS: 24 // X 欄 — 製作狀態
+  PRODUCTION_STATUS: 24, // X 欄 — 製作狀態
+  PRICE: 25,             // Y 欄 — 商品價格
+  WRIST_SIZE: 26         // Z 欄 — 手圍
 };
 
 /** 手鍊公開檔案工作表標題列 */
@@ -221,7 +223,9 @@ const BRACELET_PROFILE_HEADER_ROW = [
   '公開時間',
   '內部備註',
   '來源諮詢ID',
-  '製作狀態'
+  '製作狀態',
+  '商品價格',
+  '手圍'
 ];
 
 /** 分析評估表欄位在試算表中的位置（1-indexed） */
@@ -250,7 +254,10 @@ const ANALYSIS_EVALUATION_COLUMNS = {
   DESIGN_BRACELETS: 22,   // V 欄 — 想設計手鍊
   CRYSTAL_PROMPT: 23,     // W 欄 — 提示詞（不含人工水晶設計）
   STATUS: 24,             // X 欄 — 處理狀態
-  NOTES: 25               // Y 欄 — 備註紀錄
+  NOTES: 25,              // Y 欄 — 備註紀錄
+  BRACELET_CODE: 26,      // Z 欄 — 手鍊檔案碼
+  BRACELET_URL: 27,       // AA 欄 — 手鍊檔案連結
+  BRACELET_STATUS: 28     // AB 欄 — 手鍊製作狀態
 };
 
 /** 分析評估表標題列 */
@@ -279,12 +286,42 @@ const ANALYSIS_EVALUATION_HEADER_ROW = [
   '想設計手鍊',
   '提示詞',
   '處理狀態',
-  '備註紀錄'
+  '備註紀錄',
+  '手鍊檔案碼',
+  '手鍊檔案連結',
+  '手鍊製作狀態'
 ];
 
-/** 手鍊製作狀態；只有「已完成」可對外顯示實際成品檔案。 */
+/** 手鍊製作狀態；只有「已完成」且通過公開檢查才可對外顯示。 */
+const BRACELET_PRODUCTION_STATUS_NEW = '新諮詢';
+const BRACELET_PRODUCTION_STATUS_DESIGN_PENDING = '待設計';
+const BRACELET_PRODUCTION_STATUS_DESIGNING = '設計中';
+const BRACELET_PRODUCTION_STATUS_CONFIRMING = '待確認';
 const BRACELET_PRODUCTION_STATUS_READY = '已完成';
-const BRACELET_PRODUCTION_STATUS_PENDING = '待確認實際設計';
+const BRACELET_PRODUCTION_STATUS_SHIPPED = '已出貨';
+const BRACELET_PRODUCTION_STATUS_PENDING = BRACELET_PRODUCTION_STATUS_DESIGN_PENDING;
+const BRACELET_PRODUCTION_STATUS_OPTIONS = [
+  BRACELET_PRODUCTION_STATUS_NEW,
+  BRACELET_PRODUCTION_STATUS_DESIGN_PENDING,
+  BRACELET_PRODUCTION_STATUS_DESIGNING,
+  BRACELET_PRODUCTION_STATUS_CONFIRMING,
+  BRACELET_PRODUCTION_STATUS_READY,
+  BRACELET_PRODUCTION_STATUS_SHIPPED
+];
+
+/** 後台待處理清單工作表 */
+const BACKOFFICE_QUEUE_SHEET_NAME = '待處理清單';
+const BACKOFFICE_QUEUE_HEADER_ROW = [
+  '來源ID',
+  '客戶姓名',
+  '諮詢表密碼',
+  '手鍊檔案碼',
+  '目前狀態',
+  '待處理項目',
+  '分析表連結',
+  '手鍊檔案連結',
+  '最後更新'
+];
 
 /** 水晶成本工作表欄位在試算表中的位置（1-indexed） */
 const CRYSTAL_COST_COLUMNS = {

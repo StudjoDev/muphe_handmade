@@ -5,7 +5,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>手鍊檔案查詢｜沐菲 MUPHÉ Handmade</title>
-  <meta name="description" content="輸入手鍊檔案碼，查詢 MUPHÉ Handmade 客製水晶的實際晶種配置、配戴指南與保養提醒。" />
+  <meta name="description" content="輸入手鍊檔案碼，查詢 MUPHÉ Handmade 客製水晶的實際晶種配置。" />
   <link rel="icon" type="image/png" href="pic/muphe_logo.png" />
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -50,7 +50,7 @@
         <p class="eyebrow">Bracelet Profile</p>
         <h1 id="bracelet-title">您的手鍊檔案</h1>
         <p>
-          輸入店主提供的 MUPHE-B 開頭手鍊檔案碼，查看實際晶種配置、配戴指南與保養提醒。諮詢表密碼請改到「您的諮詢表單」查詢。
+          輸入店主提供的 MUPHE-B 開頭手鍊檔案碼，查看實際晶種配置。諮詢表密碼請改到「您的諮詢表單」查詢。
         </p>
       </div>
 
@@ -130,7 +130,7 @@
           emptyTitle: "請輸入手鍊檔案碼",
           emptyMessage: "手鍊檔案碼會由店主在實際客製設計完成後提供，格式為 MUPHE-B-XXXX-XXXX。",
           help: "手鍊檔案是實際設計與出貨內容，請輸入店主提供的 MUPHE-B 開頭手鍊檔案碼。",
-          idleMessage: "手鍊檔案會顯示實際晶種配置、配戴指南與保養提醒。若手上是 MUPHE-C 開頭，請改到「您的諮詢表單」查詢。",
+          idleMessage: "手鍊檔案會顯示實際晶種配置。若手上是 MUPHE-C 開頭，請改到「您的諮詢表單」查詢。",
           action: BRACELET_PROFILE_ACTION,
         },
       };
@@ -924,7 +924,15 @@
 
       function renderAnalysisReport(text) {
         const sections = enrichAnalysisSectionsWithCrystalFunctions(parseAnalysisReport(text))
-          .filter((section) => !section.title.includes("暖心陪伴語"));
+          .filter((section) => {
+            const title = section.title || "";
+            return !title.includes("暖心陪伴語") &&
+                   !title.includes("配戴") &&
+                   !title.includes("日常提醒") &&
+                   !title.includes("保養") &&
+                   !title.includes("淨化") &&
+                   !title.includes("儀式");
+          });
         if (!sections.length) return "";
 
         return `
@@ -1010,26 +1018,6 @@
                 : ""
             }
 
-            <section class="consultation-card-panel consultation-guidance-panel" aria-labelledby="consultation-wearing-title">
-              <h3 id="consultation-wearing-title">配戴與日常提醒</h3>
-              ${renderList(profile.wearingGuide)}
-            </section>
-
-            <section class="consultation-card-panel consultation-guidance-panel" aria-labelledby="consultation-care-title">
-              <h3 id="consultation-care-title">保養與淨化</h3>
-              ${renderList(profile.careGuide)}
-            </section>
-
-            ${
-              profile.ritual.length
-                ? `
-                  <section class="consultation-card-panel consultation-guidance-panel" aria-labelledby="consultation-ritual-title">
-                    <h3 id="consultation-ritual-title">小儀式</h3>
-                    ${renderList(profile.ritual)}
-                  </section>
-                `
-                : ""
-            }
 
             ${
               profile.makerNote.length
