@@ -184,18 +184,15 @@ const BRACELET_PROFILE_COLUMNS = {
   ENERGY_FOCUS: 12,     // L 欄 — 能量主題
   CHAKRA_FOCUS: 13,     // M 欄 — 脈輪主題
   DESIGN_NOTES: 14,     // N 欄 — 設計說明
-  WEARING_GUIDE: 15,    // O 欄 — 配戴指南
-  CARE_INSTRUCTIONS: 16,// P 欄 — 保養說明
-  RITUAL_TEXT: 17,      // Q 欄 — 日常儀式
-  MAKER_NOTE: 18,       // R 欄 — 店主小語
-  IMAGE_URL: 19,        // S 欄 — 圖片網址
-  PRODUCT_URL: 20,      // T 欄 — 商品或公開頁網址
-  PUBLISHED_AT: 21,     // U 欄 — 公開時間
-  INTERNAL_NOTES: 22,   // V 欄 — 內部備註（不對外輸出）
-  SOURCE_CONSULTATION_ID: 23, // W 欄 — 來源諮詢 ID
-  PRODUCTION_STATUS: 24, // X 欄 — 製作狀態
-  PRICE: 25,             // Y 欄 — 商品價格
-  WRIST_SIZE: 26         // Z 欄 — 手圍
+  MAKER_NOTE: 15,       // O 欄 — 店主小語
+  IMAGE_URL: 16,        // P 欄 — 圖片網址
+  PRODUCT_URL: 17,      // Q 欄 — 商品或公開頁網址
+  PUBLISHED_AT: 18,     // R 欄 — 公開時間
+  INTERNAL_NOTES: 19,   // S 欄 — 內部備註（不對外輸出）
+  SOURCE_CONSULTATION_ID: 20, // T 欄 — 來源諮詢 ID
+  PRODUCTION_STATUS: 21, // U 欄 — 製作狀態
+  PRICE: 22,             // V 欄 — 商品價格
+  WRIST_SIZE: 23         // W 欄 — 手圍
 };
 
 /** 手鍊公開檔案工作表標題列 */
@@ -214,9 +211,6 @@ const BRACELET_PROFILE_HEADER_ROW = [
   '能量主題',
   '脈輪主題',
   '設計說明',
-  '配戴指南',
-  '保養說明',
-  '日常儀式',
   '店主小語',
   '圖片網址',
   '商品或公開頁網址',

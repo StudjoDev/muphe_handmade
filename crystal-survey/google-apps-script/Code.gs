@@ -688,9 +688,9 @@ function buildPublicBraceletProfile(row) {
     energyFocus: splitPublicListValue(getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.ENERGY_FOCUS)),
     chakraFocus: splitPublicListValue(getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.CHAKRA_FOCUS)),
     designNotes: getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.DESIGN_NOTES),
-    wearingGuide: splitPublicListValue(getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.WEARING_GUIDE)),
-    careInstructions: splitPublicListValue(getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.CARE_INSTRUCTIONS)),
-    ritual: splitPublicListValue(getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.RITUAL_TEXT)),
+    wearingGuide: [],
+    careInstructions: [],
+    ritual: [],
     makerNote: getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.MAKER_NOTE),
     imageUrl: getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.IMAGE_URL),
     productUrl: getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.PRODUCT_URL),
@@ -925,9 +925,6 @@ function appendConsultationCardProfile(data, recommendation, timestamp, consulta
   rowData[BRACELET_PROFILE_COLUMNS.ENERGY_FOCUS - 1] = publicFields.energyFocus.join('\n');
   rowData[BRACELET_PROFILE_COLUMNS.CHAKRA_FOCUS - 1] = publicFields.chakraFocus.join('\n');
   rowData[BRACELET_PROFILE_COLUMNS.DESIGN_NOTES - 1] = publicFields.designNotes;
-  rowData[BRACELET_PROFILE_COLUMNS.WEARING_GUIDE - 1] = publicFields.wearingGuide.join('\n');
-  rowData[BRACELET_PROFILE_COLUMNS.CARE_INSTRUCTIONS - 1] = publicFields.careInstructions.join('\n');
-  rowData[BRACELET_PROFILE_COLUMNS.RITUAL_TEXT - 1] = publicFields.ritual.join('\n');
   rowData[BRACELET_PROFILE_COLUMNS.MAKER_NOTE - 1] = publicFields.makerNote;
   rowData[BRACELET_PROFILE_COLUMNS.IMAGE_URL - 1] = '';
   rowData[BRACELET_PROFILE_COLUMNS.PRODUCT_URL - 1] = profileUrl;
@@ -1095,9 +1092,6 @@ function appendBraceletDraftRecord(data, recommendation, timestamp, evaluationRe
   rowData[BRACELET_PROFILE_COLUMNS.ENERGY_FOCUS - 1] = publicFields.energyFocus.join('\n');
   rowData[BRACELET_PROFILE_COLUMNS.CHAKRA_FOCUS - 1] = publicFields.chakraFocus.join('\n');
   rowData[BRACELET_PROFILE_COLUMNS.DESIGN_NOTES - 1] = publicFields.designNotes || '';
-  rowData[BRACELET_PROFILE_COLUMNS.WEARING_GUIDE - 1] = publicFields.wearingGuide.join('\n');
-  rowData[BRACELET_PROFILE_COLUMNS.CARE_INSTRUCTIONS - 1] = publicFields.careInstructions.join('\n');
-  rowData[BRACELET_PROFILE_COLUMNS.RITUAL_TEXT - 1] = publicFields.ritual.join('\n');
   rowData[BRACELET_PROFILE_COLUMNS.MAKER_NOTE - 1] = publicFields.makerNote || '';
   rowData[BRACELET_PROFILE_COLUMNS.IMAGE_URL - 1] = '';
   rowData[BRACELET_PROFILE_COLUMNS.PRODUCT_URL - 1] = getBraceletProfileUrl(accessCode);
@@ -1261,9 +1255,6 @@ function syncPendingBraceletDraftRecords() {
     row[BRACELET_PROFILE_COLUMNS.ENERGY_FOCUS - 1] = row[BRACELET_PROFILE_COLUMNS.ENERGY_FOCUS - 1] || publicFields.energyFocus.join('\n');
     row[BRACELET_PROFILE_COLUMNS.CHAKRA_FOCUS - 1] = row[BRACELET_PROFILE_COLUMNS.CHAKRA_FOCUS - 1] || publicFields.chakraFocus.join('\n');
     row[BRACELET_PROFILE_COLUMNS.DESIGN_NOTES - 1] = row[BRACELET_PROFILE_COLUMNS.DESIGN_NOTES - 1] || publicFields.designNotes;
-    row[BRACELET_PROFILE_COLUMNS.WEARING_GUIDE - 1] = row[BRACELET_PROFILE_COLUMNS.WEARING_GUIDE - 1] || publicFields.wearingGuide.join('\n');
-    row[BRACELET_PROFILE_COLUMNS.CARE_INSTRUCTIONS - 1] = row[BRACELET_PROFILE_COLUMNS.CARE_INSTRUCTIONS - 1] || publicFields.careInstructions.join('\n');
-    row[BRACELET_PROFILE_COLUMNS.RITUAL_TEXT - 1] = row[BRACELET_PROFILE_COLUMNS.RITUAL_TEXT - 1] || publicFields.ritual.join('\n');
     row[BRACELET_PROFILE_COLUMNS.MAKER_NOTE - 1] = row[BRACELET_PROFILE_COLUMNS.MAKER_NOTE - 1] || publicFields.makerNote;
     row[BRACELET_PROFILE_COLUMNS.PRODUCT_URL - 1] = row[BRACELET_PROFILE_COLUMNS.PRODUCT_URL - 1] || getBraceletProfileUrl(accessCode);
     row[BRACELET_PROFILE_COLUMNS.PRODUCTION_STATUS - 1] = row[BRACELET_PROFILE_COLUMNS.PRODUCTION_STATUS - 1] || BRACELET_PRODUCTION_STATUS_PENDING;
@@ -2992,9 +2983,7 @@ function getBraceletPublicationMissingFields(row) {
   return [
     [BRACELET_PROFILE_COLUMNS.CRYSTALS, '水晶配置'],
     [BRACELET_PROFILE_COLUMNS.PRICE, '價格'],
-    [BRACELET_PROFILE_COLUMNS.WRIST_SIZE, '手圍'],
-    [BRACELET_PROFILE_COLUMNS.WEARING_GUIDE, '配戴方式'],
-    [BRACELET_PROFILE_COLUMNS.CARE_INSTRUCTIONS, '保養說明']
+    [BRACELET_PROFILE_COLUMNS.WRIST_SIZE, '手圍']
   ].filter(function(item) {
     return !getBraceletProfileCell(row, item[0]);
   }).map(function(item) {
@@ -3778,9 +3767,6 @@ function getBraceletProfileColumnWidths() {
   widths[BRACELET_PROFILE_COLUMNS.ENERGY_FOCUS] = 220;
   widths[BRACELET_PROFILE_COLUMNS.CHAKRA_FOCUS] = 180;
   widths[BRACELET_PROFILE_COLUMNS.DESIGN_NOTES] = 320;
-  widths[BRACELET_PROFILE_COLUMNS.WEARING_GUIDE] = 260;
-  widths[BRACELET_PROFILE_COLUMNS.CARE_INSTRUCTIONS] = 260;
-  widths[BRACELET_PROFILE_COLUMNS.RITUAL_TEXT] = 260;
   widths[BRACELET_PROFILE_COLUMNS.MAKER_NOTE] = 260;
   widths[BRACELET_PROFILE_COLUMNS.IMAGE_URL] = 260;
   widths[BRACELET_PROFILE_COLUMNS.PRODUCT_URL] = 260;
@@ -4277,9 +4263,6 @@ function dynamicSyncColumns(sheet, sheetName) {
         '能量主題': 'ENERGY_FOCUS',
         '脈輪主題': 'CHAKRA_FOCUS',
         '設計說明': 'DESIGN_NOTES',
-        '配戴指南': 'WEARING_GUIDE',
-        '保養說明': 'CARE_INSTRUCTIONS',
-        '日常儀式': 'RITUAL_TEXT',
         '店主小語': 'MAKER_NOTE',
         '圖片網址': 'IMAGE_URL',
         '商品或公開頁網址': 'PRODUCT_URL',
