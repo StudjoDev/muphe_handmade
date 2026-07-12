@@ -699,7 +699,9 @@
       }
 
       function isFullAnalysisText(text) {
-        return /您的專屬水晶能量初步評估|多維度.*能量.*評估|暖心陪伴語|配戴與消磁儀式建議|【手[鍊鏈]\s*[ABC]/.test(normalizeString(text));
+        if (!text) return false;
+        return text.length > 200 ||
+               /您的專屬水晶能量初步評估|多維度.*能量.*評估|設計報告|暖心陪伴語|配戴與消磁儀式建議|【手[鍊鏈]\s*[ABC]/.test(normalizeString(text));
       }
 
       function normalizeInlineAnalysisText(text) {
