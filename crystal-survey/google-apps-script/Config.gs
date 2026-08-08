@@ -192,7 +192,8 @@ const BRACELET_PROFILE_COLUMNS = {
   SOURCE_CONSULTATION_ID: 20, // T 欄 — 來源諮詢 ID
   PRODUCTION_STATUS: 21, // U 欄 — 製作狀態
   PRICE: 22,             // V 欄 — 商品價格
-  WRIST_SIZE: 23         // W 欄 — 手圍
+  WRIST_SIZE: 23,        // W 欄 — 手圍
+  CALCULATION_METHOD: 24 // X 欄 — 能量分析模組
 };
 
 /** 手鍊公開檔案工作表標題列 */
@@ -219,7 +220,8 @@ const BRACELET_PROFILE_HEADER_ROW = [
   '來源諮詢ID',
   '製作狀態',
   '商品價格',
-  '手圍'
+  '手圍',
+  '能量分析模組'
 ];
 
 /** 分析評估表欄位在試算表中的位置（1-indexed） */

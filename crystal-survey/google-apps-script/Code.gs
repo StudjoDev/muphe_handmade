@@ -695,7 +695,8 @@ function buildPublicBraceletProfile(row) {
     imageUrl: getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.IMAGE_URL),
     productUrl: getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.PRODUCT_URL),
     publishedAt: getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.PUBLISHED_AT),
-    updatedAt: getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.UPDATED_AT)
+    updatedAt: getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.UPDATED_AT),
+    calculationMethod: getBraceletProfileCell(row, BRACELET_PROFILE_COLUMNS.CALCULATION_METHOD)
   };
 }
 
@@ -793,22 +794,27 @@ function buildReadableAccessCode(prefix, firstLength, secondLength) {
  * @returns {string} 查詢碼
  */
 function generateBraceletProfileAccessCode(sheet) {
-  const evaluationSheet = getOrCreateSheet(
-    ANALYSIS_EVALUATION_SHEET_NAME,
-    ANALYSIS_EVALUATION_HEADER_ROW,
-    getAnalysisEvaluationColumnWidths()
-  );
+  let evaluationSheet = null;
+  try {
+    evaluationSheet = getOrCreateSheet(
+      ANALYSIS_EVALUATION_SHEET_NAME,
+      ANALYSIS_EVALUATION_HEADER_ROW,
+      getAnalysisEvaluationColumnWidths()
+    );
+  } catch (error) {
+    console.error('【手鍊檔案碼】無法讀取諮詢表單檢查重覆碼，將只比對手鍊檔案：' + error.toString());
+  }
 
   for (let attempt = 0; attempt < 10; attempt++) {
     const code = buildReadableAccessCode(BRACELET_ACCESS_CODE_PREFIX, 4, 4);
-    if (!braceletAccessCodeExists(sheet, code) && !analysisAccessCodeExists(evaluationSheet, code)) {
+    if (!braceletAccessCodeExists(sheet, code) && (!evaluationSheet || !analysisAccessCodeExists(evaluationSheet, code))) {
       return code;
     }
   }
 
   for (let attempt = 0; attempt < 10; attempt++) {
     const code = buildReadableAccessCode(BRACELET_ACCESS_CODE_PREFIX, 4, 6);
-    if (!braceletAccessCodeExists(sheet, code) && !analysisAccessCodeExists(evaluationSheet, code)) {
+    if (!braceletAccessCodeExists(sheet, code) && (!evaluationSheet || !analysisAccessCodeExists(evaluationSheet, code))) {
       return code;
     }
   }
@@ -822,22 +828,27 @@ function generateBraceletProfileAccessCode(sheet) {
  * @returns {string} 諮詢表密碼
  */
 function generateAnalysisAccessCode(evaluationSheet) {
-  const profileSheet = getOrCreateSheet(
-    BRACELET_PROFILE_SHEET_NAME,
-    BRACELET_PROFILE_HEADER_ROW,
-    getBraceletProfileColumnWidths()
-  );
+  let profileSheet = null;
+  try {
+    profileSheet = getOrCreateSheet(
+      BRACELET_PROFILE_SHEET_NAME,
+      BRACELET_PROFILE_HEADER_ROW,
+      getBraceletProfileColumnWidths()
+    );
+  } catch (error) {
+    console.error('【諮詢表密碼】無法讀取手鍊檔案檢查重覆碼，將只比對諮詢表單：' + error.toString());
+  }
 
   for (let attempt = 0; attempt < 10; attempt++) {
     const code = buildReadableAccessCode(CONSULTATION_ACCESS_CODE_PREFIX, 4, 4);
-    if (!analysisAccessCodeExists(evaluationSheet, code) && !braceletAccessCodeExists(profileSheet, code)) {
+    if (!analysisAccessCodeExists(evaluationSheet, code) && (!profileSheet || !braceletAccessCodeExists(profileSheet, code))) {
       return code;
     }
   }
 
   for (let attempt = 0; attempt < 10; attempt++) {
     const code = buildReadableAccessCode(CONSULTATION_ACCESS_CODE_PREFIX, 4, 6);
-    if (!analysisAccessCodeExists(evaluationSheet, code) && !braceletAccessCodeExists(profileSheet, code)) {
+    if (!analysisAccessCodeExists(evaluationSheet, code) && (!profileSheet || !braceletAccessCodeExists(profileSheet, code))) {
       return code;
     }
   }
@@ -932,6 +943,7 @@ function appendConsultationCardProfile(data, recommendation, timestamp, consulta
   rowData[BRACELET_PROFILE_COLUMNS.INTERNAL_NOTES - 1] = '由諮詢表單自動生成；諮詢紀錄列號 ' + consultationRow + '；此列不是實際成品檔案。' + archiveNote;
   rowData[BRACELET_PROFILE_COLUMNS.SOURCE_CONSULTATION_ID - 1] = profileId;
   rowData[BRACELET_PROFILE_COLUMNS.PRODUCTION_STATUS - 1] = BRACELET_PRODUCTION_STATUS_PENDING;
+  rowData[BRACELET_PROFILE_COLUMNS.CALCULATION_METHOD - 1] = normalizeListValue(data.calculationMethod);
 
   profileSheet.appendRow(rowData);
 
@@ -1101,6 +1113,7 @@ function appendBraceletDraftRecord(data, recommendation, timestamp, evaluationRe
   rowData[BRACELET_PROFILE_COLUMNS.PRODUCTION_STATUS - 1] = BRACELET_PRODUCTION_STATUS_NEW;
   rowData[BRACELET_PROFILE_COLUMNS.PRICE - 1] = '';
   rowData[BRACELET_PROFILE_COLUMNS.WRIST_SIZE - 1] = data.wristSize || '';
+  rowData[BRACELET_PROFILE_COLUMNS.CALCULATION_METHOD - 1] = normalizeListValue(data.calculationMethod);
 
   sheet.appendRow(rowData);
   return {
@@ -1259,6 +1272,7 @@ function syncPendingBraceletDraftRecords() {
     row[BRACELET_PROFILE_COLUMNS.PRODUCT_URL - 1] = row[BRACELET_PROFILE_COLUMNS.PRODUCT_URL - 1] || getBraceletProfileUrl(accessCode);
     row[BRACELET_PROFILE_COLUMNS.PRODUCTION_STATUS - 1] = row[BRACELET_PROFILE_COLUMNS.PRODUCTION_STATUS - 1] || BRACELET_PRODUCTION_STATUS_PENDING;
     row[BRACELET_PROFILE_COLUMNS.WRIST_SIZE - 1] = row[BRACELET_PROFILE_COLUMNS.WRIST_SIZE - 1] || evaluation.data.wristSize;
+    row[BRACELET_PROFILE_COLUMNS.CALCULATION_METHOD - 1] = row[BRACELET_PROFILE_COLUMNS.CALCULATION_METHOD - 1] || normalizeListValue(evaluation.data.calculationMethod);
     if (!isBraceletProductionReady(row)) {
       row[BRACELET_PROFILE_COLUMNS.PUBLISHED - 1] = '待公開';
     }
@@ -3285,9 +3299,28 @@ function processConsultation(data) {
     // 步驟 3：保存諮詢分析，並建立一列尚未公開的手鍊待製作草稿。
     const writeResult = withScriptLock(function() {
       const evaluationResult = appendAnalysisEvaluationRecord(data, recommendation, timestamp, '');
-      const braceletDraft = appendBraceletDraftRecord(data, recommendation, timestamp, evaluationResult);
-      updateEvaluationBraceletLink(evaluationResult, braceletDraft);
-      syncBackofficeQueue();
+      let braceletDraft = null;
+
+      try {
+        braceletDraft = appendBraceletDraftRecord(data, recommendation, timestamp, evaluationResult);
+      } catch (braceletDraftError) {
+        console.error('【手鍊檔案草稿】建立失敗，但諮詢資料已保存：' + braceletDraftError.toString());
+      }
+
+      if (braceletDraft) {
+        try {
+          updateEvaluationBraceletLink(evaluationResult, braceletDraft);
+        } catch (braceletLinkError) {
+          console.error('【手鍊檔案連結回寫】失敗，但諮詢資料已保存：' + braceletLinkError.toString());
+        }
+      }
+
+      try {
+        syncBackofficeQueue();
+      } catch (queueError) {
+        console.error('【待處理清單同步】失敗，但諮詢資料已保存：' + queueError.toString());
+      }
+
       SpreadsheetApp.flush();
       return {
         csvUrl: '',
@@ -3776,6 +3809,7 @@ function getBraceletProfileColumnWidths() {
   widths[BRACELET_PROFILE_COLUMNS.PRODUCTION_STATUS] = 150;
   widths[BRACELET_PROFILE_COLUMNS.PRICE] = 110;
   widths[BRACELET_PROFILE_COLUMNS.WRIST_SIZE] = 90;
+  widths[BRACELET_PROFILE_COLUMNS.CALCULATION_METHOD] = 160;
   return widths;
 }
 
@@ -3932,13 +3966,17 @@ function getOrCreateSheet(sheetName, headerRow, columnWidths) {
       dynamicSyncColumns(sheet, targetSheetName);
     }
     if (targetSheetName === BRACELET_PROFILE_SHEET_NAME && sheet.getMaxRows() > 1) {
-      const statusValidation = SpreadsheetApp.newDataValidation()
-        .requireValueInList(BRACELET_PRODUCTION_STATUS_OPTIONS, true)
-        .setAllowInvalid(false)
-        .build();
-      sheet
-        .getRange(2, BRACELET_PROFILE_COLUMNS.PRODUCTION_STATUS, sheet.getMaxRows() - 1, 1)
-        .setDataValidation(statusValidation);
+      try {
+        const statusValidation = SpreadsheetApp.newDataValidation()
+          .requireValueInList(BRACELET_PRODUCTION_STATUS_OPTIONS, true)
+          .setAllowInvalid(false)
+          .build();
+        sheet
+          .getRange(2, BRACELET_PROFILE_COLUMNS.PRODUCTION_STATUS, sheet.getMaxRows() - 1, 1)
+          .setDataValidation(statusValidation);
+      } catch (validationError) {
+        console.error('【工作表】製作狀態資料驗證設定失敗，略過不影響主流程：' + validationError.toString());
+      }
     }
 
     return sheet;
@@ -4271,7 +4309,8 @@ function dynamicSyncColumns(sheet, sheetName) {
         '來源諮詢ID': 'SOURCE_CONSULTATION_ID',
         '製作狀態': 'PRODUCTION_STATUS',
         '商品價格': 'PRICE',
-        '手圍': 'WRIST_SIZE'
+        '手圍': 'WRIST_SIZE',
+        '能量分析模組': 'CALCULATION_METHOD'
       };
       headers.forEach(function(header, index) {
         const cleanHeader = String(header || '').trim();
